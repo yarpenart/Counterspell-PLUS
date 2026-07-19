@@ -11,17 +11,43 @@
         "Homebrew": "Homebrew: opposed rolls",
         "Official2014": "Official D&D 2014"
       },
+      "DispelEnabled": {
+        "Name": "Enable Dispel Magic workflow",
+        "Hint": "Intercept recognized Dispel Magic spells and use the Counterspell PLUS workflow."
+      },
+      "DispelRuleset": {
+        "Name": "Dispel Magic rules",
+        "Hint": "Choose the rule used to resolve Dispel Magic independently from Counterspell.",
+        "Homebrew": "Homebrew: roll against passive spellcasting",
+        "Official2014": "Official D&D 2014"
+      },
+      "DispelDefenseBase": {
+        "Name": "Dispel Magic: normal spell defense base",
+        "Hint": "Homebrew base for an ordinary spell effect. Default: 10. Any numeric value is allowed."
+      },
+      "DispelScrollDefenseBase": {
+        "Name": "Dispel Magic: spell scroll defense base",
+        "Hint": "Independent homebrew base for an effect cast from a scroll. Default: 7. Any numeric value is allowed."
+      },
+      "DispelGlyphDefenseBase": {
+        "Name": "Dispel Magic: Spell Glyph defense base",
+        "Hint": "Independent homebrew base for an effect cast from a Glyph. Default: 10. Any numeric value is allowed."
+      },
       "ScrollDefenseBase": {
-        "Name": "Spell scroll defense base",
-        "Hint": "Base added to the stored spell level and creator values for a scroll. Default: 7. Any numeric value is allowed."
+        "Name": "Counterspell: spell scroll defense base",
+        "Hint": "Counterspell homebrew base added to the stored spell level and creator values for a scroll. Default: 7. Any numeric value is allowed."
       },
       "GlyphDefenseBase": {
-        "Name": "Spell Glyph defense base",
-        "Hint": "Base added to the stored spell level and creator values for a Glyph. Default: 10. Any numeric value is allowed."
+        "Name": "Counterspell: Spell Glyph defense base",
+        "Hint": "Counterspell homebrew base added to the stored spell level and creator values for a Glyph. Default: 10. Any numeric value is allowed."
       },
       "Names": {
         "Name": "Recognized Counterspell names",
         "Hint": "Comma-separated spell names. Parenthetical suffixes such as Counterspell (Alternate) are recognized automatically."
+      },
+      "DispelNames": {
+        "Name": "Recognized Dispel Magic names",
+        "Hint": "Comma-separated spell names. Parenthetical suffixes are recognized automatically."
       },
       "WildMagic": {
         "Name": "Wild Magic message",
@@ -51,10 +77,16 @@
       "RollModePublic": "Public Roll",
       "RollModePrivate": "Private GM Roll",
       "RollModeBlind": "Blind GM Roll",
+      "BonusDice": "Additional dice formula",
+      "BonusDiceHint": "Optional, for example 1d4 or 1d4 + 1d8. The GM will confirm or edit this formula.",
+      "TargetBonusDice": "Target's additional dice formula",
+      "TargetBonusDiceHint": "Optional dice added to the original spell roll. Ignored for a scroll or Glyph fixed defense.",
+      "CounterBonusDice": "Counterspell additional dice formula",
+      "BonusDiceGMHint": "Confirm or edit the optional dice formula. Leave blank for no additional dice.",
       "KnowsTargetSpell": "I know the spell being countered",
-      "KnowsTargetSpellHint": "Homebrew only: this grants advantage unless the target spell is Counterspell. The GM will confirm this declaration.",
+      "KnowsTargetSpellHint": "Homebrew only: a known normal spell grants advantage (except Counterspell); a known scroll or Glyph spell reduces its fixed defense by 5. The GM will confirm this declaration.",
       "GMConfirmKnowledge": "The Counterspell caster knows the target spell",
-      "GMConfirmKnowledgeHint": "Confirm or correct the player's declaration. Knowing the spell never grants advantage against another Counterspell.",
+      "GMConfirmKnowledgeHint": "Confirm or correct the declaration. A known normal spell grants advantage except against Counterspell; a known scroll or Glyph spell instead reduces its defense by 5.",
       "DeclareDisadvantage": "I have disadvantage",
       "DisadvantageHint": "For example, from an exhaustion level or another effect. The GM will confirm this declaration.",
       "GMTargetDisadvantage": "The target caster has disadvantage",
@@ -118,7 +150,68 @@
       "CancelledByGM": "The GM cancelled the Counterspell workflow.",
       "CancelledByTarget": "The target player cancelled the Counterspell workflow.",
       "TargetRollFailed": "The target spell roll could not be completed.",
+      "InvalidBonusFormula": "An additional dice formula is invalid. Correct it before rolling.",
       "GenericError": "The Counterspell workflow encountered an error."
+    },
+    "Dispel": {
+      "Dialog": {
+        "DispelSlot": "Dispel Magic slot",
+        "DispellerTitle": "Counterspell PLUS — your Dispel Magic",
+        "OfficialBonusLater": "Official 2014: you will choose optional additional dice separately for each required ability check after the GM enters the effects.",
+        "DispelData": "Dispel Magic",
+        "Target": "Affected target",
+        "EffectCount": "Number of spell effects on the target",
+        "DefenseRollMode": "Passive defense roll mode",
+        "SetupHint": "Enter the total number of effects. With more than one effect, the homebrew rule adds that total to every effect's DC.",
+        "GMSetupTitle": "Counterspell PLUS — Dispel Magic target",
+        "EffectNumber": "Effect {index} of {count}",
+        "EffectName": "Spell effect name",
+        "EffectLevel": "Spell level",
+        "CasterCreatorModifier": "Original caster / creator ability modifier",
+        "CasterCreatorProficiency": "Original caster / creator proficiency bonus",
+        "SourceBaseHint": "Normal spell, Scroll and Glyph use their own independently configurable homebrew bases. Creator values are used for Scroll and Glyph.",
+        "GMEffectTitle": "Dispel Magic — effect {index} of {count}",
+        "KnowsEffect": "I know this spell",
+        "KnowsEffectHint": "Homebrew: subtract 5 from this individual effect's DC. The GM will confirm this declaration.",
+        "CheckBonusDice": "Additional dice for this check",
+        "CheckBonusDiceHint": "Official 2014: this formula applies only to the separate ability check for this effect.",
+        "AutomaticBonusIgnored": "This effect is currently automatic because its level does not exceed the Dispel Magic slot; the formula is ignored unless the GM changes its level.",
+        "LevelValue": "level {level}",
+        "EffectsSummary": "{count} spell effect(s)",
+        "PlayerEffectsTitle": "Counterspell PLUS — spells affected by your Dispel Magic",
+        "GMConfirmKnown": "The Dispel Magic caster knows this spell",
+        "GMConfirmDisadvantage": "The Dispel Magic caster has disadvantage",
+        "TargetData": "Target and passive defenses",
+        "EffectsToResolve": "Spell effects",
+        "GMReviewHint": "Confirm or correct every effect and player declaration. The Dispel Magic slot is consumed only after you press Roll.",
+        "GMReviewTitle": "Counterspell PLUS — final Dispel Magic review"
+      },
+      "Chat": {
+        "DefenseTitle": "Dispel Magic — spell defenses",
+        "HomebrewRoll": "Dispel Magic: {actor}",
+        "OfficialRoll": "Dispel Magic check against {spell} — DC {dc}",
+        "Dispelled": "DISPELLED",
+        "Remains": "REMAINS",
+        "Automatic": "Automatic under the official 2014 rule.",
+        "NumericResult": "Result: {total}; DC: {dc}.",
+        "HiddenResult": "At least one relevant value used a hidden roll mode.",
+        "TieRule": "Under the homebrew rule, the Dispel Magic result must be strictly higher than the effect DC; a tie leaves the effect in place.",
+        "TargetSummary": "Target: {target}",
+        "ManualRemoval": "The module only identifies which effects should be removed; the GM removes them manually."
+      },
+      "Notifications": {
+        "NoSlots": "This actor has no available spell slot capable of casting Dispel Magic.",
+        "NoTargets": "No actors or tokens are available for the GM to select.",
+        "TargetNotFound": "The selected Dispel Magic target could not be found.",
+        "ActorNotFound": "The Dispel Magic actor could not be found.",
+        "SlotUnavailable": "The selected Dispel Magic slot is no longer available.",
+        "NoGM": "An active GM is required to resolve Dispel Magic.",
+        "AlreadyPending": "This actor already has a pending Dispel Magic workflow.",
+        "RequestTimeout": "The Dispel Magic request expired after three minutes.",
+        "CancelledByGM": "The GM cancelled the Dispel Magic workflow.",
+        "CancelledByPlayer": "The Dispel Magic caster cancelled the workflow.",
+        "GenericError": "The Dispel Magic workflow encountered an error."
+      }
     }
   }
 }

@@ -9,6 +9,7 @@ import {
   getRollModeEntries,
   getSceneCasterEntries,
   getSlotChoices,
+  normalizeBonusFormula,
   parseNumber,
   t,
   tf
@@ -120,6 +121,11 @@ export async function promptCounterspeller(actor, item, ruleset) {
           <select name="rollMode">${selectOptions(getRollModeEntries(rollMode))}</select>
         </div>
       </div>
+      <div class="form-group stacked">
+        <label>${t("Dialog.BonusDice")}</label>
+        <div class="form-fields"><input type="text" name="bonusFormula" placeholder="1d4 + 1d8"></div>
+        <p class="hint">${t("Dialog.BonusDiceHint")}</p>
+      </div>
       ${knowledgeField}
       ${disadvantageField}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
@@ -142,6 +148,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
     slotLevel: selectedSlot.level,
     slotLabel: selectedSlot.label,
     rollMode: String(result.rollMode),
+    bonusFormula: normalizeBonusFormula(result.bonusFormula),
     knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     disadvantage: Boolean(result.disadvantage),
     actorUuid: actor.uuid,
@@ -170,6 +177,14 @@ export async function promptGMTarget(counter) {
           ${t("Dialog.GMTargetDisadvantage")}
         </label>
         <p class="hint">${t("Dialog.GMTargetDisadvantageHint")}</p>
+      </div>`
+    : "";
+  const targetBonusField = counter.ruleset === RULESETS.HOMEBREW
+    ? `
+      <div class="form-group stacked">
+        <label>${t("Dialog.TargetBonusDice")}</label>
+        <div class="form-fields"><input type="text" name="bonusFormula" placeholder="1d4 + 1d8"></div>
+        <p class="hint">${t("Dialog.TargetBonusDiceHint")}</p>
       </div>`
     : "";
   const casterOptions = casters.map((entry, index) => ({
@@ -219,6 +234,7 @@ export async function promptGMTarget(counter) {
         <label>${t("Dialog.TargetRollMode")}</label>
         <div class="form-fields"><select name="targetRollMode">${selectOptions(getRollModeEntries(targetRollMode))}</select></div>
       </div>
+      ${targetBonusField}
       ${targetDisadvantageField}
       <div class="form-group stacked">
         <label class="checkbox">
@@ -272,6 +288,7 @@ export async function promptGMTarget(counter) {
     creatorMod: parseNumber(result.creatorMod, 0),
     creatorProf: parseNumber(result.creatorProf, 0),
     rollMode: String(result.targetRollMode),
+    bonusFormula: counter.ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
     rollUserId: game.user.id,
     ruleset: counter.ruleset,
     disadvantage: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.disadvantage)
@@ -298,6 +315,14 @@ export async function promptTargetPlayer(target) {
         <p class="hint">${t("Dialog.DisadvantageHint")}</p>
       </div>`
     : "";
+  const bonusField = target.ruleset === RULESETS.HOMEBREW
+    ? `
+      <div class="form-group stacked">
+        <label>${t("Dialog.BonusDice")}</label>
+        <div class="form-fields"><input type="text" name="bonusFormula" value="${escapeHTML(target.bonusFormula)}" placeholder="1d4 + 1d8"></div>
+        <p class="hint">${t("Dialog.BonusDiceHint")}</p>
+      </div>`
+    : "";
   const content = `
     <div class="csp-form">
       <div class="csp-summary">
@@ -320,6 +345,7 @@ export async function promptTargetPlayer(target) {
         <label>${t("Dialog.RollMode")}</label>
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(rollMode))}</select></div>
       </div>
+      ${bonusField}
       ${disadvantageField}
       <p class="hint">${t("Dialog.PlayerDataHint")}</p>
     </div>`;
@@ -338,6 +364,7 @@ export async function promptTargetPlayer(target) {
     spellName: String(result.spellName || target.spellName),
     spellLevel: parseNumber(result.spellLevel, target.spellLevel),
     rollMode: String(result.rollMode),
+    bonusFormula: target.ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
     rollUserId: game.user.id,
     disadvantage: target.ruleset === RULESETS.HOMEBREW && Boolean(result.disadvantage)
   };
@@ -421,6 +448,17 @@ export async function promptGMReview(counter, target) {
         <label>${isFixedSource ? t("Dialog.CreatorProficiency") : t("Dialog.Proficiency")}</label>
         <div class="form-fields"><input type="number" name="targetProf" value="${prof}" min="0" step="1"></div>
       </div>
+      <div class="form-group stacked">
+        <label>${t("Dialog.CounterBonusDice")}</label>
+        <div class="form-fields"><input type="text" name="counterBonusFormula" value="${escapeHTML(counter.bonusFormula)}" placeholder="1d4 + 1d8"></div>
+        <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
+      </div>
+      ${counter.ruleset === RULESETS.HOMEBREW && !isFixedSource ? `
+        <div class="form-group stacked">
+          <label>${t("Dialog.TargetBonusDice")}</label>
+          <div class="form-fields"><input type="text" name="targetBonusFormula" value="${escapeHTML(target.bonusFormula)}" placeholder="1d4 + 1d8"></div>
+          <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
+        </div>` : ""}
       ${knowledgeField}
       ${counterDisadvantageField}
       ${targetDisadvantageField}
@@ -445,12 +483,14 @@ export async function promptGMReview(counter, target) {
   } else {
     reviewed.abilityMod = parseNumber(result.targetMod, target.abilityMod);
     reviewed.proficiency = parseNumber(result.targetProf, target.proficiency);
+    reviewed.bonusFormula = normalizeBonusFormula(result.targetBonusFormula);
   }
   reviewed.disadvantage = counter.ruleset === RULESETS.HOMEBREW
     && !isFixedSource
     && Boolean(result.targetDisadvantage);
   const reviewedCounter = {
     ...counter,
+    bonusFormula: normalizeBonusFormula(result.counterBonusFormula),
     knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     disadvantage: Boolean(result.counterDisadvantage)
   };

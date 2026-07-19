@@ -1,5 +1,6 @@
 import { MODULE_ID, registerSettings } from "./config.js";
 import { initializeWorkflow } from "./workflow.js";
+import { initializeDispelWorkflow } from "./dispel-workflow.js";
 
 Hooks.once("init", () => {
   registerSettings();
@@ -9,4 +10,5 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   if (game.system.id !== "dnd5e") return;
   initializeWorkflow();
+  initializeDispelWorkflow();
 });

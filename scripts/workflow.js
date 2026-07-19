@@ -7,6 +7,7 @@ import {
 } from "./dialogs.js";
 import {
   applyRollMode,
+  bonusRollPart,
   escapeHTML,
   getActivityItem,
   getActorFromUuidSync,
@@ -17,7 +18,8 @@ import {
   randomRequestId,
   speakerFor,
   t,
-  tf
+  tf,
+  validateBonusFormula
 } from "./utils.js";
 
 const pendingRequests = new Map();
@@ -142,6 +144,7 @@ async function handleSocket(message) {
         result = await executeTargetRoll(message.payload.target);
         break;
       default:
+        if (String(message.type).startsWith("dispel-")) return;
         debug("Unknown socket message", message.type);
     }
     await answerRequest(message, result);
@@ -182,7 +185,7 @@ async function postFixedTarget(target, total, base) {
     content: `
       <div class="counterspell-plus-chat csp-fixed">
         <h3>${title}</h3>
-        <p class="csp-formula">${base} + ${target.spellLevel} + ${target.creatorMod} + ${target.creatorProf} = <strong>${total}</strong></p>
+        <p class="csp-formula">${base} + ${target.spellLevel} + ${target.creatorMod} + ${target.creatorProf}${target.knowledgeReduction ? ` - ${target.knowledgeReduction}` : ""} = <strong>${total}</strong></p>
       </div>`
   }, target.rollMode);
   return ChatMessage.create(messageData);
@@ -234,13 +237,15 @@ async function postResult({ counter, target, counterTotal, targetTotal, success,
 async function executeTargetRoll(target) {
   if (["scroll", "glyph"].includes(target.sourceType)) {
     const base = getFixedDefenseBase(target.sourceType);
-    const total = base + target.spellLevel + target.creatorMod + target.creatorProf;
+    const total = base + target.spellLevel + target.creatorMod + target.creatorProf - Number(target.knowledgeReduction ?? 0);
     await postFixedTarget(target, total, base);
     return { total };
   }
 
   const targetActor = getActorFromUuidSync(target.actorUuid);
-  const targetRoll = await createD20Roll(["@slot", "@mod", "@prof"], {
+  const bonusPart = bonusRollPart(target.bonusFormula);
+  const targetParts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
+  const targetRoll = await createD20Roll(targetParts, {
     slot: target.spellLevel,
     mod: target.abilityMod,
     prof: target.proficiency
@@ -258,8 +263,13 @@ async function executeTargetRoll(target) {
 
 async function resolveHomebrew(counter, target) {
   const counterActor = getActorFromUuidSync(counter.actorUuid);
-  const hasAdvantage = Boolean(counter.knowsTargetSpell) && !isCounterspellName(target.spellName);
-  const counterRoll = await createD20Roll(["@slot", "@mod", "@prof"], {
+  const isFixedSource = ["scroll", "glyph"].includes(target.sourceType);
+  const hasAdvantage = Boolean(counter.knowsTargetSpell)
+    && target.sourceType === "spell"
+    && !isCounterspellName(target.spellName);
+  const bonusPart = bonusRollPart(counter.bonusFormula);
+  const counterParts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
+  const counterRoll = await createD20Roll(counterParts, {
     slot: counter.slotLevel,
     mod: counter.abilityMod,
     prof: counter.proficiency
@@ -271,11 +281,15 @@ async function resolveHomebrew(counter, target) {
   await postRoll(counterRoll, {
     actor: counterActor,
     alias: counter.actorName,
-    flavor: tf("Chat.CounterspellRoll", { actor: counter.actorName }),
+    flavor: tf(hasAdvantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", { actor: counter.actorName }),
     rollMode: counter.rollMode
   });
 
-  const targetResult = await requestRemote("execute-target-roll", target.rollUserId, { target });
+  const resolvedTarget = {
+    ...target,
+    knowledgeReduction: isFixedSource && counter.knowsTargetSpell ? 5 : 0
+  };
+  const targetResult = await requestRemote("execute-target-roll", target.rollUserId, { target: resolvedTarget });
   if (!targetResult) throw new Error(t("Notifications.TargetRollFailed"));
   const targetTotal = Number(targetResult.total);
 
@@ -303,7 +317,8 @@ async function resolveOfficial2014(counter, target) {
 
   const counterActor = getActorFromUuidSync(counter.actorUuid);
   const dc = 10 + target.spellLevel;
-  const roll = await createD20Roll(["@mod"], { mod: counter.abilityMod }, {
+  const bonusPart = bonusRollPart(counter.bonusFormula);
+  const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), { mod: counter.abilityMod }, {
     disadvantage: Boolean(counter.disadvantage)
   }).evaluate();
   await postRoll(roll, {
@@ -370,6 +385,15 @@ async function startCounterspell(activity) {
     counter = review.counter;
     target = review.target;
 
+    const validCounterBonus = validateBonusFormula(counter.bonusFormula);
+    const validTargetBonus = ruleset !== RULESETS.HOMEBREW
+      || target.sourceType !== "spell"
+      || validateBonusFormula(target.bonusFormula);
+    if (!validCounterBonus || !validTargetBonus) {
+      ui.notifications.error(t("Notifications.InvalidBonusFormula"));
+      return;
+    }
+
     await consumeCounterspellSlot(counter);
 
     if (ruleset === RULESETS.OFFICIAL_2014) {
@@ -397,7 +421,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.1.7"
+    version: "0.2.0"
   };
 
   debug("Ready");

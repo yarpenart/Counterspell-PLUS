@@ -31,6 +31,60 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "dispelEnabled", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelEnabled.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelEnabled.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "dispelRuleset", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelRuleset.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelRuleset.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      [RULESETS.HOMEBREW]: "COUNTERSPELL_PLUS.Settings.DispelRuleset.Homebrew",
+      [RULESETS.OFFICIAL_2014]: "COUNTERSPELL_PLUS.Settings.DispelRuleset.Official2014"
+    },
+    default: RULESETS.HOMEBREW,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "dispelDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 10,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "dispelScrollDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelScrollDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelScrollDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 7,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "dispelGlyphDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelGlyphDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelGlyphDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 10,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "scrollDefenseBase", {
     name: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Name",
     hint: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Hint",
@@ -58,6 +112,16 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "Counterspell, Counterspell (Alternate), Kontrzaklęcie, Kontrczar",
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "dispelMagicNames", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelNames.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelNames.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "Dispel Magic, Rozproszenie magii",
     restricted: true
   });
 
