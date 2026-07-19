@@ -1,9 +1,5 @@
 .counterspell-plus-dialog .window-content {
-  max-height: calc(100vh - 6rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
   padding: 1rem;
-  scrollbar-gutter: stable;
 }
 
 .counterspell-plus-dialog .csp-form {
