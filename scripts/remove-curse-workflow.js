@@ -13,6 +13,7 @@ import {
   getActivityItem,
   getActorFromUuidSync,
   getItemActor,
+  getHomebrewProficiencyMultiplier,
   getPrimaryGM,
   getSpecialMinimum,
   isRemoveCurseActivity,
@@ -268,17 +269,13 @@ async function postFinalResults(remover, setup, results) {
 }
 
 export function getOutcomeThresholds() {
-  const configuredDramaticMin = Math.max(1, Math.trunc(configuredNumber("removeCurseDramaticFailureMin", 5)));
-  const configuredFailureMax = Math.max(0, Math.trunc(configuredNumber("removeCurseFailureMax", 4)));
-  const configuredBarelyMax = Math.max(1, Math.trunc(configuredNumber("removeCurseBarelySuccessMax", 5)));
-  const configuredSuccessMin = Math.max(2, Math.trunc(configuredNumber("removeCurseSuccessMin", 6)));
-  const dramaticFailureMin = Math.max(configuredDramaticMin, configuredFailureMax + 1);
-  const successMin = Math.max(configuredSuccessMin, configuredBarelyMax + 1);
+  const dramaticFailureMin = Math.max(1, Math.trunc(configuredNumber("removeCurseDramaticFailureMin", 5)));
+  const barelySuccessMax = Math.max(1, Math.trunc(configuredNumber("removeCurseBarelySuccessMax", 5)));
   return {
     dramaticFailureMin,
     failureMax: dramaticFailureMin - 1,
-    barelySuccessMax: successMin - 1,
-    successMin
+    barelySuccessMax,
+    successMin: barelySuccessMax + 1
   };
 }
 
@@ -334,7 +331,13 @@ async function resolveHomebrew(remover, setup) {
   const specialMinimum = remover.specialSpellcaster
     ? getSpecialMinimum("removeCurseSpecialMinimum")
     : undefined;
-  const parts = ["@slot", "@mod", usesHomebrewProficiency() ? "@prof" : null, bonusPart].filter(Boolean);
+  const proficiencyMultiplier = getHomebrewProficiencyMultiplier(remover.abjurer);
+  const proficiencyPart = proficiencyMultiplier === 2
+    ? "2 * @prof"
+    : proficiencyMultiplier === 1
+      ? "@prof"
+      : null;
+  const parts = ["@slot", "@mod", proficiencyPart, bonusPart].filter(Boolean);
   const roll = await createD20Roll(parts, {
     slot: remover.slotLevel,
     mod: remover.abilityMod,
@@ -492,6 +495,6 @@ export function initializeRemoveCurseWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRemoveCurseFromActivity = startRemoveCurse;
-  game.counterspellPlus.version = "0.3.1";
+  game.counterspellPlus.version = "0.3.2";
   debug("Ready");
 }

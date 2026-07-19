@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic** and **Remove Curse** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.3.1
+## Version 0.3.2
 
 - Independent world settings for Counterspell, Dispel Magic and Remove Curse: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -11,7 +11,7 @@ Automation for **Counterspell**, **Dispel Magic** and **Remove Curse** in Foundr
 - Final outcomes are public, while hidden numerical values remain protected by the selected roll modes.
 - Ordinary D&D5e d20 rolls support Dice So Nice and use the system's standard natural 20 / natural 1 colors.
 - Optional additional dice formulas such as `1d4` or `1d4 + 1d8` are supported and editable by the GM.
-- One world checkbox controls whether proficiency is included in all three Homebrew workflows. Official 2014 calculations remain unchanged.
+- One world checkbox controls whether proficiency is included in all three Homebrew workflows. Official 2014 calculations remain unchanged. An optional world setting enables an `Abjurer` declaration: it adds one extra proficiency bonus to the caster roll, producing single proficiency when the shared proficiency option is off and expertise when it is on.
 - Counterspell, Dispel Magic and Remove Curse can be declared as cast normally or from a spell scroll. Scroll casting uses the selected scroll level plus the scroll author's ability modifier and proficiency, consumes no character spell slot, and is editable by the GM.
 - Counterspell target selection supports actor/token, Unknown and Glyph targets; Dispel Magic additionally supports Object. Selecting Glyph as the target forces Glyph as the spell source in both workflows.
 - Counterspell and Dispel Magic target selectors provide a live-filtered search list instead of requiring scrolling through long actor lists.
@@ -110,7 +110,7 @@ Under the Homebrew rule, every curse also posts a public outcome card. The defau
 - success by 1–5: Barely Successful Curse Removal;
 - success by 6 or more: Successful Curse Removal.
 
-All four displayed boundaries are world settings. The card descriptions are generated from the effective configured values. A homebrew tie is a failure. The Official 2014 mode follows the same automatic-level and separate-check procedure configured for Dispel Magic in this module.
+Two world sliders define these bands. The negative slider sets where Dramatic Failure begins; ordinary Failure automatically covers every smaller failure through a tie at 0. The positive slider sets the upper limit of Barely Successful; full Success automatically begins at the next value. Card descriptions are generated from the configured values. A homebrew tie is a failure. The Official 2014 mode follows the same automatic-level and separate-check procedure configured for Dispel Magic in this module.
 
 ## Natural 20 and natural 1
 
@@ -122,8 +122,9 @@ Open **Configure Settings → Module Settings → Counterspell PLUS** to configu
 
 - Counterspell enabled state, ruleset, recognized names, Scroll base, Glyph base and Wild Magic reminder.
 - Dispel Magic enabled state, ruleset, recognized names, Normal Spell base, Scroll base and Glyph base.
-- Remove Curse enabled state, ruleset, recognized names, Curse defense base and four outcome boundaries.
+- Remove Curse enabled state, ruleset, recognized names, Curse defense base and two outcome sliders.
 - One shared Homebrew proficiency checkbox for Counterspell, Dispel Magic and Remove Curse.
+- Optional Homebrew Abjurer declarations for all three caster rolls.
 - Independent Special Spellcaster minimum d20 values for Counterspell, Dispel Magic and Remove Curse.
 
 Every base accepts any numeric value.

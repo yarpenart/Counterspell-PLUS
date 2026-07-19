@@ -41,6 +41,16 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "abjurerEnabled", {
+    name: "COUNTERSPELL_PLUS.Settings.AbjurerEnabled.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.AbjurerEnabled.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "counterspellSpecialMinimum", {
     name: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Name",
     hint: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Hint",
@@ -173,17 +183,6 @@ export function registerSettings() {
     restricted: true
   });
 
-  game.settings.register(MODULE_ID, "removeCurseFailureMax", {
-    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseFailureMax.Name",
-    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseFailureMax.Hint",
-    scope: "world",
-    config: true,
-    type: Number,
-    range: { min: 0, max: 49, step: 1 },
-    default: 4,
-    restricted: true
-  });
-
   game.settings.register(MODULE_ID, "removeCurseBarelySuccessMax", {
     name: "COUNTERSPELL_PLUS.Settings.RemoveCurseBarelySuccessMax.Name",
     hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseBarelySuccessMax.Hint",
@@ -192,17 +191,6 @@ export function registerSettings() {
     type: Number,
     range: { min: 1, max: 49, step: 1 },
     default: 5,
-    restricted: true
-  });
-
-  game.settings.register(MODULE_ID, "removeCurseSuccessMin", {
-    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseSuccessMin.Name",
-    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseSuccessMin.Hint",
-    scope: "world",
-    config: true,
-    type: Number,
-    range: { min: 2, max: 50, step: 1 },
-    default: 6,
     restricted: true
   });
 

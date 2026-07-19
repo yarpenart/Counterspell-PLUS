@@ -80,20 +80,12 @@
         "Hint": "Homebrew defense base used by every curse. Default: 10. Any numeric value is allowed."
       },
       "RemoveCurseDramaticFailureMin": {
-        "Name": "Remove Curse outcome: Dramatic Failure starts at",
-        "Hint": "Minimum amount by which the roll must fail for a Dramatic Curse Removal Failure. Keep this one point above the ordinary failure maximum; gaps or overlaps are normalized at resolution. Default: 5."
-      },
-      "RemoveCurseFailureMax": {
-        "Name": "Remove Curse outcome: Failed Removal ends at",
-        "Hint": "Largest failure margin classified as a Failed Curse Removal. Keep this one point below the dramatic failure minimum; gaps or overlaps are normalized at resolution. Default: 4."
+        "Name": "Remove Curse: Dramatic Failure threshold",
+        "Hint": "Failure by this amount or more is a Dramatic Curse Removal Failure. Smaller failures through a tie (0) are Failed Curse Removal. Default: 5."
       },
       "RemoveCurseBarelySuccessMax": {
-        "Name": "Remove Curse outcome: Barely Successful ends at",
-        "Hint": "Largest success margin classified as a Barely Successful Curse Removal. Keep this one point below the full success minimum; gaps or overlaps are normalized at resolution. Default: 5."
-      },
-      "RemoveCurseSuccessMin": {
-        "Name": "Remove Curse outcome: Successful Removal starts at",
-        "Hint": "Minimum success margin classified as a Successful Curse Removal without negative effects. Keep this one point above the barely successful maximum; gaps or overlaps are normalized at resolution. Default: 6."
+        "Name": "Remove Curse: Barely Successful upper limit",
+        "Hint": "Success margins from 1 through this value are Barely Successful Curse Removal. The next value or more is Successful Curse Removal. Default: 5."
       },
       "RemoveCurseNames": {
         "Name": "Recognized Remove Curse names",
@@ -102,6 +94,10 @@
       "IncludeProficiency": {
         "Name": "Homebrew: add proficiency bonus",
         "Hint": "When enabled, proficiency is added to all homebrew Counterspell, Dispel Magic and Remove Curse rolls and passive or fixed defenses. Official 2014 remains unchanged."
+      },
+      "AbjurerEnabled": {
+        "Name": "Homebrew: enable Abjurer option",
+        "Hint": "Shows an Abjurer declaration for Counterspell, Dispel Magic and Remove Curse. An Abjurer adds one extra proficiency bonus to their caster roll: double proficiency when proficiency is normally included, or single proficiency when it is disabled. The GM confirms the declaration."
       }
     },
     "Rules": {
@@ -117,6 +113,9 @@
       "Ability": "Spellcasting ability",
       "AbilityModifier": "Ability modifier",
       "Proficiency": "Proficiency bonus",
+      "Abjurer": "Abjurer",
+      "AbjurerHint": "Homebrew only: adds one extra proficiency bonus to this caster roll. This becomes double proficiency when the global proficiency option is enabled, or single proficiency when it is disabled. The GM will confirm this declaration.",
+      "GMConfirmAbjurer": "The caster is an Abjurer",
       "CounterspellSlot": "Counterspell slot",
       "SpellSlotLevel": "Actual spell slot level",
       "SlotLevel": "Slot level",

@@ -269,6 +269,30 @@ export function usesHomebrewProficiency() {
   return Boolean(game.settings.get(MODULE_ID, "includeProficiency"));
 }
 
+export function isAbjurerOptionEnabled() {
+  return Boolean(game.settings.get(MODULE_ID, "abjurerEnabled"));
+}
+
+export function getHomebrewProficiencyMultiplier(abjurer = false) {
+  return (usesHomebrewProficiency() ? 1 : 0) + (abjurer ? 1 : 0);
+}
+
+export function activateAbjurerProficiency(_event, dialog) {
+  const root = dialog?.element;
+  const abjurer = root?.querySelector("[data-csp-abjurer]");
+  const proficiencyInputs = root?.querySelectorAll("[data-csp-scroll-author-prof]") ?? [];
+
+  const updateInputs = () => {
+    for (const input of proficiencyInputs) {
+      const globallyIncluded = input.dataset.baseProficiency === "true";
+      input.disabled = !globallyIncluded && !Boolean(abjurer?.checked);
+    }
+  };
+
+  abjurer?.addEventListener("change", updateInputs);
+  updateInputs();
+}
+
 export function activateTargetSearch(_event, dialog) {
   const root = dialog?.element;
   const input = root?.querySelector("[data-csp-target-filter]");

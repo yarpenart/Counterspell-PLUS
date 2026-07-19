@@ -1,11 +1,13 @@
 import { RULESETS } from "./config.js";
 import {
+  activateAbjurerProficiency,
   activateTargetSearch,
   escapeHTML,
   getAbilityData,
   getAbilityEntries,
   getActorFromUuidSync,
   getDefaultAbility,
+  isAbjurerOptionEnabled,
   getSpecialMinimum,
   getRollModeEntries,
   getSceneCasterEntries,
@@ -13,7 +15,8 @@ import {
   normalizeBonusFormula,
   parseNumber,
   t,
-  tf
+  tf,
+  usesHomebrewProficiency
 } from "./utils.js";
 
 const DialogV2 = foundry.applications.api.DialogV2;
@@ -95,6 +98,18 @@ export async function promptCurseRemover(actor, item, ruleset) {
   const slotOptions = slots.length
     ? selectOptions(slots)
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
+  const proficiencyIncluded = usesHomebrewProficiency();
+  const showAbjurer = ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
+  const abjurerField = showAbjurer
+    ? `
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="abjurer" data-csp-abjurer>
+          ${t("Dialog.Abjurer")}
+        </label>
+        <p class="hint">${t("Dialog.AbjurerHint")}</p>
+      </div>`
+    : "";
 
   const homebrewBonus = ruleset === RULESETS.HOMEBREW
     ? `
@@ -136,7 +151,7 @@ export async function promptCurseRemover(actor, item, ruleset) {
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollAuthorProficiency")}</label>
-        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1"></div>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1" data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"></div>
       </div>
       <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       <div class="form-group">
@@ -144,6 +159,7 @@ export async function promptCurseRemover(actor, item, ruleset) {
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
       </div>
       ${homebrewBonus}
+      ${abjurerField}
       <div class="form-group stacked">
         <label class="checkbox">
           <input type="checkbox" name="disadvantage">
@@ -157,7 +173,8 @@ export async function promptCurseRemover(actor, item, ruleset) {
   const result = await waitForm({
     title: t("RemoveCurse.Dialog.DispellerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM")
+    confirmLabel: t("Dialog.SendToGM"),
+    onRender: activateAbjurerProficiency
   });
   if (!result) return null;
 
@@ -190,6 +207,7 @@ export async function promptCurseRemover(actor, item, ruleset) {
     slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
     bonusFormula: ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
+    abjurer: showAbjurer && Boolean(result.abjurer),
     disadvantage: Boolean(result.disadvantage),
     ruleset
   };
@@ -397,6 +415,18 @@ export async function promptGMRemoveCurseReview(remover, setup) {
   const homebrew = remover.ruleset === RULESETS.HOMEBREW;
   const specialMinimum = getSpecialMinimum("removeCurseSpecialMinimum");
   const removerUsesScroll = remover.castingSource === "scroll";
+  const proficiencyIncluded = usesHomebrewProficiency();
+  const showAbjurer = homebrew && isAbjurerOptionEnabled();
+  const abjurerField = showAbjurer
+    ? `
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="removerAbjurer" data-csp-abjurer${remover.abjurer ? " checked" : ""}>
+          ${t("Dialog.GMConfirmAbjurer")}
+        </label>
+        <p class="hint">${t("Dialog.AbjurerHint")}</p>
+      </div>`
+    : "";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${tf("RemoveCurse.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
@@ -471,7 +501,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
       </div>
       <div class="form-group">
         <label>${removerUsesScroll ? t("Dialog.ScrollAuthorProficiency") : t("Dialog.Proficiency")}</label>
-        <div class="form-fields"><input type="number" name="removerProficiency" value="${remover.proficiency}" min="0" step="1"></div>
+        <div class="form-fields"><input type="number" name="removerProficiency" value="${remover.proficiency}" min="0" step="1"${removerUsesScroll ? ` data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"` : ""}></div>
       </div>
       ${removerUsesScroll ? `
         <div class="form-group">
@@ -479,6 +509,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
           <div class="form-fields"><input type="number" name="removerScrollLevel" value="${remover.slotLevel}" min="3" max="9" step="1"></div>
         </div>` : ""}
       ${generalBonus}
+      ${abjurerField}
       <div class="form-group stacked">
         <label class="checkbox">
           <input type="checkbox" name="specialSpellcaster"${remover.specialSpellcaster ? " checked" : ""}>
@@ -502,7 +533,8 @@ export async function promptGMRemoveCurseReview(remover, setup) {
     title: t("RemoveCurse.Dialog.GMReviewTitle"),
     content,
     confirmLabel: t("Dialog.Roll"),
-    width: 760
+    width: 760,
+    onRender: activateAbjurerProficiency
   });
   if (!result) return null;
 
@@ -529,6 +561,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
         : remover.slotLabel,
       bonusFormula: homebrew ? normalizeBonusFormula(result.bonusFormula) : "",
       specialSpellcaster: Boolean(result.specialSpellcaster),
+      abjurer: showAbjurer && Boolean(result.removerAbjurer),
       disadvantage: Boolean(result.disadvantage)
     },
     setup: { ...setup, effects: reviewedEffects }

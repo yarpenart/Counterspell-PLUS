@@ -1,5 +1,6 @@
 import { RULESETS } from "./config.js";
 import {
+  activateAbjurerProficiency,
   activateTargetSearch,
   escapeHTML,
   getAbilityData,
@@ -7,6 +8,7 @@ import {
   getActiveOwner,
   getActorFromUuidSync,
   getDefaultAbility,
+  isAbjurerOptionEnabled,
   getSpecialMinimum,
   getRollModeEntries,
   getSceneCasterEntries,
@@ -14,7 +16,8 @@ import {
   normalizeBonusFormula,
   parseNumber,
   t,
-  tf
+  tf,
+  usesHomebrewProficiency
 } from "./utils.js";
 
 const DialogV2 = foundry.applications.api.DialogV2;
@@ -91,6 +94,8 @@ export async function promptCounterspeller(actor, item, ruleset) {
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
 
   const rollMode = defaultRollMode();
+  const proficiencyIncluded = usesHomebrewProficiency();
+  const showAbjurer = ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
   const knowledgeField = ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -109,6 +114,16 @@ export async function promptCounterspeller(actor, item, ruleset) {
       </label>
       <p class="hint">${t("Dialog.DisadvantageHint")}</p>
     </div>`;
+  const abjurerField = showAbjurer
+    ? `
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="abjurer" data-csp-abjurer>
+          ${t("Dialog.Abjurer")}
+        </label>
+        <p class="hint">${t("Dialog.AbjurerHint")}</p>
+      </div>`
+    : "";
 
   const content = `
     <div class="csp-form">
@@ -145,7 +160,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollAuthorProficiency")}</label>
-        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1"></div>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1" data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"></div>
       </div>
       <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       <div class="form-group">
@@ -160,6 +175,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
         <p class="hint">${t("Dialog.BonusDiceHint")}</p>
       </div>
       ${knowledgeField}
+      ${abjurerField}
       ${disadvantageField}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
     </div>`;
@@ -167,7 +183,8 @@ export async function promptCounterspeller(actor, item, ruleset) {
   const result = await waitForm({
     title: t("Dialog.CounterspellerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM")
+    confirmLabel: t("Dialog.SendToGM"),
+    onRender: activateAbjurerProficiency
   });
   if (!result) return null;
 
@@ -198,6 +215,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
     rollMode: String(result.rollMode),
     bonusFormula: normalizeBonusFormula(result.bonusFormula),
     knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
+    abjurer: showAbjurer && Boolean(result.abjurer),
     disadvantage: Boolean(result.disadvantage),
     actorUuid: actor.uuid,
     actorName: actor.name,
@@ -465,6 +483,8 @@ export async function promptGMReview(counter, target) {
   const mod = isFixedSource ? target.creatorMod : target.abilityMod;
   const prof = isFixedSource ? target.creatorProf : target.proficiency;
   const specialMinimum = getSpecialMinimum("counterspellSpecialMinimum");
+  const proficiencyIncluded = usesHomebrewProficiency();
+  const showAbjurer = counter.ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
   const knowledgeField = counter.ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -494,6 +514,16 @@ export async function promptGMReview(counter, target) {
       </div>`
     : "";
   const counterUsesScroll = counter.castingSource === "scroll";
+  const abjurerField = showAbjurer
+    ? `
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="counterAbjurer" data-csp-abjurer${counter.abjurer ? " checked" : ""}>
+          ${t("Dialog.GMConfirmAbjurer")}
+        </label>
+        <p class="hint">${t("Dialog.AbjurerHint")}</p>
+      </div>`
+    : "";
 
   const content = `
     <div class="csp-form">
@@ -524,7 +554,7 @@ export async function promptGMReview(counter, target) {
       </div>
       <div class="form-group">
         <label>${counterUsesScroll ? t("Dialog.ScrollAuthorProficiency") : t("Dialog.Proficiency")}</label>
-        <div class="form-fields"><input type="number" name="counterProficiency" value="${counter.proficiency}" min="0" step="1"></div>
+        <div class="form-fields"><input type="number" name="counterProficiency" value="${counter.proficiency}" min="0" step="1"${counterUsesScroll ? ` data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"` : ""}></div>
       </div>
       ${counterUsesScroll ? `
         <div class="form-group">
@@ -559,6 +589,7 @@ export async function promptGMReview(counter, target) {
           <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
         </div>` : ""}
       ${knowledgeField}
+      ${abjurerField}
       <div class="form-group stacked">
         <label class="checkbox">
           <input type="checkbox" name="specialSpellcaster"${counter.specialSpellcaster ? " checked" : ""}>
@@ -574,7 +605,8 @@ export async function promptGMReview(counter, target) {
   const result = await waitForm({
     title: t("Dialog.GMReviewTitle"),
     content,
-    confirmLabel: t("Dialog.Roll")
+    confirmLabel: t("Dialog.Roll"),
+    onRender: activateAbjurerProficiency
   });
   if (!result) return null;
 
@@ -605,6 +637,7 @@ export async function promptGMReview(counter, target) {
       : counter.slotLabel,
     bonusFormula: normalizeBonusFormula(result.counterBonusFormula),
     specialSpellcaster: Boolean(result.specialSpellcaster),
+    abjurer: showAbjurer && Boolean(result.counterAbjurer),
     knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     disadvantage: Boolean(result.counterDisadvantage)
   };

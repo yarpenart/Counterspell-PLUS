@@ -13,6 +13,7 @@ import {
   getActivityItem,
   getActorFromUuidSync,
   getItemActor,
+  getHomebrewProficiencyMultiplier,
   getPrimaryGM,
   getSpecialMinimum,
   isDispelMagicActivity,
@@ -277,7 +278,13 @@ async function resolveHomebrew(dispeller, setup) {
   const specialMinimum = dispeller.specialSpellcaster
     ? getSpecialMinimum("dispelSpecialMinimum")
     : undefined;
-  const parts = ["@slot", "@mod", usesHomebrewProficiency() ? "@prof" : null, bonusPart].filter(Boolean);
+  const proficiencyMultiplier = getHomebrewProficiencyMultiplier(dispeller.abjurer);
+  const proficiencyPart = proficiencyMultiplier === 2
+    ? "2 * @prof"
+    : proficiencyMultiplier === 1
+      ? "@prof"
+      : null;
+  const parts = ["@slot", "@mod", proficiencyPart, bonusPart].filter(Boolean);
   const roll = await createD20Roll(parts, {
     slot: dispeller.slotLevel,
     mod: dispeller.abilityMod,
@@ -434,6 +441,6 @@ export function initializeDispelWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startDispelFromActivity = startDispelMagic;
-  game.counterspellPlus.version = "0.3.1";
+  game.counterspellPlus.version = "0.3.2";
   debug("Ready");
 }

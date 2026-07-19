@@ -12,6 +12,7 @@ import {
   getActivityItem,
   getActorFromUuidSync,
   getItemActor,
+  getHomebrewProficiencyMultiplier,
   getPrimaryGM,
   getSpecialMinimum,
   isCounterspellActivity,
@@ -285,7 +286,13 @@ async function resolveHomebrew(counter, target) {
   const specialMinimum = counter.specialSpellcaster
     ? getSpecialMinimum("counterspellSpecialMinimum")
     : undefined;
-  const counterParts = ["@slot", "@mod", usesHomebrewProficiency() ? "@prof" : null, bonusPart].filter(Boolean);
+  const proficiencyMultiplier = getHomebrewProficiencyMultiplier(counter.abjurer);
+  const proficiencyPart = proficiencyMultiplier === 2
+    ? "2 * @prof"
+    : proficiencyMultiplier === 1
+      ? "@prof"
+      : null;
+  const counterParts = ["@slot", "@mod", proficiencyPart, bonusPart].filter(Boolean);
   const counterRoll = await createD20Roll(counterParts, {
     slot: counter.slotLevel,
     mod: counter.abilityMod,
@@ -443,7 +450,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.3.1"
+    version: "0.3.2"
   };
 
   debug("Ready");

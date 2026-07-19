@@ -80,20 +80,12 @@
         "Hint": "Homebrew defense base used by every curse. Default: 10. Any numeric value is allowed."
       },
       "RemoveCurseDramaticFailureMin": {
-        "Name": "Remove Curse outcome: Dramatic Failure starts at",
-        "Hint": "Minimum amount by which the roll must fail for a Dramatic Curse Removal Failure. Keep this one point above the ordinary failure maximum; gaps or overlaps are normalized at resolution. Default: 5."
-      },
-      "RemoveCurseFailureMax": {
-        "Name": "Remove Curse outcome: Failed Removal ends at",
-        "Hint": "Largest failure margin classified as a Failed Curse Removal. Keep this one point below the dramatic failure minimum; gaps or overlaps are normalized at resolution. Default: 4."
+        "Name": "Remove Curse: Dramatic Failure threshold",
+        "Hint": "Failure by this amount or more is a Dramatic Curse Removal Failure. Smaller failures through a tie (0) are Failed Curse Removal. Default: 5."
       },
       "RemoveCurseBarelySuccessMax": {
-        "Name": "Remove Curse outcome: Barely Successful ends at",
-        "Hint": "Largest success margin classified as a Barely Successful Curse Removal. Keep this one point below the full success minimum; gaps or overlaps are normalized at resolution. Default: 5."
-      },
-      "RemoveCurseSuccessMin": {
-        "Name": "Remove Curse outcome: Successful Removal starts at",
-        "Hint": "Minimum success margin classified as a Successful Curse Removal without negative effects. Keep this one point above the barely successful maximum; gaps or overlaps are normalized at resolution. Default: 6."
+        "Name": "Remove Curse: Barely Successful upper limit",
+        "Hint": "Success margins from 1 through this value are Barely Successful Curse Removal. The next value or more is Successful Curse Removal. Default: 5."
       },
       "RemoveCurseNames": {
         "Name": "Recognized Remove Curse names",
@@ -102,6 +94,10 @@
       "IncludeProficiency": {
         "Name": "Homebrew: dodawaj premię z biegłości",
         "Hint": "Po włączeniu premia z biegłości jest dodawana do wszystkich homebrewowych rzutów oraz pasywnych i stałych obron Counterspell, Dispel Magic i Remove Curse. Tryb Official 2014 pozostaje bez zmian."
+      },
+      "AbjurerEnabled": {
+        "Name": "Homebrew: włącz opcję Abjurera",
+        "Hint": "Pokazuje deklarację Abjurer przy Counterspell, Dispel Magic i Remove Curse. Abjurer dodaje do swojego rzutu jeden dodatkowy poziom biegłości: podwójną biegłość, gdy biegłość jest normalnie dodawana, albo pojedynczą, gdy jest wyłączona. GM zatwierdza deklarację."
       }
     },
     "Rules": {
@@ -117,6 +113,9 @@
       "Ability": "Cecha rzucania czarów",
       "AbilityModifier": "Modyfikator cechy",
       "Proficiency": "Premia z biegłości",
+      "Abjurer": "Abjurer",
+      "AbjurerHint": "Tylko homebrew: dodaje do tego rzutu jeden dodatkowy poziom biegłości. Daje podwójną biegłość, gdy globalne dodawanie biegłości jest włączone, albo pojedynczą, gdy jest wyłączone. GM zatwierdzi tę deklarację.",
+      "GMConfirmAbjurer": "Rzucający jest Abjurerem",
       "CounterspellSlot": "Komórka Counterspella",
       "SpellSlotLevel": "Faktyczny poziom komórki zaklęcia",
       "SlotLevel": "Poziom komórki",
