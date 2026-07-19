@@ -124,11 +124,14 @@ export function getSlotChoices(actor, item) {
 }
 
 export function getRollModeEntries(selected) {
-  const modes = ["publicroll", "gmroll", "blindroll"];
-  return modes.map(key => ({
-    key,
-    label: game.i18n.localize(CONST.DICE_ROLL_MODES[key]),
-    selected: key === selected
+  const modes = [
+    { key: "publicroll", label: t("Dialog.RollModePublic") },
+    { key: "gmroll", label: t("Dialog.RollModePrivate") },
+    { key: "blindroll", label: t("Dialog.RollModeBlind") }
+  ];
+  return modes.map(mode => ({
+    ...mode,
+    selected: mode.key === selected
   }));
 }
 
