@@ -199,6 +199,7 @@ export async function promptGMTarget(counter) {
           <select name="sourceType">
             <option value="spell">${t("Dialog.NormalSpell")}</option>
             <option value="scroll">${t("Dialog.Scroll")}</option>
+            <option value="glyph">${t("Dialog.Glyph")}</option>
           </select>
         </div>
       </div>
@@ -344,8 +345,15 @@ export async function promptTargetPlayer(target) {
 
 export async function promptGMReview(counter, target) {
   const isScroll = target.sourceType === "scroll";
-  const mod = isScroll ? target.creatorMod : target.abilityMod;
-  const prof = isScroll ? target.creatorProf : target.proficiency;
+  const isGlyph = target.sourceType === "glyph";
+  const isFixedSource = isScroll || isGlyph;
+  const sourceLabel = isScroll
+    ? t("Dialog.Scroll")
+    : isGlyph
+      ? t("Dialog.Glyph")
+      : t("Dialog.NormalSpell");
+  const mod = isFixedSource ? target.creatorMod : target.abilityMod;
+  const prof = isFixedSource ? target.creatorProf : target.proficiency;
   const knowledgeField = counter.ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -364,7 +372,7 @@ export async function promptGMReview(counter, target) {
       </label>
       <p class="hint">${t("Dialog.GMDisadvantageHint")}</p>
     </div>`;
-  const targetDisadvantageField = counter.ruleset === RULESETS.HOMEBREW && !isScroll
+  const targetDisadvantageField = counter.ruleset === RULESETS.HOMEBREW && !isFixedSource
     ? `
       <div class="form-group stacked">
         <label class="checkbox">
@@ -392,7 +400,7 @@ export async function promptGMReview(counter, target) {
           <h3>${t("Dialog.TargetData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(target.actorName)}</dd>
-            <dt>${t("Dialog.SourceType")}</dt><dd>${escapeHTML(isScroll ? t("Dialog.Scroll") : t("Dialog.NormalSpell"))}</dd>
+            <dt>${t("Dialog.SourceType")}</dt><dd>${escapeHTML(sourceLabel)}</dd>
             <dt>${t("Dialog.RollMode")}</dt><dd>${escapeHTML(rollModeLabel(target.rollMode))}</dd>
           </dl>
         </div>
@@ -406,11 +414,11 @@ export async function promptGMReview(counter, target) {
         <div class="form-fields"><select name="spellLevel">${levelOptions(target.spellLevel)}</select></div>
       </div>
       <div class="form-group">
-        <label>${isScroll ? t("Dialog.CreatorModifier") : t("Dialog.AbilityModifier")}</label>
+        <label>${isFixedSource ? t("Dialog.CreatorModifier") : t("Dialog.AbilityModifier")}</label>
         <div class="form-fields"><input type="number" name="targetMod" value="${mod}" step="1"></div>
       </div>
       <div class="form-group">
-        <label>${isScroll ? t("Dialog.CreatorProficiency") : t("Dialog.Proficiency")}</label>
+        <label>${isFixedSource ? t("Dialog.CreatorProficiency") : t("Dialog.Proficiency")}</label>
         <div class="form-fields"><input type="number" name="targetProf" value="${prof}" min="0" step="1"></div>
       </div>
       ${knowledgeField}
@@ -431,7 +439,7 @@ export async function promptGMReview(counter, target) {
     spellName: String(result.spellName || target.spellName),
     spellLevel: parseNumber(result.spellLevel, target.spellLevel)
   };
-  if (isScroll) {
+  if (isFixedSource) {
     reviewed.creatorMod = parseNumber(result.targetMod, target.creatorMod);
     reviewed.creatorProf = parseNumber(result.targetProf, target.creatorProf);
   } else {
@@ -439,7 +447,7 @@ export async function promptGMReview(counter, target) {
     reviewed.proficiency = parseNumber(result.targetProf, target.proficiency);
   }
   reviewed.disadvantage = counter.ruleset === RULESETS.HOMEBREW
-    && !isScroll
+    && !isFixedSource
     && Boolean(result.targetDisadvantage);
   const reviewedCounter = {
     ...counter,
