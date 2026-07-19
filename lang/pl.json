@@ -11,17 +11,43 @@
         "Homebrew": "Homebrew: rzuty przeciwstawne",
         "Official2014": "Oficjalne D&D 2014"
       },
+      "DispelEnabled": {
+        "Name": "Włącz obsługę Dispel Magic",
+        "Hint": "Przechwytuje rozpoznane zaklęcia Dispel Magic i uruchamia procedurę Counterspell PLUS."
+      },
+      "DispelRuleset": {
+        "Name": "Zasady Dispel Magic",
+        "Hint": "Wybierz zasadę Dispel Magic niezależnie od zasad Counterspella.",
+        "Homebrew": "Homebrew: rzut przeciw pasywnemu spellcastingowi",
+        "Official2014": "Oficjalne D&D 2014"
+      },
+      "DispelDefenseBase": {
+        "Name": "Dispel Magic: baza zwykłego zaklęcia",
+        "Hint": "Baza homebrew dla efektu zwykłego zaklęcia. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "DispelScrollDefenseBase": {
+        "Name": "Dispel Magic: baza zwoju zaklęcia",
+        "Hint": "Niezależna baza homebrew dla efektu rzuconego ze zwoju. Domyślnie: 7. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "DispelGlyphDefenseBase": {
+        "Name": "Dispel Magic: baza Spell Glyph",
+        "Hint": "Niezależna baza homebrew dla efektu rzuconego z glifu. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+      },
       "ScrollDefenseBase": {
-        "Name": "Baza obrony zwoju zaklęcia",
-        "Hint": "Baza dodawana do poziomu zaklęcia i danych twórcy zwoju. Domyślnie: 7. Dozwolona jest dowolna wartość liczbowa."
+        "Name": "Counterspell: baza obrony zwoju zaklęcia",
+        "Hint": "Baza homebrew Counterspella dodawana do poziomu zaklęcia i danych twórcy zwoju. Domyślnie: 7. Dozwolona jest dowolna wartość liczbowa."
       },
       "GlyphDefenseBase": {
-        "Name": "Baza obrony Spell Glyph",
-        "Hint": "Baza dodawana do poziomu zaklęcia i danych twórcy glifu. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+        "Name": "Counterspell: baza obrony Spell Glyph",
+        "Hint": "Baza homebrew Counterspella dodawana do poziomu zaklęcia i danych twórcy glifu. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
       },
       "Names": {
         "Name": "Rozpoznawane nazwy Counterspella",
         "Hint": "Nazwy oddzielone przecinkami. Dopiski w nawiasach, np. Counterspell (Alternate), są rozpoznawane automatycznie."
+      },
+      "DispelNames": {
+        "Name": "Rozpoznawane nazwy Dispel Magic",
+        "Hint": "Nazwy zaklęcia oddzielone przecinkami. Dopiski w nawiasach są rozpoznawane automatycznie."
       },
       "WildMagic": {
         "Name": "Komunikat Dzikiej Magii",
@@ -51,10 +77,16 @@
       "RollModePublic": "Rzut publiczny",
       "RollModePrivate": "Rzut prywatny dla GM",
       "RollModeBlind": "Rzut ślepy dla GM",
+      "BonusDice": "Formuła dodatkowych kości",
+      "BonusDiceHint": "Opcjonalnie, np. 1d4 albo 1d4 + 1d8. GM zatwierdzi lub poprawi tę formułę.",
+      "TargetBonusDice": "Dodatkowe kości kontrowanego zaklęcia",
+      "TargetBonusDiceHint": "Opcjonalne kości dodawane do rzutu pierwotnego zaklęcia. Ignorowane dla stałej obrony zwoju lub glifu.",
+      "CounterBonusDice": "Dodatkowe kości Counterspella",
+      "BonusDiceGMHint": "Potwierdź lub popraw opcjonalną formułę kości. Pozostaw puste, aby nie dodawać kości.",
       "KnowsTargetSpell": "Znam kontrowane zaklęcie",
-      "KnowsTargetSpellHint": "Tylko homebrew: zapewnia advantage, chyba że kontrowanym zaklęciem jest Counterspell. GM zatwierdzi tę deklarację.",
+      "KnowsTargetSpellHint": "Tylko homebrew: znajomość zwykłego zaklęcia daje advantage (poza Counterspellem), a znajomość zaklęcia ze zwoju lub glifu obniża jego stałą obronę o 5. GM zatwierdzi deklarację.",
       "GMConfirmKnowledge": "Postać rzucająca Counterspell zna kontrowane zaklęcie",
-      "GMConfirmKnowledgeHint": "Potwierdź lub popraw deklarację gracza. Znajomość zaklęcia nigdy nie zapewnia advantage przeciwko innemu Counterspellowi.",
+      "GMConfirmKnowledgeHint": "Potwierdź lub popraw deklarację. Zwykłe znane zaklęcie daje advantage poza Counterspellem; znany czar ze zwoju lub glifu zamiast tego obniża jego obronę o 5.",
       "DeclareDisadvantage": "Mam disadvantage",
       "DisadvantageHint": "Na przykład z poziomu wyczerpania lub innego efektu. GM zatwierdzi tę deklarację.",
       "GMTargetDisadvantage": "Rzucający kontrowane zaklęcie ma disadvantage",
@@ -118,7 +150,68 @@
       "CancelledByGM": "GM anulował procedurę Counterspella.",
       "CancelledByTarget": "Gracz będący celem anulował procedurę Counterspella.",
       "TargetRollFailed": "Nie udało się wykonać rzutu kontrowanego zaklęcia.",
+      "InvalidBonusFormula": "Formuła dodatkowych kości jest nieprawidłowa. Popraw ją przed rzutem.",
       "GenericError": "Podczas obsługi Counterspella wystąpił błąd."
+    },
+    "Dispel": {
+      "Dialog": {
+        "DispelSlot": "Komórka Dispel Magic",
+        "DispellerTitle": "Counterspell PLUS — twój Dispel Magic",
+        "OfficialBonusLater": "Zasady oficjalne 2014: opcjonalne dodatkowe kości wybierzesz oddzielnie dla każdego wymaganego testu cechy, gdy GM wpisze efekty.",
+        "DispelData": "Dispel Magic",
+        "Target": "Cel objęty efektami",
+        "EffectCount": "Liczba efektów zaklęć na celu",
+        "DefenseRollMode": "Tryb widoczności pasywnych obron",
+        "SetupHint": "Podaj łączną liczbę efektów. Gdy jest ich więcej niż jeden, zasada homebrew dodaje tę liczbę do ST każdego efektu.",
+        "GMSetupTitle": "Counterspell PLUS — cel Dispel Magic",
+        "EffectNumber": "Efekt {index} z {count}",
+        "EffectName": "Nazwa efektu zaklęcia",
+        "EffectLevel": "Poziom zaklęcia",
+        "CasterCreatorModifier": "Modyfikator cechy pierwotnego rzucającego / twórcy",
+        "CasterCreatorProficiency": "Biegłość pierwotnego rzucającego / twórcy",
+        "SourceBaseHint": "Zwykłe zaklęcie, Scroll i Glyph mają osobne konfigurowalne bazy homebrew. Dla Scrolla i Glyphu używane są dane twórcy.",
+        "GMEffectTitle": "Dispel Magic — efekt {index} z {count}",
+        "KnowsEffect": "Znam to zaklęcie",
+        "KnowsEffectHint": "Homebrew: odejmuje 5 od ST tego konkretnego efektu. GM zatwierdzi deklarację.",
+        "CheckBonusDice": "Dodatkowe kości do tego testu",
+        "CheckBonusDiceHint": "Zasady oficjalne 2014: ta formuła dotyczy tylko oddzielnego testu cechy dla tego efektu.",
+        "AutomaticBonusIgnored": "Ten efekt jest obecnie automatycznie rozpraszany, bo jego poziom nie przekracza poziomu komórki Dispel Magic; formuła zostanie pominięta, chyba że GM zmieni poziom efektu.",
+        "LevelValue": "poziom {level}",
+        "EffectsSummary": "Efekty zaklęć: {count}",
+        "PlayerEffectsTitle": "Counterspell PLUS — zaklęcia objęte twoim Dispel Magic",
+        "GMConfirmKnown": "Postać rzucająca Dispel Magic zna to zaklęcie",
+        "GMConfirmDisadvantage": "Postać rzucająca Dispel Magic ma disadvantage",
+        "TargetData": "Cel i pasywne obrony",
+        "EffectsToResolve": "Efekty zaklęć",
+        "GMReviewHint": "Potwierdź lub popraw każdy efekt i deklarację gracza. Komórka Dispel Magic zostanie zużyta dopiero po kliknięciu „Wykonaj rzuty”.",
+        "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie Dispel Magic"
+      },
+      "Chat": {
+        "DefenseTitle": "Dispel Magic — obrony zaklęć",
+        "HomebrewRoll": "Dispel Magic: {actor}",
+        "OfficialRoll": "Test Dispel Magic przeciw {spell} — ST {dc}",
+        "Dispelled": "ROZPROSZONE",
+        "Remains": "POZOSTAJE",
+        "Automatic": "Automatyczny sukces według oficjalnych zasad 2014.",
+        "NumericResult": "Wynik: {total}; ST: {dc}.",
+        "HiddenResult": "Co najmniej jedna istotna wartość używa ukrytego trybu widoczności.",
+        "TieRule": "W zasadzie homebrew wynik Dispel Magic musi być wyższy od ST efektu; remis pozostawia efekt na celu.",
+        "TargetSummary": "Cel: {target}",
+        "ManualRemoval": "Moduł tylko wskazuje efekty do usunięcia; GM usuwa je ręcznie."
+      },
+      "Notifications": {
+        "NoSlots": "Ta postać nie ma dostępnej komórki pozwalającej rzucić Dispel Magic.",
+        "NoTargets": "GM nie ma dostępnych aktorów ani tokenów do wybrania.",
+        "TargetNotFound": "Nie udało się odnaleźć wybranego celu Dispel Magic.",
+        "ActorNotFound": "Nie udało się odnaleźć postaci rzucającej Dispel Magic.",
+        "SlotUnavailable": "Wybrana komórka Dispel Magic nie jest już dostępna.",
+        "NoGM": "Do rozstrzygnięcia Dispel Magic potrzebny jest aktywny GM.",
+        "AlreadyPending": "Ta postać ma już oczekującą procedurę Dispel Magic.",
+        "RequestTimeout": "Prośba Dispel Magic wygasła po trzech minutach.",
+        "CancelledByGM": "GM anulował procedurę Dispel Magic.",
+        "CancelledByPlayer": "Postać rzucająca Dispel Magic anulowała procedurę.",
+        "GenericError": "Podczas obsługi Dispel Magic wystąpił błąd."
+      }
     }
   }
 }

@@ -55,6 +55,16 @@
   padding: 0.5rem 0.75rem;
 }
 
+.counterspell-plus-dialog .csp-effect-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.counterspell-plus-dialog .csp-effect-card > p {
+  margin: 0;
+}
+
 .counterspell-plus-dialog .hint {
   margin: 0;
 }
@@ -105,8 +115,67 @@
   text-align: center;
 }
 
+.counterspell-plus-chat.csp-dispel-defense table {
+  margin: 0;
+}
+
+.counterspell-plus-chat.csp-dispel-defense td:last-child {
+  text-align: right;
+}
+
+.counterspell-plus-chat.csp-dispel-results ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0.6rem 0;
+  padding: 0;
+}
+
+.counterspell-plus-chat .csp-dispel-result {
+  border-left: 4px solid;
+  border-radius: 4px;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: 0.45rem 0.55rem;
+}
+
+.counterspell-plus-chat .csp-dispel-result.success {
+  background: color-mix(in srgb, #2f7d32 12%, transparent);
+  border-color: #2f7d32;
+}
+
+.counterspell-plus-chat .csp-dispel-result.failure {
+  background: color-mix(in srgb, #8b2d2d 12%, transparent);
+  border-color: #8b2d2d;
+}
+
+.counterspell-plus-chat .csp-dispel-result > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.counterspell-plus-chat .csp-dispel-result > div:last-child {
+  text-align: right;
+}
+
+.counterspell-plus-chat .csp-dispel-result span,
+.counterspell-plus-chat .csp-effect-note {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
 @media (max-width: 520px) {
   .counterspell-plus-dialog .csp-grid {
     grid-template-columns: 1fr;
+  }
+
+  .counterspell-plus-chat .csp-dispel-result {
+    grid-template-columns: 1fr;
+  }
+
+  .counterspell-plus-chat .csp-dispel-result > div:last-child {
+    text-align: left;
   }
 }

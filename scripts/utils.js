@@ -47,6 +47,24 @@ export function isCounterspellActivity(activity) {
   return configured.some(name => itemName === name || itemName.startsWith(`${name} (`));
 }
 
+export function isDispelMagicActivity(activity) {
+  if (!game.settings.get(MODULE_ID, "dispelEnabled")) return false;
+
+  const item = getActivityItem(activity);
+  if (!item || item.type !== "spell") return false;
+
+  const identifier = normalizeName(item.system?.identifier);
+  if (identifier === "dispel-magic" || identifier === "dispelmagic") return true;
+
+  const configured = game.settings.get(MODULE_ID, "dispelMagicNames")
+    .split(",")
+    .map(normalizeName)
+    .filter(Boolean);
+  const itemName = normalizeName(item.name);
+
+  return configured.some(name => itemName === name || itemName.startsWith(`${name} (`));
+}
+
 export function isCounterspellName(name) {
   const normalized = normalizeName(name);
   return normalized.startsWith("counterspell")
@@ -190,6 +208,26 @@ export function applyRollMode(messageData, rollMode) {
 export function parseNumber(value, fallback = 0) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+export function normalizeBonusFormula(value) {
+  return String(value ?? "").trim();
+}
+
+export function validateBonusFormula(value) {
+  const formula = normalizeBonusFormula(value);
+  if (!formula) return true;
+  try {
+    void new Roll(formula, {});
+    return true;
+  } catch (_error) {
+    return false;
+  }
+}
+
+export function bonusRollPart(value) {
+  const formula = normalizeBonusFormula(value);
+  return formula ? `(${formula})` : null;
 }
 
 export function randomRequestId() {
