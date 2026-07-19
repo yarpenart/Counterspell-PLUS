@@ -14,6 +14,7 @@ import {
   getActorFromUuidSync,
   getItemActor,
   getPrimaryGM,
+  getSpecialMinimum,
   isDispelMagicActivity,
   randomRequestId,
   speakerFor,
@@ -127,17 +128,19 @@ async function handleSocket(message) {
   }
 }
 
-function createD20Roll(parts, data, { disadvantage = false } = {}) {
+function createD20Roll(parts, data, { disadvantage = false, minimum } = {}) {
   const RollClass = CONFIG.Dice.D20Roll;
   const formula = ["1d20", ...parts].join(" + ");
   if (RollClass) {
     return new RollClass(formula, data, {
       disadvantage,
+      minimum,
       criticalSuccess: 20,
       criticalFailure: 1
     });
   }
-  const die = disadvantage ? "2d20kl" : "1d20";
+  const baseDie = disadvantage ? "2d20kl" : "1d20";
+  const die = Number.isFinite(minimum) ? `${baseDie}min${minimum}` : baseDie;
   return new Roll([die, ...parts].join(" + "), data);
 }
 
@@ -268,17 +271,23 @@ async function postFinalResults(dispeller, setup, results) {
 async function resolveHomebrew(dispeller, setup) {
   const actor = getActorFromUuidSync(dispeller.actorUuid);
   const bonusPart = bonusRollPart(dispeller.bonusFormula);
+  const specialMinimum = dispeller.specialSpellcaster
+    ? getSpecialMinimum("dispelSpecialMinimum")
+    : undefined;
   const parts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
   const roll = await createD20Roll(parts, {
     slot: dispeller.slotLevel,
     mod: dispeller.abilityMod,
     prof: dispeller.proficiency
-  }, { disadvantage: Boolean(dispeller.disadvantage) }).evaluate();
+  }, {
+    disadvantage: Boolean(dispeller.disadvantage),
+    minimum: specialMinimum
+  }).evaluate();
 
   await postRoll(roll, {
     actor,
     alias: dispeller.actorName,
-    flavor: tf("Dispel.Chat.HomebrewRoll", { actor: dispeller.actorName }),
+    flavor: `${tf("Dispel.Chat.HomebrewRoll", { actor: dispeller.actorName })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
     rollMode: dispeller.rollMode
   });
 
@@ -300,6 +309,9 @@ async function resolveHomebrew(dispeller, setup) {
 
 async function resolveOfficial2014(dispeller, setup) {
   const actor = getActorFromUuidSync(dispeller.actorUuid);
+  const specialMinimum = dispeller.specialSpellcaster
+    ? getSpecialMinimum("dispelSpecialMinimum")
+    : undefined;
   const defenses = calculateOfficialDefenses(setup);
   const defensePosted = await requestRemote("dispel-post-defense", setup.defenseUserId, {
     dispeller,
@@ -318,11 +330,14 @@ async function resolveOfficial2014(dispeller, setup) {
     const bonusPart = bonusRollPart(effect.bonusFormula);
     const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), {
       mod: dispeller.abilityMod
-    }, { disadvantage: Boolean(dispeller.disadvantage) }).evaluate();
+    }, {
+      disadvantage: Boolean(dispeller.disadvantage),
+      minimum: specialMinimum
+    }).evaluate();
     await postRoll(roll, {
       actor,
       alias: dispeller.actorName,
-      flavor: tf("Dispel.Chat.OfficialRoll", { spell: effect.spellName, dc: effect.dc }),
+      flavor: `${tf("Dispel.Chat.OfficialRoll", { spell: effect.spellName, dc: effect.dc })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
       rollMode: dispeller.rollMode
     });
     results.push({
@@ -416,6 +431,6 @@ export function initializeDispelWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startDispelFromActivity = startDispelMagic;
-  game.counterspellPlus.version = "0.2.5";
+  game.counterspellPlus.version = "0.2.6";
   debug("Ready");
 }

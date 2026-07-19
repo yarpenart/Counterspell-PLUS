@@ -230,6 +230,12 @@ export function bonusRollPart(value) {
   return formula ? `(${formula})` : null;
 }
 
+export function getSpecialMinimum(setting) {
+  const configured = Number(game.settings.get(MODULE_ID, setting));
+  if (!Number.isFinite(configured)) return 15;
+  return Math.min(20, Math.max(1, Math.trunc(configured)));
+}
+
 export function randomRequestId() {
   return foundry.utils.randomID(24);
 }

@@ -13,6 +13,7 @@ import {
   getActorFromUuidSync,
   getItemActor,
   getPrimaryGM,
+  getSpecialMinimum,
   isCounterspellActivity,
   isCounterspellName,
   randomRequestId,
@@ -71,29 +72,33 @@ async function answerRequest(message, result) {
   });
 }
 
-function createD20Roll(parts, data, { advantage = false, disadvantage = false } = {}) {
+function createD20Roll(parts, data, { advantage = false, disadvantage = false, minimum } = {}) {
   const RollClass = CONFIG.Dice.D20Roll;
   const formula = ["1d20", ...parts].join(" + ");
   if ( RollClass ) {
     return new RollClass(formula, data, {
       advantage,
       disadvantage,
+      minimum,
       criticalSuccess: 20,
       criticalFailure: 1
     });
   }
 
-  const die = advantage && !disadvantage
+  const baseDie = advantage && !disadvantage
     ? "2d20kh"
     : disadvantage && !advantage
       ? "2d20kl"
       : "1d20";
+  const die = Number.isFinite(minimum) ? `${baseDie}min${minimum}` : baseDie;
   return new Roll([die, ...parts].join(" + "), data);
 }
 
 function getNaturalD20(roll) {
   const die = roll?.dice?.find(term => term.faces === 20);
-  const natural = Number(die?.total);
+  const keptResult = die?.results?.find(result => result.active === true)
+    ?? die?.results?.find(result => result.active !== false);
+  const natural = Number(keptResult?.result ?? die?.total);
   return Number.isFinite(natural) ? natural : null;
 }
 
@@ -101,6 +106,10 @@ function highlightNaturalD20(message, html) {
   if (!message.getFlag(MODULE_ID, "highlightD20")) return;
   const total = html.querySelector(".dice-total");
   if (!total) return;
+
+  total.classList.remove("critical", "fumble");
+  const contentVisible = message.isContentVisible !== false && /\d/.test(total.textContent ?? "");
+  if (!contentVisible) return;
 
   const natural = getNaturalD20(message.rolls?.[0]);
   if (natural === 20) total.classList.add("critical");
@@ -268,6 +277,9 @@ async function resolveHomebrew(counter, target) {
     && target.sourceType === "spell"
     && !isCounterspellName(target.spellName);
   const bonusPart = bonusRollPart(counter.bonusFormula);
+  const specialMinimum = counter.specialSpellcaster
+    ? getSpecialMinimum("counterspellSpecialMinimum")
+    : undefined;
   const counterParts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
   const counterRoll = await createD20Roll(counterParts, {
     slot: counter.slotLevel,
@@ -275,13 +287,14 @@ async function resolveHomebrew(counter, target) {
     prof: counter.proficiency
   }, {
     advantage: hasAdvantage,
-    disadvantage: Boolean(counter.disadvantage)
+    disadvantage: Boolean(counter.disadvantage),
+    minimum: specialMinimum
   }).evaluate();
 
   await postRoll(counterRoll, {
     actor: counterActor,
     alias: counter.actorName,
-    flavor: tf(hasAdvantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", { actor: counter.actorName }),
+    flavor: `${tf(hasAdvantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", { actor: counter.actorName })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
     rollMode: counter.rollMode
   });
 
@@ -318,13 +331,17 @@ async function resolveOfficial2014(counter, target) {
   const counterActor = getActorFromUuidSync(counter.actorUuid);
   const dc = 10 + target.spellLevel;
   const bonusPart = bonusRollPart(counter.bonusFormula);
+  const specialMinimum = counter.specialSpellcaster
+    ? getSpecialMinimum("counterspellSpecialMinimum")
+    : undefined;
   const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), { mod: counter.abilityMod }, {
-    disadvantage: Boolean(counter.disadvantage)
+    disadvantage: Boolean(counter.disadvantage),
+    minimum: specialMinimum
   }).evaluate();
   await postRoll(roll, {
     actor: counterActor,
     alias: counter.actorName,
-    flavor: tf("Chat.OfficialRoll", { dc }),
+    flavor: `${tf("Chat.OfficialRoll", { dc })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
     rollMode: counter.rollMode
   });
   await postResult({
@@ -421,7 +438,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.2.5"
+    version: "0.2.6"
   };
 
   debug("Ready");

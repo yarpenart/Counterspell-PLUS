@@ -11,6 +11,10 @@
         "Homebrew": "Homebrew: opposed rolls",
         "Official2014": "Official D&D 2014"
       },
+      "CounterspellSpecialMinimum": {
+        "Name": "Counterspell: Special Spellcaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Counterspell caster as a Special Spellcaster. Range: 1–20. Default: 15."
+      },
       "DispelEnabled": {
         "Name": "Enable Dispel Magic workflow",
         "Hint": "Intercept recognized Dispel Magic spells and use the Counterspell PLUS workflow."
@@ -20,6 +24,10 @@
         "Hint": "Choose the rule used to resolve Dispel Magic independently from Counterspell.",
         "Homebrew": "Homebrew: roll against passive spellcasting",
         "Official2014": "Official D&D 2014"
+      },
+      "DispelSpecialMinimum": {
+        "Name": "Dispel Magic: Special Spellcaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Dispel Magic caster as a Special Spellcaster. Range: 1–20. Default: 15."
       },
       "DispelDefenseBase": {
         "Name": "Dispel Magic: normal spell defense base",
@@ -87,6 +95,8 @@
       "KnowsTargetSpellHint": "Homebrew only: a known normal spell grants advantage (except Counterspell); a known scroll or Glyph spell reduces its fixed defense by 5. The GM will confirm this declaration.",
       "GMConfirmKnowledge": "The Counterspell caster knows the target spell",
       "GMConfirmKnowledgeHint": "Confirm or correct the declaration. A known normal spell grants advantage except against Counterspell; a known scroll or Glyph spell instead reduces its defense by 5.",
+      "SpecialSpellcasterCounterspell": "Counterspell caster is a Special Spellcaster",
+      "SpecialSpellcasterHint": "Uses a minimum kept d20 result of {minimum}, read from the module's world settings.",
       "DeclareDisadvantage": "I have disadvantage",
       "DisadvantageHint": "For example, from an exhaustion level or another effect. The GM will confirm this declaration.",
       "GMTargetDisadvantage": "The target caster has disadvantage",
@@ -142,7 +152,8 @@
       "HiddenResults": "At least one side used a hidden roll. The outcome is public, but the hidden numerical results remain visible only according to their selected roll modes.",
       "TieRule": "In the opposed-roll rule, a tie favors the original spell.",
       "WildMagicTitle": "Wild Magic",
-      "WildMagicBody": "Counterspelling another Counterspell triggers a Wild Magic effect. The GM determines the effect."
+      "WildMagicBody": "Counterspelling another Counterspell triggers a Wild Magic effect. The GM determines the effect.",
+      "SpecialMinimum": "Special Spellcaster: minimum d20 {minimum}"
     },
     "Notifications": {
       "NoSlots": "This actor has no available spell slot capable of casting Counterspell.",
@@ -189,6 +200,7 @@
         "EffectsSummary": "{count} spell effect(s)",
         "PlayerEffectsTitle": "Counterspell PLUS — spells affected by your Dispel Magic",
         "GMConfirmKnown": "The Dispel Magic caster knows this spell",
+        "SpecialSpellcaster": "Dispel Magic caster is a Special Spellcaster",
         "GMConfirmDisadvantage": "The Dispel Magic caster has disadvantage",
         "TargetData": "Target and passive defenses",
         "EffectsToResolve": "Spell effects",

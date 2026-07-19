@@ -6,6 +6,7 @@ import {
   getActiveOwner,
   getActorFromUuidSync,
   getDefaultAbility,
+  getSpecialMinimum,
   getRollModeEntries,
   getSceneCasterEntries,
   getSlotChoices,
@@ -404,6 +405,7 @@ export async function promptGMReview(counter, target) {
       : t("Dialog.NormalSpell");
   const mod = isFixedSource ? target.creatorMod : target.abilityMod;
   const prof = isFixedSource ? target.creatorProf : target.proficiency;
+  const specialMinimum = getSpecialMinimum("counterspellSpecialMinimum");
   const knowledgeField = counter.ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -483,6 +485,13 @@ export async function promptGMReview(counter, target) {
           <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
         </div>` : ""}
       ${knowledgeField}
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="specialSpellcaster"${counter.specialSpellcaster ? " checked" : ""}>
+          ${t("Dialog.SpecialSpellcasterCounterspell")}
+        </label>
+        <p class="hint">${tf("Dialog.SpecialSpellcasterHint", { minimum: specialMinimum })}</p>
+      </div>
       ${counterDisadvantageField}
       ${targetDisadvantageField}
       <p class="hint">${t("Dialog.GMReviewHint")}</p>
@@ -514,6 +523,7 @@ export async function promptGMReview(counter, target) {
   const reviewedCounter = {
     ...counter,
     bonusFormula: normalizeBonusFormula(result.counterBonusFormula),
+    specialSpellcaster: Boolean(result.specialSpellcaster),
     knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     disadvantage: Boolean(result.counterDisadvantage)
   };

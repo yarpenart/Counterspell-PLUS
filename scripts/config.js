@@ -31,6 +31,17 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "counterspellSpecialMinimum", {
+    name: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 1, max: 20, step: 1 },
+    default: 15,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "dispelEnabled", {
     name: "COUNTERSPELL_PLUS.Settings.DispelEnabled.Name",
     hint: "COUNTERSPELL_PLUS.Settings.DispelEnabled.Hint",
@@ -52,6 +63,17 @@ export function registerSettings() {
       [RULESETS.OFFICIAL_2014]: "COUNTERSPELL_PLUS.Settings.DispelRuleset.Official2014"
     },
     default: RULESETS.HOMEBREW,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "dispelSpecialMinimum", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelSpecialMinimum.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelSpecialMinimum.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 1, max: 20, step: 1 },
+    default: 15,
     restricted: true
   });
 

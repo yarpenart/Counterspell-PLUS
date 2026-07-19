@@ -5,6 +5,7 @@ import {
   getAbilityEntries,
   getActorFromUuidSync,
   getDefaultAbility,
+  getSpecialMinimum,
   getRollModeEntries,
   getSceneCasterEntries,
   getSlotChoices,
@@ -352,6 +353,7 @@ export async function promptDispellerEffects(dispeller, setup) {
 export async function promptGMDispelReview(dispeller, setup) {
   const homebrew = dispeller.ruleset === RULESETS.HOMEBREW;
   const glyphTarget = setup.targetType === "glyph";
+  const specialMinimum = getSpecialMinimum("dispelSpecialMinimum");
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
@@ -424,6 +426,13 @@ export async function promptGMDispelReview(dispeller, setup) {
       ${generalBonus}
       <div class="form-group stacked">
         <label class="checkbox">
+          <input type="checkbox" name="specialSpellcaster"${dispeller.specialSpellcaster ? " checked" : ""}>
+          ${t("Dispel.Dialog.SpecialSpellcaster")}
+        </label>
+        <p class="hint">${tf("Dialog.SpecialSpellcasterHint", { minimum: specialMinimum })}</p>
+      </div>
+      <div class="form-group stacked">
+        <label class="checkbox">
           <input type="checkbox" name="disadvantage"${dispeller.disadvantage ? " checked" : ""}>
           ${t("Dispel.Dialog.GMConfirmDisadvantage")}
         </label>
@@ -457,6 +466,7 @@ export async function promptGMDispelReview(dispeller, setup) {
     dispeller: {
       ...dispeller,
       bonusFormula: homebrew ? normalizeBonusFormula(result.bonusFormula) : "",
+      specialSpellcaster: Boolean(result.specialSpellcaster),
       disadvantage: Boolean(result.disadvantage)
     },
     setup: { ...setup, effects: reviewedEffects }

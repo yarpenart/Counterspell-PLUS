@@ -11,6 +11,10 @@
         "Homebrew": "Homebrew: rzuty przeciwstawne",
         "Official2014": "Oficjalne D&D 2014"
       },
+      "CounterspellSpecialMinimum": {
+        "Name": "Counterspell: minimalny wynik d20 Special Spellcastera",
+        "Hint": "Minimalny zachowany wynik d20, gdy GM oznaczy rzucającego Counterspell jako Special Spellcaster. Zakres: 1–20. Domyślnie: 15."
+      },
       "DispelEnabled": {
         "Name": "Włącz obsługę Dispel Magic",
         "Hint": "Przechwytuje rozpoznane zaklęcia Dispel Magic i uruchamia procedurę Counterspell PLUS."
@@ -20,6 +24,10 @@
         "Hint": "Wybierz zasadę Dispel Magic niezależnie od zasad Counterspella.",
         "Homebrew": "Homebrew: rzut przeciw pasywnemu spellcastingowi",
         "Official2014": "Oficjalne D&D 2014"
+      },
+      "DispelSpecialMinimum": {
+        "Name": "Dispel Magic: minimalny wynik d20 Special Spellcastera",
+        "Hint": "Minimalny zachowany wynik d20, gdy GM oznaczy rzucającego Dispel Magic jako Special Spellcaster. Zakres: 1–20. Domyślnie: 15."
       },
       "DispelDefenseBase": {
         "Name": "Dispel Magic: baza zwykłego zaklęcia",
@@ -87,6 +95,8 @@
       "KnowsTargetSpellHint": "Tylko homebrew: znajomość zwykłego zaklęcia daje advantage (poza Counterspellem), a znajomość zaklęcia ze zwoju lub glifu obniża jego stałą obronę o 5. GM zatwierdzi deklarację.",
       "GMConfirmKnowledge": "Postać rzucająca Counterspell zna kontrowane zaklęcie",
       "GMConfirmKnowledgeHint": "Potwierdź lub popraw deklarację. Zwykłe znane zaklęcie daje advantage poza Counterspellem; znany czar ze zwoju lub glifu zamiast tego obniża jego obronę o 5.",
+      "SpecialSpellcasterCounterspell": "Rzucający Counterspell jest Special Spellcasterem",
+      "SpecialSpellcasterHint": "Używa minimalnego zachowanego wyniku d20 równego {minimum}, pobranego z ustawień świata modułu.",
       "DeclareDisadvantage": "Mam disadvantage",
       "DisadvantageHint": "Na przykład z poziomu wyczerpania lub innego efektu. GM zatwierdzi tę deklarację.",
       "GMTargetDisadvantage": "Rzucający kontrowane zaklęcie ma disadvantage",
@@ -142,7 +152,8 @@
       "HiddenResults": "Co najmniej jedna strona użyła ukrytego rzutu. Rozstrzygnięcie jest publiczne, ale ukryte wyniki liczbowe pozostają widoczne wyłącznie zgodnie z wybranymi trybami rzutów.",
       "TieRule": "W zasadzie rzutów przeciwstawnych remis wygrywa pierwotne zaklęcie.",
       "WildMagicTitle": "Dzika Magia",
-      "WildMagicBody": "Użycie Counterspella przeciwko innemu Counterspellowi wywołuje efekt Dzikiej Magii. Efekt określa GM."
+      "WildMagicBody": "Użycie Counterspella przeciwko innemu Counterspellowi wywołuje efekt Dzikiej Magii. Efekt określa GM.",
+      "SpecialMinimum": "Special Spellcaster: minimum d20 {minimum}"
     },
     "Notifications": {
       "NoSlots": "Ta postać nie ma dostępnej komórki pozwalającej rzucić Counterspell.",
@@ -189,6 +200,7 @@
         "EffectsSummary": "Efekty zaklęć: {count}",
         "PlayerEffectsTitle": "Counterspell PLUS — zaklęcia objęte twoim Dispel Magic",
         "GMConfirmKnown": "Postać rzucająca Dispel Magic zna to zaklęcie",
+        "SpecialSpellcaster": "Rzucający Dispel Magic jest Special Spellcasterem",
         "GMConfirmDisadvantage": "Postać rzucająca Dispel Magic ma disadvantage",
         "TargetData": "Cel i pasywne obrony",
         "EffectsToResolve": "Efekty zaklęć",
