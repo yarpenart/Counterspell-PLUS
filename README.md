@@ -1,10 +1,10 @@
 # Counterspell PLUS
 
-Automation for **Counterspell** and **Dispel Magic** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
+Automation for **Counterspell**, **Dispel Magic** and **Remove Curse** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.2.14
+## Version 0.3.0
 
-- Independent world settings for Counterspell and Dispel Magic: Homebrew or Official D&D 2014.
+- Independent world settings for Counterspell, Dispel Magic and Remove Curse: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
 - Standard and Pact Magic slots are supported and the selected slot is consumed only after GM approval.
 - Every rolling participant chooses Public Roll, Private GM Roll or Blind GM Roll independently.
@@ -17,8 +17,8 @@ Automation for **Counterspell** and **Dispel Magic** in Foundry VTT 13 Build 351
 - Long workflow windows keep the full-size target list and scroll the complete form, including the action buttons, within the available screen height.
 - A Blind GM defense hides affected spell levels from players; Counterspell keeps the target data with the GM, while Dispel Magic masks levels in the caster's effect list.
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
-- The GM can mark a Counterspell or Dispel Magic caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
-- Polish and English interfaces are included.
+- The GM can mark a Counterspell, Dispel Magic or Remove Curse caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
+- English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
 
 ## Counterspell
 
@@ -97,6 +97,19 @@ vs DC 10 + effect spell level
 
 The player can enter different optional dice for every required check, and the GM can edit them. Proficiency is not added. The selected roll visibility and disadvantage apply to each separate roll.
 
+## Remove Curse
+
+Remove Curse uses the same target selection, source types, multiple-effect handling, roll modes, bonus dice, knowledge reduction, Special Spellcaster option and GM review flow as Dispel Magic. The Normal Spell, Scroll and Glyph homebrew bases are independent Remove Curse settings.
+
+Under the Homebrew rule, every curse also posts a public outcome card. The default result bands are:
+
+- failure by 5 or more: Dramatic Curse Removal Failure;
+- failure by 0–4: Failed Curse Removal;
+- success by 1–5: Barely Successful Curse Removal;
+- success by 6 or more: Successful Curse Removal.
+
+All four displayed boundaries are world settings. The card descriptions are generated from the effective configured values. A homebrew tie is a failure. The Official 2014 mode follows the same automatic-level and separate-check procedure configured for Dispel Magic in this module.
+
 ## Natural 20 and natural 1
 
 The kept d20 is highlighted with the D&D5e system's normal critical or fumble color. This is visual only: natural 20 is not an automatic success and natural 1 is not an automatic failure unless the compared totals say so.
@@ -107,7 +120,8 @@ Open **Configure Settings → Module Settings → Counterspell PLUS** to configu
 
 - Counterspell enabled state, ruleset, recognized names, Scroll base, Glyph base and Wild Magic reminder.
 - Dispel Magic enabled state, ruleset, recognized names, Normal Spell base, Scroll base and Glyph base.
-- Independent Special Spellcaster minimum d20 values for Counterspell and Dispel Magic.
+- Remove Curse enabled state, ruleset, recognized names, Normal Spell base, Scroll base, Glyph base and four outcome boundaries.
+- Independent Special Spellcaster minimum d20 values for Counterspell, Dispel Magic and Remove Curse.
 
 Every base accepts any numeric value.
 
@@ -125,6 +139,12 @@ Dispel Magic:
 - Dispel Magic
 - Rozproszenie magii
 
+Remove Curse:
+
+- Remove Curse
+- Zdjęcie klątwy
+- Usunięcie klątwy
+
 The comma-separated lists may be edited in module settings. Parenthetical suffixes are recognized automatically.
 
 ## Installation
@@ -139,7 +159,6 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 
 - The target spell effects and their source data are entered through participant dialogs rather than detected automatically.
 - Original spell slots are not consumed.
-- Remove Curse is not included yet.
 
 ## License
 

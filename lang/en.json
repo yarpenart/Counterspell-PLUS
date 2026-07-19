@@ -60,6 +60,52 @@
       "WildMagic": {
         "Name": "Wild Magic message",
         "Hint": "Post a Wild Magic message when Counterspell targets another Counterspell."
+      },
+      "RemoveCurseEnabled": {
+        "Name": "Enable Remove Curse workflow",
+        "Hint": "Intercept recognized Remove Curse spells and use the Counterspell PLUS workflow."
+      },
+      "RemoveCurseRuleset": {
+        "Name": "Remove Curse rules",
+        "Hint": "Choose the rule used to resolve Remove Curse independently from Counterspell and Dispel Magic.",
+        "Homebrew": "Homebrew: roll against passive curse defense",
+        "Official2014": "Official D&D 2014"
+      },
+      "RemoveCurseSpecialMinimum": {
+        "Name": "Remove Curse: Special Spellcaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Remove Curse caster as a Special Spellcaster. Range: 1–20. Default: 15."
+      },
+      "RemoveCurseDefenseBase": {
+        "Name": "Remove Curse: normal curse defense base",
+        "Hint": "Homebrew base for an ordinary curse effect. Default: 10. Any numeric value is allowed."
+      },
+      "RemoveCurseScrollDefenseBase": {
+        "Name": "Remove Curse: spell scroll defense base",
+        "Hint": "Independent homebrew base for a curse cast from a scroll. Default: 7. Any numeric value is allowed."
+      },
+      "RemoveCurseGlyphDefenseBase": {
+        "Name": "Remove Curse: Spell Glyph defense base",
+        "Hint": "Independent homebrew base for a curse cast from a Glyph. Default: 10. Any numeric value is allowed."
+      },
+      "RemoveCurseDramaticFailureMin": {
+        "Name": "Remove Curse outcome: Dramatic Failure starts at",
+        "Hint": "Minimum amount by which the roll must fail for a Dramatic Curse Removal Failure. Keep this one point above the ordinary failure maximum; gaps or overlaps are normalized at resolution. Default: 5."
+      },
+      "RemoveCurseFailureMax": {
+        "Name": "Remove Curse outcome: Failed Removal ends at",
+        "Hint": "Largest failure margin classified as a Failed Curse Removal. Keep this one point below the dramatic failure minimum; gaps or overlaps are normalized at resolution. Default: 4."
+      },
+      "RemoveCurseBarelySuccessMax": {
+        "Name": "Remove Curse outcome: Barely Successful ends at",
+        "Hint": "Largest success margin classified as a Barely Successful Curse Removal. Keep this one point below the full success minimum; gaps or overlaps are normalized at resolution. Default: 5."
+      },
+      "RemoveCurseSuccessMin": {
+        "Name": "Remove Curse outcome: Successful Removal starts at",
+        "Hint": "Minimum success margin classified as a Successful Curse Removal without negative effects. Keep this one point above the barely successful maximum; gaps or overlaps are normalized at resolution. Default: 6."
+      },
+      "RemoveCurseNames": {
+        "Name": "Recognized Remove Curse names",
+        "Hint": "Comma-separated spell names. Parenthetical suffixes are recognized automatically."
       }
     },
     "Rules": {
@@ -239,6 +285,89 @@
         "CancelledByGM": "The GM cancelled the Dispel Magic workflow.",
         "CancelledByPlayer": "The Dispel Magic caster cancelled the workflow.",
         "GenericError": "The Dispel Magic workflow encountered an error."
+      }
+    },
+    "RemoveCurse": {
+      "Dialog": {
+        "DispelSlot": "Remove Curse slot",
+        "DispellerTitle": "Counterspell PLUS — your Remove Curse",
+        "OfficialBonusLater": "Official 2014: you will choose optional additional dice separately for each required ability check after the GM enters the curses.",
+        "DispelData": "Remove Curse",
+        "Target": "Cursed target",
+        "EffectCount": "Number of curses on the target",
+        "DefenseRollMode": "Passive defense roll mode",
+        "SetupHint": "Enter the total number of curses. With more than one curse, the homebrew rule adds that total to every curse's DC.",
+        "SpecialTargetHint": "Choose an actor/token or a special target: Unknown, Glyph or Object. A Glyph target automatically forces every curse source to Glyph.",
+        "GMSetupTitle": "Counterspell PLUS — Remove Curse target",
+        "EffectNumber": "Curse {index} of {count}",
+        "EffectName": "Curse name",
+        "EffectLevel": "Curse spell level",
+        "CasterCreatorModifier": "Original caster / creator ability modifier",
+        "CasterCreatorProficiency": "Original caster / creator proficiency bonus",
+        "SourceBaseHint": "Normal spell, Scroll and Glyph use their own independently configurable homebrew bases. Creator values are used for Scroll and Glyph.",
+        "GMEffectTitle": "Remove Curse — curse {index} of {count}",
+        "KnowsEffect": "I know this curse",
+        "KnowsEffectHint": "Homebrew: subtract 5 from this individual curse's DC. The GM will confirm this declaration.",
+        "CheckBonusDice": "Additional dice for this check",
+        "CheckBonusDiceHint": "Official 2014: this formula applies only to the separate ability check for this curse.",
+        "AutomaticBonusIgnored": "This curse is currently automatic because its level does not exceed the Remove Curse slot; the formula is ignored unless the GM changes its level.",
+        "HiddenLevel": "curse level hidden by GM",
+        "HiddenLevelBonusHint": "The curse level is hidden. Enter optional dice for this curse; the GM will apply them only if an ability check is required.",
+        "LevelValue": "level {level}",
+        "EffectsSummary": "{count} curse(s)",
+        "PlayerEffectsTitle": "Counterspell PLUS — curses affected by your Remove Curse",
+        "GMConfirmKnown": "The Remove Curse caster knows this curse",
+        "SpecialSpellcaster": "Remove Curse caster is a Special Spellcaster",
+        "GMConfirmDisadvantage": "The Remove Curse caster has disadvantage",
+        "TargetData": "Target and passive defenses",
+        "EffectsToResolve": "Curses",
+        "GMReviewHint": "Confirm or correct every curse and player declaration. The Remove Curse slot is consumed only after you press Roll.",
+        "GMReviewTitle": "Counterspell PLUS — final Remove Curse review"
+      },
+      "Chat": {
+        "DefenseTitle": "Remove Curse — curse defenses",
+        "HomebrewRoll": "Remove Curse: {actor}",
+        "OfficialRoll": "Remove Curse check against {spell} — DC {dc}",
+        "Dispelled": "CURSE REMOVED",
+        "Remains": "CURSE REMAINS",
+        "Automatic": "Automatic under the official 2014 rule.",
+        "NumericResult": "Result: {total}; DC: {dc}.",
+        "HiddenResult": "At least one relevant value used a hidden roll mode.",
+        "TieRule": "Under the homebrew rule, the Remove Curse result must be strictly higher than the curse DC; a tie is a failure.",
+        "TargetSummary": "Target: {target}",
+        "ManualRemoval": "The module only identifies which curses should be removed; the GM removes them manually."
+      },
+      "Outcome": {
+        "DramaticFailure": {
+          "Title": "Dramatic Curse Removal Failure",
+          "Body": "Remove Curse failed by {minimum} or more. This carries significant complications. The GM determines the effect."
+        },
+        "Failure": {
+          "Title": "Failed Curse Removal",
+          "Body": "Remove Curse failed by {minimum}–{maximum}. This carries minor complications. The GM determines the effect."
+        },
+        "BarelySuccess": {
+          "Title": "Barely Successful Curse Removal",
+          "Body": "Remove Curse succeeded by {minimum}–{maximum}. The curse is removed, but this carries minor complications. The GM determines the effect."
+        },
+        "Success": {
+          "Title": "Successful Curse Removal",
+          "Body": "Remove Curse succeeded by {minimum} or more. The curse is removed without negative effects."
+        }
+      },
+      "Notifications": {
+        "NoSlots": "This actor has no available spell slot capable of casting Remove Curse.",
+        "NoTargets": "No actors or tokens are available for the GM to select.",
+        "TargetNotFound": "The selected Remove Curse target could not be found.",
+        "ActorNotFound": "The Remove Curse actor could not be found.",
+        "SlotUnavailable": "The selected Remove Curse slot is no longer available.",
+        "NoGM": "An active GM is required to resolve Remove Curse.",
+        "AlreadyPending": "This actor already has a pending Remove Curse workflow.",
+        "RequestTimeout": "The Remove Curse request expired after three minutes.",
+        "DefensePostFailed": "The GM could not publish the Remove Curse passive defenses.",
+        "CancelledByGM": "The GM cancelled the Remove Curse workflow.",
+        "CancelledByPlayer": "The Remove Curse caster cancelled the workflow.",
+        "GenericError": "The Remove Curse workflow encountered an error."
       }
     }
   }

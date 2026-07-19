@@ -431,6 +431,6 @@ export function initializeDispelWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startDispelFromActivity = startDispelMagic;
-  game.counterspellPlus.version = "0.2.14";
+  game.counterspellPlus.version = "0.3.0";
   debug("Ready");
 }

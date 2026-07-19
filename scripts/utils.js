@@ -65,6 +65,24 @@ export function isDispelMagicActivity(activity) {
   return configured.some(name => itemName === name || itemName.startsWith(`${name} (`));
 }
 
+export function isRemoveCurseActivity(activity) {
+  if (!game.settings.get(MODULE_ID, "removeCurseEnabled")) return false;
+
+  const item = getActivityItem(activity);
+  if (!item || item.type !== "spell") return false;
+
+  const identifier = normalizeName(item.system?.identifier);
+  if (identifier === "remove-curse" || identifier === "removecurse") return true;
+
+  const configured = game.settings.get(MODULE_ID, "removeCurseNames")
+    .split(",")
+    .map(normalizeName)
+    .filter(Boolean);
+  const itemName = normalizeName(item.name);
+
+  return configured.some(name => itemName === name || itemName.startsWith(`${name} (`));
+}
+
 export function isCounterspellName(name) {
   const normalized = normalizeName(name);
   return normalized.startsWith("counterspell")

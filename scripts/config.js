@@ -107,6 +107,115 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "removeCurseEnabled", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseEnabled.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseEnabled.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseRuleset", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseRuleset.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseRuleset.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      [RULESETS.HOMEBREW]: "COUNTERSPELL_PLUS.Settings.RemoveCurseRuleset.Homebrew",
+      [RULESETS.OFFICIAL_2014]: "COUNTERSPELL_PLUS.Settings.RemoveCurseRuleset.Official2014"
+    },
+    default: RULESETS.HOMEBREW,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseSpecialMinimum", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseSpecialMinimum.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseSpecialMinimum.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 1, max: 20, step: 1 },
+    default: 15,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 10,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseScrollDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseScrollDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseScrollDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 7,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseGlyphDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseGlyphDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseGlyphDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 10,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseDramaticFailureMin", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseDramaticFailureMin.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseDramaticFailureMin.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 1, max: 50, step: 1 },
+    default: 5,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseFailureMax", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseFailureMax.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseFailureMax.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 0, max: 49, step: 1 },
+    default: 4,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseBarelySuccessMax", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseBarelySuccessMax.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseBarelySuccessMax.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 1, max: 49, step: 1 },
+    default: 5,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseSuccessMin", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseSuccessMin.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseSuccessMin.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 2, max: 50, step: 1 },
+    default: 6,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "scrollDefenseBase", {
     name: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Name",
     hint: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Hint",
@@ -144,6 +253,16 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "Dispel Magic, Rozproszenie magii",
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "removeCurseNames", {
+    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseNames.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseNames.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "Remove Curse, Zdjęcie klątwy, Usunięcie klątwy",
     restricted: true
   });
 
