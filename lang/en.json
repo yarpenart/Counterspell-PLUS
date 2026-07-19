@@ -114,6 +114,7 @@
       "Caster": "Caster",
       "TargetCaster": "Who is being countered?",
       "SearchTargetPlaceholder": "Type to search targets…",
+      "TargetsFound": "Matching targets: {count}",
       "SpecialUnknown": "Unknown",
       "SpecialGlyph": "Glyph",
       "SpecialObject": "Object",

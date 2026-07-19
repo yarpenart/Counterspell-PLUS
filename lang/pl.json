@@ -114,6 +114,7 @@
       "Caster": "Rzucający",
       "TargetCaster": "Kto jest counterspellowany?",
       "SearchTargetPlaceholder": "Wpisz nazwę, aby wyszukać cel…",
+      "TargetsFound": "Pasujące cele: {count}",
       "SpecialUnknown": "Unknown",
       "SpecialGlyph": "Glyph",
       "SpecialObject": "Object",

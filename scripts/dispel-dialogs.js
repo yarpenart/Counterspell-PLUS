@@ -1,5 +1,6 @@
 import { RULESETS } from "./config.js";
 import {
+  activateTargetSearch,
   escapeHTML,
   getAbilityData,
   getAbilityEntries,
@@ -37,12 +38,6 @@ function searchableEntries(entries) {
   });
 }
 
-function datalistOptions(entries) {
-  return entries
-    .map(entry => `<option value="${escapeHTML(entry.searchLabel)}"></option>`)
-    .join("");
-}
-
 function levelOptions(selected, minimum = 0) {
   return Array.from({ length: 10 - minimum }, (_, index) => index + minimum)
     .map(level => `<option value="${level}"${level === Number(selected) ? " selected" : ""}>${level}</option>`)
@@ -74,12 +69,13 @@ function sourceOptions(selected = "spell") {
   ].map(entry => `<option value="${entry.key}"${entry.key === selected ? " selected" : ""}>${escapeHTML(entry.label)}</option>`).join("");
 }
 
-async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 620 }) {
+async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 620, onRender }) {
   return DialogV2.wait({
     window: { title },
     position: { width },
     classes: ["counterspell-plus-dialog", "dispel-plus-dialog"],
     content,
+    render: onRender,
     buttons: [
       {
         action: "cancel",
@@ -204,9 +200,10 @@ export async function promptGMDispelSetup(dispeller) {
       </div>
       <div class="form-group">
         <label>${t("Dispel.Dialog.Target")}</label>
-        <div class="form-fields">
-          <input type="search" name="targetSearch" list="csp-dispel-targets" placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off" required>
-          <datalist id="csp-dispel-targets">${datalistOptions(targetOptions)}</datalist>
+        <div class="form-fields csp-target-search">
+          <input type="search" data-csp-target-filter placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
+          <select name="targetUuid" data-csp-target-select size="6" required>${selectOptions(targetOptions, "key", "searchLabel")}</select>
+          <small data-csp-target-count></small>
         </div>
       </div>
       <p class="hint">${t("Dispel.Dialog.SpecialTargetHint")}</p>
@@ -224,16 +221,16 @@ export async function promptGMDispelSetup(dispeller) {
   const result = await waitForm({
     title: t("Dispel.Dialog.GMSetupTitle"),
     content,
-    confirmLabel: t("Dialog.Continue")
+    confirmLabel: t("Dialog.Continue"),
+    onRender: activateTargetSearch
   });
   if (!result) return null;
 
-  const selectedTarget = targetOptions.find(entry => entry.searchLabel === String(result.targetSearch));
-  if (!selectedTarget) {
+  const targetChoice = String(result.targetUuid ?? "");
+  if (!targetOptions.some(entry => entry.key === targetChoice)) {
     ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
     return null;
   }
-  const targetChoice = selectedTarget.key;
   const specialLabels = {
     [SPECIAL_TARGET_UNKNOWN]: t("Dialog.SpecialUnknown"),
     [SPECIAL_TARGET_GLYPH]: t("Dialog.SpecialGlyph"),

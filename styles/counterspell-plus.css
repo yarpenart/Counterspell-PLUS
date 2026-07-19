@@ -75,6 +75,26 @@
   gap: 0.5rem;
 }
 
+.counterspell-plus-dialog .form-fields.csp-target-search {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.counterspell-plus-dialog .csp-target-search input,
+.counterspell-plus-dialog .csp-target-search select {
+  width: 100%;
+}
+
+.counterspell-plus-dialog .csp-target-search select {
+  min-height: 8rem;
+}
+
+.counterspell-plus-dialog .csp-target-search small {
+  opacity: 0.75;
+}
+
 .counterspell-plus-chat h3 {
   margin: 0 0 0.5rem;
 }

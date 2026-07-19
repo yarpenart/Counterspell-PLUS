@@ -1,5 +1,6 @@
 import { RULESETS } from "./config.js";
 import {
+  activateTargetSearch,
   escapeHTML,
   getAbilityData,
   getAbilityEntries,
@@ -37,12 +38,6 @@ function searchableEntries(entries) {
   });
 }
 
-function datalistOptions(entries) {
-  return entries
-    .map(entry => `<option value="${escapeHTML(entry.searchLabel)}"></option>`)
-    .join("");
-}
-
 function levelOptions(selected, minimum = 0) {
   return Array.from({ length: 10 - minimum }, (_, index) => index + minimum)
     .map(level => `<option value="${level}"${level === Number(selected) ? " selected" : ""}>${level}</option>`)
@@ -60,12 +55,13 @@ function rollModeLabel(mode) {
   return getRollModeEntries(mode).find(entry => entry.key === mode)?.label ?? mode;
 }
 
-async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 560 }) {
+async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 560, onRender }) {
   return DialogV2.wait({
     window: { title },
     position: { width },
     classes: ["counterspell-plus-dialog"],
     content,
+    render: onRender,
     buttons: [
       {
         action: "cancel",
@@ -230,9 +226,10 @@ export async function promptGMTarget(counter) {
       </div>
       <div class="form-group">
         <label>${t("Dialog.TargetCaster")}</label>
-        <div class="form-fields">
-          <input type="search" name="actorSearch" list="csp-counterspell-targets" placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off" required>
-          <datalist id="csp-counterspell-targets">${datalistOptions(casterOptions)}</datalist>
+        <div class="form-fields csp-target-search">
+          <input type="search" data-csp-target-filter placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
+          <select name="actorUuid" data-csp-target-select size="6" required>${selectOptions(casterOptions, "key", "searchLabel")}</select>
+          <small data-csp-target-count></small>
         </div>
       </div>
       <p class="hint">${t("Dialog.SpecialTargetHint")}</p>
@@ -288,16 +285,16 @@ export async function promptGMTarget(counter) {
   const result = await waitForm({
     title: t("Dialog.GMTargetTitle"),
     content,
-    confirmLabel: t("Dialog.Continue")
+    confirmLabel: t("Dialog.Continue"),
+    onRender: activateTargetSearch
   });
   if (!result) return null;
 
-  const selectedTarget = casterOptions.find(entry => entry.searchLabel === String(result.actorSearch));
-  if (!selectedTarget) {
+  const targetChoice = String(result.actorUuid ?? "");
+  if (!casterOptions.some(entry => entry.key === targetChoice)) {
     ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
     return null;
   }
-  const targetChoice = selectedTarget.key;
   const isUnknownTarget = targetChoice === SPECIAL_TARGET_UNKNOWN;
   const isGlyphTarget = targetChoice === SPECIAL_TARGET_GLYPH;
   const isSpecialTarget = isUnknownTarget || isGlyphTarget;

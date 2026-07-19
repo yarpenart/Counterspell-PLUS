@@ -236,6 +236,43 @@ export function getSpecialMinimum(setting) {
   return Math.min(20, Math.max(1, Math.trunc(configured)));
 }
 
+export function activateTargetSearch(_event, dialog) {
+  const root = dialog?.element;
+  const input = root?.querySelector("[data-csp-target-filter]");
+  const select = root?.querySelector("[data-csp-target-select]");
+  const count = root?.querySelector("[data-csp-target-count]");
+  if (!input || !select) return;
+
+  const entries = Array.from(select.options).map(option => ({
+    value: option.value,
+    label: option.textContent ?? option.value
+  }));
+
+  const filterEntries = () => {
+    const query = normalizeName(input.value);
+    const previous = select.value;
+    const matches = entries.filter(entry => normalizeName(entry.label).includes(query));
+    const fragment = document.createDocumentFragment();
+    for (const entry of matches) {
+      const option = document.createElement("option");
+      option.value = entry.value;
+      option.textContent = entry.label;
+      fragment.append(option);
+    }
+    select.replaceChildren(fragment);
+    if (matches.some(entry => entry.value === previous)) select.value = previous;
+    if (count) count.textContent = tf("Dialog.TargetsFound", { count: matches.length });
+  };
+
+  input.addEventListener("input", filterEntries);
+  input.addEventListener("keydown", event => {
+    if (event.key !== "ArrowDown") return;
+    event.preventDefault();
+    select.focus();
+  });
+  filterEntries();
+}
+
 export function randomRequestId() {
   return foundry.utils.randomID(24);
 }
