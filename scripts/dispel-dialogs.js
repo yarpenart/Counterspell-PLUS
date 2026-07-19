@@ -190,7 +190,7 @@ export async function promptGMDispelSetup(dispeller) {
   targetOptions = searchableEntries(targetOptions);
 
   const content = `
-    <div class="csp-form csp-compact-target">
+    <div class="csp-form">
       <div class="csp-panel">
         <h3>${t("Dispel.Dialog.DispelData")}</h3>
         <dl>
@@ -204,7 +204,7 @@ export async function promptGMDispelSetup(dispeller) {
         <label>${t("Dispel.Dialog.Target")}</label>
         <div class="form-fields csp-target-search">
           <input type="search" data-csp-target-filter placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
-          <select name="targetUuid" data-csp-target-select size="4" required>${selectOptions(targetOptions, "key", "searchLabel")}</select>
+          <select name="targetUuid" data-csp-target-select size="6" required>${selectOptions(targetOptions, "key", "searchLabel")}</select>
           <small data-csp-target-count></small>
         </div>
       </div>
@@ -224,7 +224,6 @@ export async function promptGMDispelSetup(dispeller) {
     title: t("Dispel.Dialog.GMSetupTitle"),
     content,
     confirmLabel: t("Dialog.Continue"),
-    width: 540,
     onRender: activateTargetSearch
   });
   if (!result) return null;
