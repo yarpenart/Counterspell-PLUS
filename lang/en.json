@@ -208,6 +208,7 @@
         "NoGM": "An active GM is required to resolve Dispel Magic.",
         "AlreadyPending": "This actor already has a pending Dispel Magic workflow.",
         "RequestTimeout": "The Dispel Magic request expired after three minutes.",
+        "DefensePostFailed": "The GM could not publish the Dispel Magic passive defenses.",
         "CancelledByGM": "The GM cancelled the Dispel Magic workflow.",
         "CancelledByPlayer": "The Dispel Magic caster cancelled the workflow.",
         "GenericError": "The Dispel Magic workflow encountered an error."

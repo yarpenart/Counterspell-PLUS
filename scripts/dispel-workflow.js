@@ -107,6 +107,16 @@ async function handleSocket(message) {
           result = await promptGMDispelReview(message.payload.dispeller, message.payload.setup);
         }
         break;
+      case "dispel-post-defense":
+        if (game.user.isGM) {
+          await postDefenseSummary(
+            message.payload.dispeller,
+            message.payload.setup,
+            message.payload.defenses
+          );
+          result = true;
+        }
+        break;
       default:
         debug("Unknown socket message", message.type);
     }
@@ -273,7 +283,12 @@ async function resolveHomebrew(dispeller, setup) {
   });
 
   const defenses = calculateHomebrewDefenses(setup);
-  await postDefenseSummary(dispeller, setup, defenses);
+  const defensePosted = await requestRemote("dispel-post-defense", setup.defenseUserId, {
+    dispeller,
+    setup,
+    defenses
+  });
+  if (!defensePosted) throw new Error(t("Dispel.Notifications.DefensePostFailed"));
   const results = defenses.map(effect => ({
     ...effect,
     total: roll.total,
@@ -286,7 +301,12 @@ async function resolveHomebrew(dispeller, setup) {
 async function resolveOfficial2014(dispeller, setup) {
   const actor = getActorFromUuidSync(dispeller.actorUuid);
   const defenses = calculateOfficialDefenses(setup);
-  await postDefenseSummary(dispeller, setup, defenses);
+  const defensePosted = await requestRemote("dispel-post-defense", setup.defenseUserId, {
+    dispeller,
+    setup,
+    defenses
+  });
+  if (!defensePosted) throw new Error(t("Dispel.Notifications.DefensePostFailed"));
   const results = [];
 
   for (const effect of defenses) {

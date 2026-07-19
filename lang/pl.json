@@ -208,6 +208,7 @@
         "NoGM": "Do rozstrzygnięcia Dispel Magic potrzebny jest aktywny GM.",
         "AlreadyPending": "Ta postać ma już oczekującą procedurę Dispel Magic.",
         "RequestTimeout": "Prośba Dispel Magic wygasła po trzech minutach.",
+        "DefensePostFailed": "GM nie mógł opublikować pasywnych obron Dispel Magic.",
         "CancelledByGM": "GM anulował procedurę Dispel Magic.",
         "CancelledByPlayer": "Postać rzucająca Dispel Magic anulowała procedurę.",
         "GenericError": "Podczas obsługi Dispel Magic wystąpił błąd."

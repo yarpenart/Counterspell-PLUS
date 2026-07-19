@@ -209,6 +209,7 @@ export async function promptGMDispelSetup(dispeller) {
     targetName: target.name,
     effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
     defenseRollMode: String(result.defenseRollMode),
+    defenseUserId: game.user.id,
     effects: []
   };
 }
