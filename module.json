@@ -1,0 +1,55 @@
+{
+  "id": "counterspell-plus",
+  "title": "Counterspell PLUS",
+  "description": "Automated Counterspell resolution for D&D5e, including opposed homebrew rolls and the official 2014 rule.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "YarpenArt"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.351"
+  },
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/counterspell-plus.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "pl",
+      "name": "Polski",
+      "path": "lang/pl.json"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "5.3.3",
+          "verified": "5.3.3"
+        }
+      }
+    ],
+    "recommends": [
+      {
+        "id": "dice-so-nice",
+        "type": "module"
+      }
+    ]
+  },
+  "url": "https://github.com/yarpenart/Counterspell-PLUS",
+  "manifest": "https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.json",
+  "download": "https://github.com/yarpenart/Counterspell-PLUS/releases/download/v0.1.0/counterspell-plus.zip",
+  "license": "MIT"
+}

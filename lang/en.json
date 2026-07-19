@@ -1,0 +1,96 @@
+{
+  "COUNTERSPELL_PLUS": {
+    "Settings": {
+      "Enabled": {
+        "Name": "Enable Counterspell workflow",
+        "Hint": "Intercept recognized Counterspell spells and use the Counterspell PLUS workflow."
+      },
+      "Ruleset": {
+        "Name": "Counterspell rules",
+        "Hint": "Choose the rule used to resolve Counterspell.",
+        "Homebrew": "Homebrew: opposed rolls",
+        "Official2014": "Official D&D 2014"
+      },
+      "Names": {
+        "Name": "Recognized Counterspell names",
+        "Hint": "Comma-separated spell names. Parenthetical suffixes such as Counterspell (Alternate) are recognized automatically."
+      },
+      "WildMagic": {
+        "Name": "Wild Magic message",
+        "Hint": "Post a Wild Magic message when Counterspell targets another Counterspell."
+      }
+    },
+    "Rules": {
+      "Homebrew": "Homebrew opposed roll",
+      "Official2014": "Official D&D 2014"
+    },
+    "Dialog": {
+      "Confirm": "Confirm",
+      "Cancel": "Cancel",
+      "Continue": "Continue",
+      "Roll": "Roll",
+      "SendToGM": "Send to GM",
+      "Ability": "Spellcasting ability",
+      "AbilityModifier": "Ability modifier",
+      "Proficiency": "Proficiency bonus",
+      "CounterspellSlot": "Counterspell slot",
+      "SpellSlotLevel": "Actual spell slot level",
+      "SlotLevel": "Slot level",
+      "SlotStandard": "Level {level} spell slot ({value} available)",
+      "SlotPact": "Level {level} Pact Magic slot ({value} available)",
+      "RollMode": "Roll mode",
+      "GMWillReview": "The active GM will receive and review all selected values before the rolls.",
+      "CounterspellerTitle": "Counterspell PLUS — your Counterspell",
+      "GMTargetTitle": "Counterspell PLUS — choose the target",
+      "TargetPlayerTitle": "Counterspell PLUS — your spell is being countered",
+      "GMReviewTitle": "Counterspell PLUS — final GM review",
+      "CounterspellData": "Counterspell",
+      "TargetData": "Target spell",
+      "Caster": "Caster",
+      "TargetCaster": "Who is being countered?",
+      "TargetAbility": "Target's spellcasting ability",
+      "SourceType": "Casting source",
+      "NormalSpell": "Normal spell",
+      "Scroll": "Spell scroll",
+      "SpellName": "Target spell name",
+      "AskOwner": "Ask the active owner of this actor",
+      "AskOwnerHint": "If an active player owns the selected actor, they will receive their own data window.",
+      "ScrollCreator": "Scroll creator data",
+      "CreatorModifier": "Creator's ability modifier",
+      "CreatorProficiency": "Creator's proficiency bonus",
+      "ScrollHint": "Scroll creator values are used only when Casting source is Spell scroll.",
+      "YouAreCountered": "Your spell is being countered",
+      "PlayerDataHint": "Your modifier and proficiency bonus will be read from this character sheet. The GM will review the result.",
+      "GMReviewHint": "Confirm or correct the target spell data. The Counterspell slot is consumed only after you press Roll."
+    },
+    "Chat": {
+      "UnknownCaster": "Unknown caster",
+      "UnknownSpell": "Unknown spell",
+      "CounterspellRoll": "Counterspell: {actor}",
+      "TargetRoll": "{spell}: {actor}",
+      "OfficialRoll": "Counterspell ability check — DC {dc}",
+      "ScrollDefense": "Spell scroll defense",
+      "Countered": "SPELL COUNTERED",
+      "NotCountered": "COUNTERSPELL FAILED",
+      "AutomaticSuccess": "The Counterspell slot is at least as high as the target spell. The spell is countered automatically.",
+      "OfficialResult": "Counterspell result: {counterTotal}; DC: {dc}.",
+      "OpposedResult": "Counterspell result: {counterTotal}; target spell result: {targetTotal}.",
+      "TieRule": "In the opposed-roll rule, a tie favors the original spell.",
+      "WildMagicTitle": "Wild Magic",
+      "WildMagicBody": "Counterspelling another Counterspell triggers a Wild Magic effect. The GM determines the effect."
+    },
+    "Notifications": {
+      "NoSlots": "This actor has no available spell slot capable of casting Counterspell.",
+      "NoCasters": "No actors or tokens are available for the GM to select.",
+      "CasterNotFound": "The selected caster could not be found.",
+      "ActorNotFound": "The Counterspell actor could not be found.",
+      "SlotUnavailable": "The selected Counterspell slot is no longer available.",
+      "NoGM": "An active GM is required to resolve Counterspell.",
+      "AlreadyPending": "This actor already has a pending Counterspell workflow.",
+      "RequestTimeout": "The Counterspell request expired after three minutes.",
+      "CancelledByGM": "The GM cancelled the Counterspell workflow.",
+      "CancelledByTarget": "The target player cancelled the Counterspell workflow.",
+      "GenericError": "The Counterspell workflow encountered an error."
+    }
+  }
+}

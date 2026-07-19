@@ -1,0 +1,112 @@
+.counterspell-plus-dialog .window-content {
+  padding: 1rem;
+}
+
+.counterspell-plus-dialog .csp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.counterspell-plus-dialog .csp-summary,
+.counterspell-plus-dialog .csp-panel {
+  border: 1px solid var(--color-border-light-primary);
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--color-bg-option) 70%, transparent);
+}
+
+.counterspell-plus-dialog .csp-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.counterspell-plus-dialog .csp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.counterspell-plus-dialog .csp-panel h3 {
+  margin: 0 0 0.5rem;
+}
+
+.counterspell-plus-dialog .csp-panel dl {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) 1fr;
+  margin: 0;
+  gap: 0.25rem 0.75rem;
+}
+
+.counterspell-plus-dialog .csp-panel dt {
+  font-weight: 600;
+}
+
+.counterspell-plus-dialog .csp-panel dd {
+  margin: 0;
+  text-align: right;
+}
+
+.counterspell-plus-dialog fieldset {
+  border: 1px solid var(--color-border-light-primary);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.counterspell-plus-dialog .hint {
+  margin: 0;
+}
+
+.counterspell-plus-dialog label.checkbox {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.counterspell-plus-chat h3 {
+  margin: 0 0 0.5rem;
+}
+
+.counterspell-plus-chat .csp-result {
+  border-radius: 5px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0.4rem 0;
+  padding: 0.45rem 0.65rem;
+  text-align: center;
+}
+
+.counterspell-plus-chat .csp-result.success {
+  background: #2f7d32;
+}
+
+.counterspell-plus-chat .csp-result.failure {
+  background: #8b2d2d;
+}
+
+.counterspell-plus-chat .csp-tie-note {
+  font-size: 0.85em;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.counterspell-plus-chat.csp-wild-magic {
+  border: 1px solid #8a4ebf;
+  border-radius: 6px;
+  padding: 0.65rem;
+  background: color-mix(in srgb, #7b2cbf 15%, transparent);
+}
+
+.counterspell-plus-chat .csp-formula {
+  font-family: var(--font-monospace);
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .counterspell-plus-dialog .csp-grid {
+    grid-template-columns: 1fr;
+  }
+}
