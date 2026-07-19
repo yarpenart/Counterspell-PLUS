@@ -15,6 +15,9 @@ import {
 } from "./utils.js";
 
 const DialogV2 = foundry.applications.api.DialogV2;
+const SPECIAL_TARGET_UNKNOWN = "special:unknown";
+const SPECIAL_TARGET_GLYPH = "special:glyph";
+const SPECIAL_TARGET_OBJECT = "special:object";
 
 function selectOptions(entries, valueKey = "key", labelKey = "label") {
   return entries.map(entry => {
@@ -164,6 +167,11 @@ export async function promptGMDispelSetup(dispeller) {
     label: entry.name,
     selected: index === 0
   }));
+  targetOptions.push(
+    { key: SPECIAL_TARGET_UNKNOWN, label: t("Dialog.SpecialUnknown"), selected: false },
+    { key: SPECIAL_TARGET_GLYPH, label: t("Dialog.SpecialGlyph"), selected: false },
+    { key: SPECIAL_TARGET_OBJECT, label: t("Dialog.SpecialObject"), selected: false }
+  );
 
   const content = `
     <div class="csp-form">
@@ -180,6 +188,7 @@ export async function promptGMDispelSetup(dispeller) {
         <label>${t("Dispel.Dialog.Target")}</label>
         <div class="form-fields"><select name="targetUuid">${selectOptions(targetOptions)}</select></div>
       </div>
+      <p class="hint">${t("Dispel.Dialog.SpecialTargetHint")}</p>
       <div class="form-group">
         <label>${t("Dispel.Dialog.EffectCount")}</label>
         <div class="form-fields"><input type="number" name="effectCount" value="1" min="1" max="20" step="1"></div>
@@ -198,15 +207,25 @@ export async function promptGMDispelSetup(dispeller) {
   });
   if (!result) return null;
 
-  const target = getActorFromUuidSync(result.targetUuid);
-  if (!target) {
+  const targetChoice = String(result.targetUuid);
+  const specialLabels = {
+    [SPECIAL_TARGET_UNKNOWN]: t("Dialog.SpecialUnknown"),
+    [SPECIAL_TARGET_GLYPH]: t("Dialog.SpecialGlyph"),
+    [SPECIAL_TARGET_OBJECT]: t("Dialog.SpecialObject")
+  };
+  const targetType = targetChoice.startsWith("special:")
+    ? targetChoice.slice("special:".length)
+    : "actor";
+  const target = targetType === "actor" ? getActorFromUuidSync(targetChoice) : null;
+  if (!target && targetType === "actor") {
     ui.notifications.error(t("Dispel.Notifications.TargetNotFound"));
     return null;
   }
 
   return {
-    targetUuid: String(result.targetUuid),
-    targetName: target.name,
+    targetUuid: target ? targetChoice : "",
+    targetType,
+    targetName: target?.name ?? specialLabels[targetChoice] ?? t("Dialog.SpecialUnknown"),
     effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
     defenseRollMode: String(result.defenseRollMode),
     defenseUserId: game.user.id,
@@ -214,16 +233,28 @@ export async function promptGMDispelSetup(dispeller) {
   };
 }
 
-export async function promptGMDispelEffect(index, count) {
+export async function promptGMDispelEffect(index, count, targetType = "actor") {
+  const glyphTarget = targetType === "glyph";
+  const sourceField = glyphTarget
+    ? `
+      <div class="form-group">
+        <label>${t("Dialog.SourceType")}</label>
+        <div class="form-fields">
+          <input type="hidden" name="sourceType" value="glyph">
+          <strong>${t("Dialog.Glyph")}</strong>
+        </div>
+      </div>`
+    : `
+      <div class="form-group">
+        <label>${t("Dialog.SourceType")}</label>
+        <div class="form-fields"><select name="sourceType">${sourceOptions()}</select></div>
+      </div>`;
   const content = `
     <div class="csp-form">
       <div class="csp-summary">
         <strong>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count })}</strong>
       </div>
-      <div class="form-group">
-        <label>${t("Dialog.SourceType")}</label>
-        <div class="form-fields"><select name="sourceType">${sourceOptions()}</select></div>
-      </div>
+      ${sourceField}
       <div class="form-group">
         <label>${t("Dispel.Dialog.EffectName")}</label>
         <div class="form-fields"><input type="text" name="spellName" placeholder="Bless" required></div>
@@ -251,7 +282,7 @@ export async function promptGMDispelEffect(index, count) {
   if (!result) return null;
 
   return {
-    sourceType: String(result.sourceType),
+    sourceType: glyphTarget ? "glyph" : String(result.sourceType),
     spellName: String(result.spellName || t("Chat.UnknownSpell")),
     spellLevel: parseNumber(result.spellLevel, 0),
     casterMod: parseNumber(result.casterMod, 0),
@@ -262,6 +293,7 @@ export async function promptGMDispelEffect(index, count) {
 }
 
 export async function promptDispellerEffects(dispeller, setup) {
+  const hideLevels = setup.defenseRollMode === "blindroll";
   const effectCards = setup.effects.map((effect, index) => {
     const homebrewFields = dispeller.ruleset === RULESETS.HOMEBREW
       ? `
@@ -274,14 +306,18 @@ export async function promptDispellerEffects(dispeller, setup) {
         <div class="form-group stacked">
           <label>${t("Dispel.Dialog.CheckBonusDice")}</label>
           <div class="form-fields"><input type="text" name="bonus${index}" placeholder="1d4 + 1d8"></div>
-          <p class="hint">${effect.spellLevel <= dispeller.slotLevel
-            ? t("Dispel.Dialog.AutomaticBonusIgnored")
-            : t("Dispel.Dialog.CheckBonusDiceHint")}</p>
+          <p class="hint">${hideLevels
+            ? t("Dispel.Dialog.HiddenLevelBonusHint")
+            : effect.spellLevel <= dispeller.slotLevel
+              ? t("Dispel.Dialog.AutomaticBonusIgnored")
+              : t("Dispel.Dialog.CheckBonusDiceHint")}</p>
         </div>`;
     return `
       <fieldset class="csp-effect-card">
         <legend>${index + 1}. ${escapeHTML(effect.spellName)}</legend>
-        <p>${escapeHTML(sourceLabel(effect.sourceType))} · ${tf("Dispel.Dialog.LevelValue", { level: effect.spellLevel })}</p>
+        <p>${escapeHTML(sourceLabel(effect.sourceType))} · ${hideLevels
+          ? t("Dispel.Dialog.HiddenLevel")
+          : tf("Dispel.Dialog.LevelValue", { level: effect.spellLevel })}</p>
         ${homebrewFields}
       </fieldset>`;
   }).join("");
@@ -315,12 +351,15 @@ export async function promptDispellerEffects(dispeller, setup) {
 
 export async function promptGMDispelReview(dispeller, setup) {
   const homebrew = dispeller.ruleset === RULESETS.HOMEBREW;
+  const glyphTarget = setup.targetType === "glyph";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
       <div class="form-group">
         <label>${t("Dialog.SourceType")}</label>
-        <div class="form-fields"><select name="source${index}">${sourceOptions(effect.sourceType)}</select></div>
+        <div class="form-fields">${glyphTarget
+          ? `<input type="hidden" name="source${index}" value="glyph"><strong>${t("Dialog.Glyph")}</strong>`
+          : `<select name="source${index}">${sourceOptions(effect.sourceType)}</select>`}</div>
       </div>
       <div class="form-group">
         <label>${t("Dispel.Dialog.EffectName")}</label>
@@ -405,7 +444,7 @@ export async function promptGMDispelReview(dispeller, setup) {
 
   const reviewedEffects = setup.effects.map((effect, index) => ({
     ...effect,
-    sourceType: String(result[`source${index}`]),
+    sourceType: glyphTarget ? "glyph" : String(result[`source${index}`]),
     spellName: String(result[`name${index}`] || effect.spellName),
     spellLevel: parseNumber(result[`level${index}`], effect.spellLevel),
     casterMod: parseNumber(result[`mod${index}`], effect.casterMod),

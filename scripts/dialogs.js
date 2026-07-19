@@ -16,6 +16,8 @@ import {
 } from "./utils.js";
 
 const DialogV2 = foundry.applications.api.DialogV2;
+const SPECIAL_TARGET_UNKNOWN = "special:unknown";
+const SPECIAL_TARGET_GLYPH = "special:glyph";
 
 function selectOptions(entries, valueKey = "key", labelKey = "label") {
   return entries.map(entry => {
@@ -192,6 +194,10 @@ export async function promptGMTarget(counter) {
     label: entry.name,
     selected: index === 0
   }));
+  casterOptions.push(
+    { key: SPECIAL_TARGET_UNKNOWN, label: t("Dialog.SpecialUnknown"), selected: false },
+    { key: SPECIAL_TARGET_GLYPH, label: t("Dialog.SpecialGlyph"), selected: false }
+  );
 
   const content = `
     <div class="csp-form">
@@ -208,6 +214,7 @@ export async function promptGMTarget(counter) {
         <label>${t("Dialog.TargetCaster")}</label>
         <div class="form-fields"><select name="actorUuid">${selectOptions(casterOptions)}</select></div>
       </div>
+      <p class="hint">${t("Dialog.SpecialTargetHint")}</p>
       <div class="form-group">
         <label>${t("Dialog.SourceType")}</label>
         <div class="form-fields">
@@ -244,7 +251,7 @@ export async function promptGMTarget(counter) {
         <p class="hint">${t("Dialog.AskOwnerHint")}</p>
       </div>
       <fieldset>
-        <legend>${t("Dialog.ScrollCreator")}</legend>
+        <legend>${t("Dialog.ManualCasterCreator")}</legend>
         <div class="form-group">
           <label>${t("Dialog.CreatorModifier")}</label>
           <div class="form-fields"><input type="number" name="creatorMod" value="0" step="1"></div>
@@ -254,7 +261,7 @@ export async function promptGMTarget(counter) {
           <div class="form-fields"><input type="number" name="creatorProf" value="0" min="0" step="1"></div>
         </div>
       </fieldset>
-      <p class="hint">${t("Dialog.ScrollHint")}</p>
+      <p class="hint">${t("Dialog.ManualDataHint")}</p>
     </div>`;
 
   const result = await waitForm({
@@ -264,30 +271,46 @@ export async function promptGMTarget(counter) {
   });
   if (!result) return null;
 
-  const actor = getActorFromUuidSync(result.actorUuid);
-  if (!actor) {
+  const targetChoice = String(result.actorUuid);
+  const isUnknownTarget = targetChoice === SPECIAL_TARGET_UNKNOWN;
+  const isGlyphTarget = targetChoice === SPECIAL_TARGET_GLYPH;
+  const isSpecialTarget = isUnknownTarget || isGlyphTarget;
+  const actor = isSpecialTarget ? null : getActorFromUuidSync(targetChoice);
+  if (!actor && !isSpecialTarget) {
     ui.notifications.error(t("Notifications.CasterNotFound"));
     return null;
   }
 
   const owner = getActiveOwner(actor);
   const ability = String(result.ability);
-  const computed = getAbilityData(actor, ability);
+  const manualMod = parseNumber(result.creatorMod, 0);
+  const manualProf = parseNumber(result.creatorProf, 0);
+  const computed = actor
+    ? getAbilityData(actor, ability)
+    : { ability, abilityMod: manualMod, proficiency: manualProf };
+  const sourceType = isGlyphTarget ? "glyph" : String(result.sourceType);
+  const selectedRollMode = String(result.targetRollMode);
+  const actorName = actor?.name
+    ?? (isGlyphTarget ? t("Dialog.SpecialGlyph") : t("Dialog.SpecialUnknown"));
 
   return {
-    actorUuid: String(result.actorUuid),
-    actorName: actor.name,
+    actorUuid: actor ? targetChoice : "",
+    actorName,
+    targetType: isGlyphTarget ? "glyph" : isUnknownTarget ? "unknown" : "actor",
     ownerUserId: owner?.id ?? null,
-    askOwner: Boolean(result.askOwner) && Boolean(owner),
-    sourceType: String(result.sourceType),
+    askOwner: Boolean(result.askOwner)
+      && Boolean(owner)
+      && sourceType === "spell"
+      && selectedRollMode !== "blindroll",
+    sourceType,
     spellName: String(result.spellName || t("Chat.UnknownSpell")),
     spellLevel: parseNumber(result.spellLevel, 0),
     ability,
     abilityMod: computed.abilityMod,
     proficiency: computed.proficiency,
-    creatorMod: parseNumber(result.creatorMod, 0),
-    creatorProf: parseNumber(result.creatorProf, 0),
-    rollMode: String(result.targetRollMode),
+    creatorMod: manualMod,
+    creatorProf: manualProf,
+    rollMode: selectedRollMode,
     bonusFormula: counter.ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
     rollUserId: game.user.id,
     ruleset: counter.ruleset,

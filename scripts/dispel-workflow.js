@@ -91,7 +91,7 @@ async function handleSocket(message) {
           const setup = await promptGMDispelSetup(message.payload.dispeller);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              const effect = await promptGMDispelEffect(index, setup.effectCount);
+              const effect = await promptGMDispelEffect(index, setup.effectCount, setup.targetType);
               if (!effect) {
                 result = null;
                 break;
@@ -416,6 +416,6 @@ export function initializeDispelWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startDispelFromActivity = startDispelMagic;
-  game.counterspellPlus.version = "0.2.0";
+  game.counterspellPlus.version = "0.2.5";
   debug("Ready");
 }
