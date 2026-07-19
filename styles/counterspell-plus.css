@@ -2,6 +2,14 @@
   padding: 1rem;
 }
 
+.counterspell-plus-dialog form {
+  max-height: min(620px, calc(100vh - 7rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.4rem;
+  scrollbar-gutter: stable;
+}
+
 .counterspell-plus-dialog .csp-form {
   display: flex;
   flex-direction: column;
