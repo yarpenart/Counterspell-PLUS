@@ -27,6 +27,22 @@ function selectOptions(entries, valueKey = "key", labelKey = "label") {
   }).join("");
 }
 
+function searchableEntries(entries) {
+  const counts = new Map();
+  for (const entry of entries) counts.set(entry.label, (counts.get(entry.label) ?? 0) + 1);
+  return entries.map((entry, index) => {
+    if (counts.get(entry.label) === 1) return { ...entry, searchLabel: entry.label };
+    const suffix = String(entry.key).split(".").pop()?.slice(-6) || String(index + 1);
+    return { ...entry, searchLabel: `${entry.label} [${suffix}]` };
+  });
+}
+
+function datalistOptions(entries) {
+  return entries
+    .map(entry => `<option value="${escapeHTML(entry.searchLabel)}"></option>`)
+    .join("");
+}
+
 function levelOptions(selected, minimum = 0) {
   return Array.from({ length: 10 - minimum }, (_, index) => index + minimum)
     .map(level => `<option value="${level}"${level === Number(selected) ? " selected" : ""}>${level}</option>`)
@@ -163,7 +179,7 @@ export async function promptGMDispelSetup(dispeller) {
     ui.notifications.warn(t("Dispel.Notifications.NoTargets"));
     return null;
   }
-  const targetOptions = targets.map((entry, index) => ({
+  let targetOptions = targets.map((entry, index) => ({
     key: entry.uuid,
     label: entry.name,
     selected: index === 0
@@ -173,6 +189,7 @@ export async function promptGMDispelSetup(dispeller) {
     { key: SPECIAL_TARGET_GLYPH, label: t("Dialog.SpecialGlyph"), selected: false },
     { key: SPECIAL_TARGET_OBJECT, label: t("Dialog.SpecialObject"), selected: false }
   );
+  targetOptions = searchableEntries(targetOptions);
 
   const content = `
     <div class="csp-form">
@@ -187,7 +204,10 @@ export async function promptGMDispelSetup(dispeller) {
       </div>
       <div class="form-group">
         <label>${t("Dispel.Dialog.Target")}</label>
-        <div class="form-fields"><select name="targetUuid">${selectOptions(targetOptions)}</select></div>
+        <div class="form-fields">
+          <input type="search" name="targetSearch" list="csp-dispel-targets" placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off" required>
+          <datalist id="csp-dispel-targets">${datalistOptions(targetOptions)}</datalist>
+        </div>
       </div>
       <p class="hint">${t("Dispel.Dialog.SpecialTargetHint")}</p>
       <div class="form-group">
@@ -208,7 +228,12 @@ export async function promptGMDispelSetup(dispeller) {
   });
   if (!result) return null;
 
-  const targetChoice = String(result.targetUuid);
+  const selectedTarget = targetOptions.find(entry => entry.searchLabel === String(result.targetSearch));
+  if (!selectedTarget) {
+    ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
+    return null;
+  }
+  const targetChoice = selectedTarget.key;
   const specialLabels = {
     [SPECIAL_TARGET_UNKNOWN]: t("Dialog.SpecialUnknown"),
     [SPECIAL_TARGET_GLYPH]: t("Dialog.SpecialGlyph"),

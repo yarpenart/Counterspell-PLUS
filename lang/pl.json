@@ -113,6 +113,7 @@
       "TargetData": "Kontrowane zaklęcie",
       "Caster": "Rzucający",
       "TargetCaster": "Kto jest counterspellowany?",
+      "SearchTargetPlaceholder": "Wpisz nazwę, aby wyszukać cel…",
       "SpecialUnknown": "Unknown",
       "SpecialGlyph": "Glyph",
       "SpecialObject": "Object",
@@ -168,6 +169,7 @@
       "CancelledByTarget": "Gracz będący celem anulował procedurę Counterspella.",
       "TargetRollFailed": "Nie udało się wykonać rzutu kontrowanego zaklęcia.",
       "InvalidBonusFormula": "Formuła dodatkowych kości jest nieprawidłowa. Popraw ją przed rzutem.",
+      "SelectTargetSuggestion": "Wybierz cel z podpowiedzi wyszukiwarki.",
       "GenericError": "Podczas obsługi Counterspella wystąpił błąd."
     },
     "Dispel": {

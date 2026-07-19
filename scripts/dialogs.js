@@ -27,6 +27,22 @@ function selectOptions(entries, valueKey = "key", labelKey = "label") {
   }).join("");
 }
 
+function searchableEntries(entries) {
+  const counts = new Map();
+  for (const entry of entries) counts.set(entry.label, (counts.get(entry.label) ?? 0) + 1);
+  return entries.map((entry, index) => {
+    if (counts.get(entry.label) === 1) return { ...entry, searchLabel: entry.label };
+    const suffix = String(entry.key).split(".").pop()?.slice(-6) || String(index + 1);
+    return { ...entry, searchLabel: `${entry.label} [${suffix}]` };
+  });
+}
+
+function datalistOptions(entries) {
+  return entries
+    .map(entry => `<option value="${escapeHTML(entry.searchLabel)}"></option>`)
+    .join("");
+}
+
 function levelOptions(selected, minimum = 0) {
   return Array.from({ length: 10 - minimum }, (_, index) => index + minimum)
     .map(level => `<option value="${level}"${level === Number(selected) ? " selected" : ""}>${level}</option>`)
@@ -190,7 +206,7 @@ export async function promptGMTarget(counter) {
         <p class="hint">${t("Dialog.TargetBonusDiceHint")}</p>
       </div>`
     : "";
-  const casterOptions = casters.map((entry, index) => ({
+  let casterOptions = casters.map((entry, index) => ({
     key: entry.uuid,
     label: entry.name,
     selected: index === 0
@@ -199,6 +215,7 @@ export async function promptGMTarget(counter) {
     { key: SPECIAL_TARGET_UNKNOWN, label: t("Dialog.SpecialUnknown"), selected: false },
     { key: SPECIAL_TARGET_GLYPH, label: t("Dialog.SpecialGlyph"), selected: false }
   );
+  casterOptions = searchableEntries(casterOptions);
 
   const content = `
     <div class="csp-form">
@@ -213,7 +230,10 @@ export async function promptGMTarget(counter) {
       </div>
       <div class="form-group">
         <label>${t("Dialog.TargetCaster")}</label>
-        <div class="form-fields"><select name="actorUuid">${selectOptions(casterOptions)}</select></div>
+        <div class="form-fields">
+          <input type="search" name="actorSearch" list="csp-counterspell-targets" placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off" required>
+          <datalist id="csp-counterspell-targets">${datalistOptions(casterOptions)}</datalist>
+        </div>
       </div>
       <p class="hint">${t("Dialog.SpecialTargetHint")}</p>
       <div class="form-group">
@@ -272,7 +292,12 @@ export async function promptGMTarget(counter) {
   });
   if (!result) return null;
 
-  const targetChoice = String(result.actorUuid);
+  const selectedTarget = casterOptions.find(entry => entry.searchLabel === String(result.actorSearch));
+  if (!selectedTarget) {
+    ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
+    return null;
+  }
+  const targetChoice = selectedTarget.key;
   const isUnknownTarget = targetChoice === SPECIAL_TARGET_UNKNOWN;
   const isGlyphTarget = targetChoice === SPECIAL_TARGET_GLYPH;
   const isSpecialTarget = isUnknownTarget || isGlyphTarget;

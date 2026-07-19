@@ -113,6 +113,7 @@
       "TargetData": "Target spell",
       "Caster": "Caster",
       "TargetCaster": "Who is being countered?",
+      "SearchTargetPlaceholder": "Type to search targets…",
       "SpecialUnknown": "Unknown",
       "SpecialGlyph": "Glyph",
       "SpecialObject": "Object",
@@ -168,6 +169,7 @@
       "CancelledByTarget": "The target player cancelled the Counterspell workflow.",
       "TargetRollFailed": "The target spell roll could not be completed.",
       "InvalidBonusFormula": "An additional dice formula is invalid. Correct it before rolling.",
+      "SelectTargetSuggestion": "Select a target from the search suggestions.",
       "GenericError": "The Counterspell workflow encountered an error."
     },
     "Dispel": {

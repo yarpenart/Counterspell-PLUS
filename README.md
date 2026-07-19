@@ -2,7 +2,7 @@
 
 Automation for **Counterspell** and **Dispel Magic** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.2.6
+## Version 0.2.7
 
 - Independent world settings for Counterspell and Dispel Magic: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -12,6 +12,7 @@ Automation for **Counterspell** and **Dispel Magic** in Foundry VTT 13 Build 351
 - Ordinary D&D5e d20 rolls support Dice So Nice and use the system's standard natural 20 / natural 1 colors.
 - Optional additional dice formulas such as `1d4` or `1d4 + 1d8` are supported and editable by the GM.
 - Counterspell target selection supports actor/token, Unknown and Glyph targets; Dispel Magic additionally supports Object. Selecting Glyph as the target forces Glyph as the spell source in both workflows.
+- Counterspell and Dispel Magic target selectors provide searchable suggestions instead of requiring scrolling through long actor lists.
 - A Blind GM defense hides affected spell levels from players; Counterspell keeps the target data with the GM, while Dispel Magic masks levels in the caster's effect list.
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
 - The GM can mark a Counterspell or Dispel Magic caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
