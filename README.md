@@ -2,7 +2,7 @@
 
 Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system.
 
-## Version 0.1.2 scope
+## Version 0.1.3 scope
 
 - Intercepts Counterspell use from a D&D5e spell activity.
 - Lets the Counterspell caster choose their spellcasting ability, actual slot resource and roll mode.
@@ -11,7 +11,8 @@ Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system
 - Gives the GM a final review window containing both sides' relevant values.
 - Reads ability modifiers and proficiency bonuses from actor sheets.
 - Supports standard and Pact Magic spell slots and consumes the selected Counterspell slot once the GM approves the roll.
-- Supports public, private GM and blind GM rolls.
+- Each side independently chooses public, private GM or blind GM roll visibility.
+- The final success or failure is public, while hidden numerical results remain hidden.
 - Uses ordinary Foundry chat rolls, so Dice So Nice animates them automatically when installed and enabled.
 - Supports Polish and English Foundry interface languages.
 
@@ -65,9 +66,9 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 
 ## Current limitations
 
-- Version 0.1.0 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
+- Version 0.1.3 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
 - The original spell is assumed to have already been cast, so this module does not consume its slot.
-- Live multiplayer testing in Foundry is required before marking the first release stable.
+- The module currently identifies the target spell and its slot level through participant dialogs rather than reading an interrupted cast automatically.
 
 ## License
 

@@ -39,6 +39,7 @@
       "SlotStandard": "Komórka {level}. poziomu (dostępne: {value})",
       "SlotPact": "Komórka Magii Paktu {level}. poziomu (dostępne: {value})",
       "RollMode": "Tryb rzutu",
+      "TargetRollMode": "Tryb rzutu celu",
       "RollModePublic": "Rzut publiczny",
       "RollModePrivate": "Rzut prywatny dla GM",
       "RollModeBlind": "Rzut ślepy dla GM",
@@ -78,6 +79,7 @@
       "AutomaticSuccess": "Komórka Counterspella ma co najmniej poziom kontrowanego zaklęcia. Zaklęcie zostaje skontrowane automatycznie.",
       "OfficialResult": "Wynik Counterspella: {counterTotal}; ST: {dc}.",
       "OpposedResult": "Wynik Counterspella: {counterTotal}; wynik kontrowanego zaklęcia: {targetTotal}.",
+      "HiddenResults": "Co najmniej jedna strona użyła ukrytego rzutu. Rozstrzygnięcie jest publiczne, ale ukryte wyniki liczbowe pozostają widoczne wyłącznie zgodnie z wybranymi trybami rzutów.",
       "TieRule": "W zasadzie rzutów przeciwstawnych remis wygrywa pierwotne zaklęcie.",
       "WildMagicTitle": "Dzika Magia",
       "WildMagicBody": "Użycie Counterspella przeciwko innemu Counterspellowi wywołuje efekt Dzikiej Magii. Efekt określa GM."
@@ -93,6 +95,7 @@
       "RequestTimeout": "Prośba Counterspella wygasła po trzech minutach.",
       "CancelledByGM": "GM anulował procedurę Counterspella.",
       "CancelledByTarget": "Gracz będący celem anulował procedurę Counterspella.",
+      "TargetRollFailed": "Nie udało się wykonać rzutu kontrowanego zaklęcia.",
       "GenericError": "Podczas obsługi Counterspella wystąpił błąd."
     }
   }

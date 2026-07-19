@@ -94,6 +94,9 @@ async function handleSocket(message) {
           result = await promptGMReview(message.payload.counter, message.payload.target);
         }
         break;
+      case "execute-target-roll":
+        result = await executeTargetRoll(message.payload.target);
+        break;
       default:
         debug("Unknown socket message", message.type);
     }
@@ -122,7 +125,7 @@ async function postRoll(roll, { actor, alias, flavor, rollMode }) {
   }, { rollMode });
 }
 
-async function postFixedTarget(target, total, rollMode) {
+async function postFixedTarget(target, total) {
   const messageData = applyRollMode({
     speaker: speakerFor(null, target.actorName),
     content: `
@@ -130,18 +133,23 @@ async function postFixedTarget(target, total, rollMode) {
         <h3>${t("Chat.ScrollDefense")}</h3>
         <p class="csp-formula">7 + ${target.spellLevel} + ${target.creatorMod} + ${target.creatorProf} = <strong>${total}</strong></p>
       </div>`
-  }, rollMode);
+  }, target.rollMode);
   return ChatMessage.create(messageData);
 }
 
 async function postResult({ counter, target, counterTotal, targetTotal, success, automatic = false, dc = null }) {
   const resultLabel = success ? t("Chat.Countered") : t("Chat.NotCountered");
   const resultClass = success ? "success" : "failure";
+  const allRelevantRollsPublic = dc !== null
+    ? counter.rollMode === "publicroll"
+    : counter.rollMode === "publicroll" && target.rollMode === "publicroll";
   const detail = automatic
     ? t("Chat.AutomaticSuccess")
-    : dc !== null
-      ? tf("Chat.OfficialResult", { counterTotal, dc })
-      : tf("Chat.OpposedResult", { counterTotal, targetTotal });
+    : !allRelevantRollsPublic
+      ? t("Chat.HiddenResults")
+      : dc !== null
+        ? tf("Chat.OfficialResult", { counterTotal, dc })
+        : tf("Chat.OpposedResult", { counterTotal, targetTotal });
   const tieNote = counter.ruleset === RULESETS.HOMEBREW
     ? `<p class="csp-tie-note">${t("Chat.TieRule")}</p>`
     : "";
@@ -156,7 +164,7 @@ async function postResult({ counter, target, counterTotal, targetTotal, success,
         <p>${escapeHTML(detail)}</p>
         ${tieNote}
       </div>`
-  }, counter.rollMode);
+  }, "publicroll");
   await ChatMessage.create(messageData);
 
   if (game.settings.get(MODULE_ID, "wildMagic") && isCounterspellName(target.spellName)) {
@@ -167,9 +175,31 @@ async function postResult({ counter, target, counterTotal, targetTotal, success,
           <h3>${t("Chat.WildMagicTitle")}</h3>
           <p>${t("Chat.WildMagicBody")}</p>
         </div>`
-    }, counter.rollMode);
+    }, "publicroll");
     await ChatMessage.create(wildData);
   }
+}
+
+async function executeTargetRoll(target) {
+  if (target.sourceType === "scroll") {
+    const total = 7 + target.spellLevel + target.creatorMod + target.creatorProf;
+    await postFixedTarget(target, total);
+    return { total };
+  }
+
+  const targetActor = getActorFromUuidSync(target.actorUuid);
+  const targetRoll = await new Roll("1d20 + @slot + @mod + @prof", {
+    slot: target.spellLevel,
+    mod: target.abilityMod,
+    prof: target.proficiency
+  }).evaluate();
+  await postRoll(targetRoll, {
+    actor: targetActor,
+    alias: target.actorName,
+    flavor: tf("Chat.TargetRoll", { spell: target.spellName, actor: target.actorName }),
+    rollMode: target.rollMode
+  });
+  return { total: targetRoll.total };
 }
 
 async function resolveHomebrew(counter, target) {
@@ -187,25 +217,9 @@ async function resolveHomebrew(counter, target) {
     rollMode: counter.rollMode
   });
 
-  let targetTotal;
-  if (target.sourceType === "scroll") {
-    targetTotal = 7 + target.spellLevel + target.creatorMod + target.creatorProf;
-    await postFixedTarget(target, targetTotal, counter.rollMode);
-  } else {
-    const targetActor = getActorFromUuidSync(target.actorUuid);
-    const targetRoll = await new Roll("1d20 + @slot + @mod + @prof", {
-      slot: target.spellLevel,
-      mod: target.abilityMod,
-      prof: target.proficiency
-    }).evaluate();
-    targetTotal = targetRoll.total;
-    await postRoll(targetRoll, {
-      actor: targetActor,
-      alias: target.actorName,
-      flavor: tf("Chat.TargetRoll", { spell: target.spellName, actor: target.actorName }),
-      rollMode: counter.rollMode
-    });
-  }
+  const targetResult = await requestRemote("execute-target-roll", target.rollUserId, { target });
+  if (!targetResult) throw new Error(t("Notifications.TargetRollFailed"));
+  const targetTotal = Number(targetResult.total);
 
   await postResult({
     counter,
@@ -320,7 +334,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.1.2"
+    version: "0.1.3"
   };
 
   debug("Ready");

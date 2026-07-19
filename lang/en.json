@@ -39,6 +39,7 @@
       "SlotStandard": "Level {level} spell slot ({value} available)",
       "SlotPact": "Level {level} Pact Magic slot ({value} available)",
       "RollMode": "Roll mode",
+      "TargetRollMode": "Target roll mode",
       "RollModePublic": "Public Roll",
       "RollModePrivate": "Private GM Roll",
       "RollModeBlind": "Blind GM Roll",
@@ -78,6 +79,7 @@
       "AutomaticSuccess": "The Counterspell slot is at least as high as the target spell. The spell is countered automatically.",
       "OfficialResult": "Counterspell result: {counterTotal}; DC: {dc}.",
       "OpposedResult": "Counterspell result: {counterTotal}; target spell result: {targetTotal}.",
+      "HiddenResults": "At least one side used a hidden roll. The outcome is public, but the hidden numerical results remain visible only according to their selected roll modes.",
       "TieRule": "In the opposed-roll rule, a tie favors the original spell.",
       "WildMagicTitle": "Wild Magic",
       "WildMagicBody": "Counterspelling another Counterspell triggers a Wild Magic effect. The GM determines the effect."
@@ -93,6 +95,7 @@
       "RequestTimeout": "The Counterspell request expired after three minutes.",
       "CancelledByGM": "The GM cancelled the Counterspell workflow.",
       "CancelledByTarget": "The target player cancelled the Counterspell workflow.",
+      "TargetRollFailed": "The target spell roll could not be completed.",
       "GenericError": "The Counterspell workflow encountered an error."
     }
   }
