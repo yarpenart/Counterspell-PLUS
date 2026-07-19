@@ -216,7 +216,7 @@ export async function promptGMTarget(counter) {
   casterOptions = searchableEntries(casterOptions);
 
   const content = `
-    <div class="csp-form csp-target-dialog-body">
+    <div class="csp-form">
       <div class="csp-panel">
         <h3>${t("Dialog.CounterspellData")}</h3>
         <dl>

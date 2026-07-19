@@ -1,5 +1,9 @@
 .counterspell-plus-dialog .window-content {
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1rem;
+  scrollbar-gutter: stable;
 }
 
 .counterspell-plus-dialog .csp-form {
@@ -89,13 +93,6 @@
 
 .counterspell-plus-dialog .csp-target-search select {
   min-height: 8rem;
-}
-
-.counterspell-plus-dialog .csp-form.csp-target-dialog-body {
-  max-height: calc(100vh - 12rem);
-  overflow-y: auto;
-  padding-right: 0.4rem;
-  scrollbar-gutter: stable;
 }
 
 .counterspell-plus-dialog .csp-target-search small {
