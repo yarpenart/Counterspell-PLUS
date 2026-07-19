@@ -2,7 +2,7 @@
 
 Automation for **Counterspell** and **Dispel Magic** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.2.9
+## Version 0.2.10
 
 - Independent world settings for Counterspell and Dispel Magic: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.

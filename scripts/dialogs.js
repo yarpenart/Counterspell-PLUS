@@ -216,7 +216,7 @@ export async function promptGMTarget(counter) {
   casterOptions = searchableEntries(casterOptions);
 
   const content = `
-    <div class="csp-form">
+    <div class="csp-form csp-compact-target">
       <div class="csp-panel">
         <h3>${t("Dialog.CounterspellData")}</h3>
         <dl>
@@ -230,7 +230,7 @@ export async function promptGMTarget(counter) {
         <label>${t("Dialog.TargetCaster")}</label>
         <div class="form-fields csp-target-search">
           <input type="search" data-csp-target-filter placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
-          <select name="actorUuid" data-csp-target-select size="6" required>${selectOptions(casterOptions, "key", "searchLabel")}</select>
+          <select name="actorUuid" data-csp-target-select size="4" required>${selectOptions(casterOptions, "key", "searchLabel")}</select>
           <small data-csp-target-count></small>
         </div>
       </div>
@@ -288,12 +288,14 @@ export async function promptGMTarget(counter) {
     title: t("Dialog.GMTargetTitle"),
     content,
     confirmLabel: t("Dialog.Continue"),
+    width: 520,
     onRender: activateTargetSearch
   });
   if (!result) return null;
 
   const targetChoice = String(result.actorUuid ?? "");
-  if (!casterOptions.some(entry => entry.key === targetChoice)) {
+  const selectedTarget = casterOptions.find(entry => entry.key === targetChoice);
+  if (!selectedTarget) {
     ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
     return null;
   }

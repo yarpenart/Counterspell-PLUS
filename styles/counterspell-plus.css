@@ -88,7 +88,16 @@
 }
 
 .counterspell-plus-dialog .csp-target-search select {
-  min-height: 8rem;
+  min-height: 5.5rem;
+  max-height: 6.5rem;
+}
+
+.counterspell-plus-dialog .csp-form.csp-compact-target {
+  gap: 0.55rem;
+}
+
+.counterspell-plus-dialog .csp-compact-target .csp-panel {
+  padding: 0.55rem 0.65rem;
 }
 
 .counterspell-plus-dialog .csp-target-search small {
