@@ -11,6 +11,14 @@
         "Homebrew": "Homebrew: opposed rolls",
         "Official2014": "Official D&D 2014"
       },
+      "ScrollDefenseBase": {
+        "Name": "Spell scroll defense base",
+        "Hint": "Base added to the stored spell level and creator values for a scroll. Default: 7. Any numeric value is allowed."
+      },
+      "GlyphDefenseBase": {
+        "Name": "Spell Glyph defense base",
+        "Hint": "Base added to the stored spell level and creator values for a Glyph. Default: 10. Any numeric value is allowed."
+      },
       "Names": {
         "Name": "Recognized Counterspell names",
         "Hint": "Comma-separated spell names. Parenthetical suffixes such as Counterspell (Alternate) are recognized automatically."

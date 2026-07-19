@@ -2,7 +2,7 @@
 
 Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system.
 
-## Version 0.1.6 scope
+## Version 0.1.7 scope
 
 - Intercepts Counterspell use from a D&D5e spell activity.
 - Lets the Counterspell caster choose their spellcasting ability, actual slot resource and roll mode.
@@ -19,6 +19,7 @@ Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system
 - Advantage and disadvantage cancel each other, resulting in a normal `1d20` roll.
 - Natural 20 and natural 1 on the kept d20 are highlighted using the D&D5e system's standard critical and fumble colors.
 - Supports a Spell Glyph source with a fixed homebrew defense based on the glyph creator's values.
+- Lets the GM independently configure the scroll and Glyph defense bases in the module's world settings.
 - Uses ordinary Foundry chat rolls, so Dice So Nice animates them automatically when installed and enabled.
 - Supports Polish and English Foundry interface languages.
 
@@ -48,7 +49,7 @@ Counterspell with advantage: 2d20kh + actual slot level + ability modifier + pro
 Spell scroll:
 
 ```text
-Scroll defense = 7 + spell level + creator ability modifier + creator proficiency bonus
+Scroll defense = configured scroll base (default 7) + spell level + creator ability modifier + creator proficiency bonus
 ```
 
 Only the Counterspell caster rolls against this fixed result.
@@ -56,10 +57,12 @@ Only the Counterspell caster rolls against this fixed result.
 Spell Glyph:
 
 ```text
-Glyph defense = 10 + stored spell level + creator ability modifier + creator proficiency bonus
+Glyph defense = configured Glyph base (default 10) + stored spell level + creator ability modifier + creator proficiency bonus
 ```
 
 Like a scroll, a glyph does not roll a d20. The Counterspell caster rolls against its fixed defense.
+
+The GM can set either base to any numeric value in **Configure Settings → Module Settings → Counterspell PLUS**. The configured values are read when the roll is resolved.
 
 Counterspelling another Counterspell also creates a Wild Magic chat message.
 
@@ -90,7 +93,7 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 
 ## Current limitations
 
-- Version 0.1.6 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
+- Version 0.1.7 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
 - The original spell is assumed to have already been cast, so this module does not consume its slot.
 - The module currently identifies the target spell and its slot level through participant dialogs rather than reading an interrupted cast automatically.
 

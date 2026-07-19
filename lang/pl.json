@@ -11,6 +11,14 @@
         "Homebrew": "Homebrew: rzuty przeciwstawne",
         "Official2014": "Oficjalne D&D 2014"
       },
+      "ScrollDefenseBase": {
+        "Name": "Baza obrony zwoju zaklęcia",
+        "Hint": "Baza dodawana do poziomu zaklęcia i danych twórcy zwoju. Domyślnie: 7. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "GlyphDefenseBase": {
+        "Name": "Baza obrony Spell Glyph",
+        "Hint": "Baza dodawana do poziomu zaklęcia i danych twórcy glifu. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+      },
       "Names": {
         "Name": "Rozpoznawane nazwy Counterspella",
         "Hint": "Nazwy oddzielone przecinkami. Dopiski w nawiasach, np. Counterspell (Alternate), są rozpoznawane automatycznie."

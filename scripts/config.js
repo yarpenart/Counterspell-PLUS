@@ -31,6 +31,26 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "scrollDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 7,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "glyphDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.GlyphDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.GlyphDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 10,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "counterspellNames", {
     name: "COUNTERSPELL_PLUS.Settings.Names.Name",
     hint: "COUNTERSPELL_PLUS.Settings.Names.Hint",

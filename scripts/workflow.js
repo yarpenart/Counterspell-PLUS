@@ -105,6 +105,14 @@ function highlightNaturalD20(message, html) {
   else if (natural === 1) total.classList.add("fumble");
 }
 
+function getFixedDefenseBase(sourceType) {
+  const isGlyph = sourceType === "glyph";
+  const setting = isGlyph ? "glyphDefenseBase" : "scrollDefenseBase";
+  const fallback = isGlyph ? 10 : 7;
+  const configured = Number(game.settings.get(MODULE_ID, setting));
+  return Number.isFinite(configured) ? configured : fallback;
+}
+
 async function handleSocket(message) {
   if (!message || message.recipientId !== game.user.id) return;
 
@@ -167,8 +175,7 @@ async function postRoll(roll, { actor, alias, flavor, rollMode }) {
   return roll.toMessage(messageData, { rollMode });
 }
 
-async function postFixedTarget(target, total) {
-  const base = target.sourceType === "glyph" ? 10 : 7;
+async function postFixedTarget(target, total, base) {
   const title = target.sourceType === "glyph" ? t("Chat.GlyphDefense") : t("Chat.ScrollDefense");
   const messageData = applyRollMode({
     speaker: speakerFor(null, target.actorName),
@@ -226,9 +233,9 @@ async function postResult({ counter, target, counterTotal, targetTotal, success,
 
 async function executeTargetRoll(target) {
   if (["scroll", "glyph"].includes(target.sourceType)) {
-    const base = target.sourceType === "glyph" ? 10 : 7;
+    const base = getFixedDefenseBase(target.sourceType);
     const total = base + target.spellLevel + target.creatorMod + target.creatorProf;
-    await postFixedTarget(target, total);
+    await postFixedTarget(target, total, base);
     return { total };
   }
 
@@ -390,7 +397,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.1.6"
+    version: "0.1.7"
   };
 
   debug("Ready");
