@@ -168,12 +168,14 @@ async function postRoll(roll, { actor, alias, flavor, rollMode }) {
 }
 
 async function postFixedTarget(target, total) {
+  const base = target.sourceType === "glyph" ? 10 : 7;
+  const title = target.sourceType === "glyph" ? t("Chat.GlyphDefense") : t("Chat.ScrollDefense");
   const messageData = applyRollMode({
     speaker: speakerFor(null, target.actorName),
     content: `
       <div class="counterspell-plus-chat csp-fixed">
-        <h3>${t("Chat.ScrollDefense")}</h3>
-        <p class="csp-formula">7 + ${target.spellLevel} + ${target.creatorMod} + ${target.creatorProf} = <strong>${total}</strong></p>
+        <h3>${title}</h3>
+        <p class="csp-formula">${base} + ${target.spellLevel} + ${target.creatorMod} + ${target.creatorProf} = <strong>${total}</strong></p>
       </div>`
   }, target.rollMode);
   return ChatMessage.create(messageData);
@@ -223,8 +225,9 @@ async function postResult({ counter, target, counterTotal, targetTotal, success,
 }
 
 async function executeTargetRoll(target) {
-  if (target.sourceType === "scroll") {
-    const total = 7 + target.spellLevel + target.creatorMod + target.creatorProf;
+  if (["scroll", "glyph"].includes(target.sourceType)) {
+    const base = target.sourceType === "glyph" ? 10 : 7;
+    const total = base + target.spellLevel + target.creatorMod + target.creatorProf;
     await postFixedTarget(target, total);
     return { total };
   }
@@ -387,7 +390,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.1.5"
+    version: "0.1.6"
   };
 
   debug("Ready");
