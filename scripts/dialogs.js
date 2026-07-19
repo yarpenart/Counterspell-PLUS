@@ -29,6 +29,17 @@ function levelOptions(selected, minimum = 0) {
     .join("");
 }
 
+function defaultRollMode() {
+  const configured = game.settings.get("core", "rollMode");
+  return ["publicroll", "gmroll", "blindroll"].includes(configured)
+    ? configured
+    : "publicroll";
+}
+
+function rollModeLabel(mode) {
+  return getRollModeEntries(mode).find(entry => entry.key === mode)?.label ?? mode;
+}
+
 async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 560 }) {
   return DialogV2.wait({
     window: { title },
@@ -65,10 +76,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
     return null;
   }
 
-  const coreRollMode = game.settings.get("core", "rollMode");
-  const rollMode = ["publicroll", "gmroll", "blindroll"].includes(coreRollMode)
-    ? coreRollMode
-    : "publicroll";
+  const rollMode = defaultRollMode();
 
   const content = `
     <div class="csp-form">
@@ -131,6 +139,7 @@ export async function promptGMTarget(counter) {
 
   const genericActor = casters[0].actor;
   const abilities = getAbilityEntries(genericActor, getDefaultAbility(genericActor));
+  const targetRollMode = defaultRollMode();
   const casterOptions = casters.map((entry, index) => ({
     key: entry.uuid,
     label: entry.name,
@@ -172,6 +181,10 @@ export async function promptGMTarget(counter) {
       <div class="form-group">
         <label>${t("Dialog.TargetAbility")}</label>
         <div class="form-fields"><select name="ability">${selectOptions(abilities)}</select></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.TargetRollMode")}</label>
+        <div class="form-fields"><select name="targetRollMode">${selectOptions(getRollModeEntries(targetRollMode))}</select></div>
       </div>
       <div class="form-group stacked">
         <label class="checkbox">
@@ -223,7 +236,9 @@ export async function promptGMTarget(counter) {
     abilityMod: computed.abilityMod,
     proficiency: computed.proficiency,
     creatorMod: parseNumber(result.creatorMod, 0),
-    creatorProf: parseNumber(result.creatorProf, 0)
+    creatorProf: parseNumber(result.creatorProf, 0),
+    rollMode: String(result.targetRollMode),
+    rollUserId: game.user.id
   };
 }
 
@@ -236,6 +251,7 @@ export async function promptTargetPlayer(target) {
 
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
+  const rollMode = defaultRollMode();
   const content = `
     <div class="csp-form">
       <div class="csp-summary">
@@ -254,6 +270,10 @@ export async function promptTargetPlayer(target) {
         <label>${t("Dialog.Ability")}</label>
         <div class="form-fields"><select name="ability">${selectOptions(abilities)}</select></div>
       </div>
+      <div class="form-group">
+        <label>${t("Dialog.RollMode")}</label>
+        <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(rollMode))}</select></div>
+      </div>
       <p class="hint">${t("Dialog.PlayerDataHint")}</p>
     </div>`;
 
@@ -269,7 +289,9 @@ export async function promptTargetPlayer(target) {
     ...target,
     ...getAbilityData(actor, ability),
     spellName: String(result.spellName || target.spellName),
-    spellLevel: parseNumber(result.spellLevel, target.spellLevel)
+    spellLevel: parseNumber(result.spellLevel, target.spellLevel),
+    rollMode: String(result.rollMode),
+    rollUserId: game.user.id
   };
 }
 
@@ -288,6 +310,7 @@ export async function promptGMReview(counter, target) {
             <dt>${t("Dialog.AbilityModifier")}</dt><dd>${counter.abilityMod >= 0 ? "+" : ""}${counter.abilityMod}</dd>
             <dt>${t("Dialog.Proficiency")}</dt><dd>${counter.proficiency >= 0 ? "+" : ""}${counter.proficiency}</dd>
             <dt>${t("Dialog.SlotLevel")}</dt><dd>${counter.slotLevel}</dd>
+            <dt>${t("Dialog.RollMode")}</dt><dd>${escapeHTML(rollModeLabel(counter.rollMode))}</dd>
           </dl>
         </div>
         <div class="csp-panel">
@@ -295,6 +318,7 @@ export async function promptGMReview(counter, target) {
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(target.actorName)}</dd>
             <dt>${t("Dialog.SourceType")}</dt><dd>${escapeHTML(isScroll ? t("Dialog.Scroll") : t("Dialog.NormalSpell"))}</dd>
+            <dt>${t("Dialog.RollMode")}</dt><dd>${escapeHTML(rollModeLabel(target.rollMode))}</dd>
           </dl>
         </div>
       </div>
