@@ -163,20 +163,28 @@ export function getActorFromUuidSync(uuid) {
 
 export function getSceneCasterEntries() {
   const tokens = canvas?.tokens?.placeables ?? [];
-  if (tokens.length) {
-    return tokens
-      .map(token => ({
-        uuid: token.document.uuid,
-        name: token.name,
-        actor: token.actor
-      }))
-      .filter(entry => entry.actor)
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  return game.actors
-    .map(actor => ({ uuid: actor.uuid, name: actor.name, actor }))
+  const tokenEntries = tokens
+    .map(token => ({
+      uuid: token.document.uuid,
+      name: token.name,
+      actor: token.actor,
+      kind: "token"
+    }))
+    .filter(entry => entry.actor)
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const actorIdsOnScene = new Set(tokenEntries.map(entry => entry.actor.id));
+  const actorEntries = game.actors
+    .filter(actor => !actorIdsOnScene.has(actor.id))
+    .map(actor => ({
+      uuid: actor.uuid,
+      name: actor.name,
+      actor,
+      kind: "actor"
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return [...tokenEntries, ...actorEntries];
 }
 
 export function getActiveOwner(actor) {

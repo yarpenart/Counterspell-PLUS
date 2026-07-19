@@ -204,12 +204,14 @@ export async function promptGMTarget(counter) {
     : "";
   let casterOptions = casters.map((entry, index) => ({
     key: entry.uuid,
-    label: entry.name,
+    label: tf(entry.kind === "token" ? "Dialog.TargetTokenEntry" : "Dialog.TargetActorEntry", { name: entry.name }),
+    name: entry.name,
+    kind: entry.kind,
     selected: index === 0
   }));
   casterOptions.push(
-    { key: SPECIAL_TARGET_UNKNOWN, label: t("Dialog.SpecialUnknown"), selected: false },
-    { key: SPECIAL_TARGET_GLYPH, label: t("Dialog.SpecialGlyph"), selected: false }
+    { key: SPECIAL_TARGET_UNKNOWN, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }), name: t("Dialog.SpecialUnknown"), kind: "special", selected: false },
+    { key: SPECIAL_TARGET_GLYPH, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialGlyph") }), name: t("Dialog.SpecialGlyph"), kind: "special", selected: false }
   );
   casterOptions = searchableEntries(casterOptions);
 
@@ -313,8 +315,9 @@ export async function promptGMTarget(counter) {
     : { ability, abilityMod: manualMod, proficiency: manualProf };
   const sourceType = isGlyphTarget ? "glyph" : String(result.sourceType);
   const selectedRollMode = String(result.targetRollMode);
-  const actorName = actor?.name
-    ?? (isGlyphTarget ? t("Dialog.SpecialGlyph") : t("Dialog.SpecialUnknown"));
+  const actorName = actor
+    ? selectedTarget.name
+    : (isGlyphTarget ? t("Dialog.SpecialGlyph") : t("Dialog.SpecialUnknown"));
 
   return {
     actorUuid: actor ? targetChoice : "",

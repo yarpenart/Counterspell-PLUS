@@ -177,13 +177,15 @@ export async function promptGMDispelSetup(dispeller) {
   }
   let targetOptions = targets.map((entry, index) => ({
     key: entry.uuid,
-    label: entry.name,
+    label: tf(entry.kind === "token" ? "Dialog.TargetTokenEntry" : "Dialog.TargetActorEntry", { name: entry.name }),
+    name: entry.name,
+    kind: entry.kind,
     selected: index === 0
   }));
   targetOptions.push(
-    { key: SPECIAL_TARGET_UNKNOWN, label: t("Dialog.SpecialUnknown"), selected: false },
-    { key: SPECIAL_TARGET_GLYPH, label: t("Dialog.SpecialGlyph"), selected: false },
-    { key: SPECIAL_TARGET_OBJECT, label: t("Dialog.SpecialObject"), selected: false }
+    { key: SPECIAL_TARGET_UNKNOWN, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }), name: t("Dialog.SpecialUnknown"), kind: "special", selected: false },
+    { key: SPECIAL_TARGET_GLYPH, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialGlyph") }), name: t("Dialog.SpecialGlyph"), kind: "special", selected: false },
+    { key: SPECIAL_TARGET_OBJECT, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialObject") }), name: t("Dialog.SpecialObject"), kind: "special", selected: false }
   );
   targetOptions = searchableEntries(targetOptions);
 
@@ -248,7 +250,7 @@ export async function promptGMDispelSetup(dispeller) {
   return {
     targetUuid: target ? targetChoice : "",
     targetType,
-    targetName: target?.name ?? specialLabels[targetChoice] ?? t("Dialog.SpecialUnknown"),
+    targetName: target ? selectedTarget.name : specialLabels[targetChoice] ?? t("Dialog.SpecialUnknown"),
     effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
     defenseRollMode: String(result.defenseRollMode),
     defenseUserId: game.user.id,
