@@ -77,6 +77,16 @@ export async function promptCounterspeller(actor, item, ruleset) {
   }
 
   const rollMode = defaultRollMode();
+  const knowledgeField = ruleset === RULESETS.HOMEBREW
+    ? `
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="knowsTargetSpell">
+          ${t("Dialog.KnowsTargetSpell")}
+        </label>
+        <p class="hint">${t("Dialog.KnowsTargetSpellHint")}</p>
+      </div>`
+    : "";
 
   const content = `
     <div class="csp-form">
@@ -102,6 +112,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
           <select name="rollMode">${selectOptions(getRollModeEntries(rollMode))}</select>
         </div>
       </div>
+      ${knowledgeField}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
     </div>`;
 
@@ -122,6 +133,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
     slotLevel: selectedSlot.level,
     slotLabel: selectedSlot.label,
     rollMode: String(result.rollMode),
+    knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
@@ -299,6 +311,16 @@ export async function promptGMReview(counter, target) {
   const isScroll = target.sourceType === "scroll";
   const mod = isScroll ? target.creatorMod : target.abilityMod;
   const prof = isScroll ? target.creatorProf : target.proficiency;
+  const knowledgeField = counter.ruleset === RULESETS.HOMEBREW
+    ? `
+      <div class="form-group stacked">
+        <label class="checkbox">
+          <input type="checkbox" name="knowsTargetSpell"${counter.knowsTargetSpell ? " checked" : ""}>
+          ${t("Dialog.GMConfirmKnowledge")}
+        </label>
+        <p class="hint">${t("Dialog.GMConfirmKnowledgeHint")}</p>
+      </div>`
+    : "";
 
   const content = `
     <div class="csp-form">
@@ -338,6 +360,7 @@ export async function promptGMReview(counter, target) {
         <label>${isScroll ? t("Dialog.CreatorProficiency") : t("Dialog.Proficiency")}</label>
         <div class="form-fields"><input type="number" name="targetProf" value="${prof}" min="0" step="1"></div>
       </div>
+      ${knowledgeField}
       <p class="hint">${t("Dialog.GMReviewHint")}</p>
     </div>`;
 
@@ -360,5 +383,9 @@ export async function promptGMReview(counter, target) {
     reviewed.abilityMod = parseNumber(result.targetMod, target.abilityMod);
     reviewed.proficiency = parseNumber(result.targetProf, target.proficiency);
   }
-  return reviewed;
+  const reviewedCounter = {
+    ...counter,
+    knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell)
+  };
+  return { counter: reviewedCounter, target: reviewed };
 }

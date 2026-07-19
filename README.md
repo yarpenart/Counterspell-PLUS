@@ -2,7 +2,7 @@
 
 Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system.
 
-## Version 0.1.3 scope
+## Version 0.1.4 scope
 
 - Intercepts Counterspell use from a D&D5e spell activity.
 - Lets the Counterspell caster choose their spellcasting ability, actual slot resource and roll mode.
@@ -13,6 +13,8 @@ Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system
 - Supports standard and Pact Magic spell slots and consumes the selected Counterspell slot once the GM approves the roll.
 - Each side independently chooses public, private GM or blind GM roll visibility.
 - The final success or failure is public, while hidden numerical results remain hidden.
+- In the homebrew rules, the Counterspell caster can declare that they know the target spell; the GM confirms or corrects this before rolling.
+- Knowing the target spell grants advantage on the Counterspell roll, except when Counterspell targets another Counterspell.
 - Uses ordinary Foundry chat rolls, so Dice So Nice animates them automatically when installed and enabled.
 - Supports Polish and English Foundry interface languages.
 
@@ -30,6 +32,12 @@ Counterspell:    1d20 + actual slot level + ability modifier + proficiency bonus
 ```
 
 Counterspell succeeds only if its result is higher. A tie favors the original spell.
+
+If the Counterspell caster knows the target spell and the target spell is not Counterspell, the Counterspell roll is made with advantage:
+
+```text
+Counterspell with advantage: 2d20kh + actual slot level + ability modifier + proficiency bonus
+```
 
 Spell scroll:
 
@@ -66,7 +74,7 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 
 ## Current limitations
 
-- Version 0.1.3 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
+- Version 0.1.4 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
 - The original spell is assumed to have already been cast, so this module does not consume its slot.
 - The module currently identifies the target spell and its slot level through participant dialogs rather than reading an interrupted cast automatically.
 
