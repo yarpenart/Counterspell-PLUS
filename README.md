@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic** and **Remove Curse** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.3.2
+## Version 0.3.3
 
 - Independent world settings for Counterspell, Dispel Magic and Remove Curse: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -21,6 +21,7 @@ Automation for **Counterspell**, **Dispel Magic** and **Remove Curse** in Foundr
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
 - The GM can mark a Counterspell, Dispel Magic or Remove Curse caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
 - English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
+- The primary active GM automatically receives a player-visible `Counterspell PLUS — Rules Reference` Journal Entry with two pages: Official 2014 Rules and the complete Homebrew Rules. The module updates its managed pages when relevant world settings change.
 
 ## Counterspell
 
@@ -128,6 +129,15 @@ Open **Configure Settings → Module Settings → Counterspell PLUS** to configu
 - Independent Special Spellcaster minimum d20 values for Counterspell, Dispel Magic and Remove Curse.
 
 Every base accepts any numeric value.
+
+## Rules Journal
+
+On world startup, the primary active GM creates one shared Journal Entry named **Counterspell PLUS — Rules Reference**. Its two player-visible pages provide a sequential reference for:
+
+- Official 2014 Counterspell, Dispel Magic and Remove Curse rules, including a clear note about the module's requested Dispel-style Official Remove Curse procedure.
+- All Homebrew formulas, ties, known-spell benefits, multiple-effect bonuses, Scroll and Glyph handling, proficiency, Abjurer, Special Spellcaster, roll visibility, natural d20 colors and configurable Remove Curse outcome bands.
+
+The entry is identified with module flags, so it is not duplicated on later startups. The module updates only its two managed pages when the reference content or relevant world settings change.
 
 ## Recognized default names
 

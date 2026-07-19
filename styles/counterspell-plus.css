@@ -243,6 +243,71 @@
   border-color: #3c9440;
 }
 
+.counterspell-plus-rules {
+  line-height: 1.5;
+}
+
+.counterspell-plus-rules h1 {
+  border-bottom: 2px solid var(--color-border-highlight, #9f6b2f);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+}
+
+.counterspell-plus-rules h2 {
+  border-bottom: 1px solid var(--color-border-light-primary, #777);
+  margin-top: 1.5rem;
+  padding-bottom: 0.2rem;
+}
+
+.counterspell-plus-rules h3 {
+  margin-top: 1rem;
+}
+
+.counterspell-plus-rules li + li {
+  margin-top: 0.3rem;
+}
+
+.counterspell-plus-rules table {
+  margin: 0.75rem 0;
+  width: 100%;
+}
+
+.counterspell-plus-rules th,
+.counterspell-plus-rules td {
+  padding: 0.35rem 0.5rem;
+  vertical-align: top;
+}
+
+.counterspell-plus-rules .csp-rules-lead {
+  font-size: 1.05em;
+}
+
+.counterspell-plus-rules .csp-rules-formula,
+.counterspell-plus-rules .csp-rules-note {
+  border: 1px solid var(--color-border-light-primary, #777);
+  border-radius: 5px;
+  margin: 0.75rem 0;
+  padding: 0.65rem 0.8rem;
+}
+
+.counterspell-plus-rules .csp-rules-formula {
+  background: color-mix(in srgb, var(--color-bg-option, #222) 10%, transparent);
+  font-family: var(--font-mono, monospace);
+}
+
+.counterspell-plus-rules .csp-rules-note {
+  background: color-mix(in srgb, #b36b25 12%, transparent);
+  border-color: #b36b25;
+}
+
+.counterspell-plus-rules .csp-rules-source {
+  border-top: 1px solid var(--color-border-light-primary, #777);
+  font-size: 0.85em;
+  margin-top: 1.5rem;
+  opacity: 0.8;
+  padding-top: 0.5rem;
+}
+
 @media (max-width: 520px) {
   .counterspell-plus-dialog .csp-grid {
     grid-template-columns: 1fr;
