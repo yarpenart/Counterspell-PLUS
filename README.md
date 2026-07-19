@@ -2,7 +2,7 @@
 
 Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system.
 
-## Version 0.1.1 scope
+## Version 0.1.2 scope
 
 - Intercepts Counterspell use from a D&D5e spell activity.
 - Lets the Counterspell caster choose their spellcasting ability, actual slot resource and roll mode.
