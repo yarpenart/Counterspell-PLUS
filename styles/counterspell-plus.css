@@ -16,6 +16,10 @@
   gap: 0.75rem;
 }
 
+.counterspell-plus-dialog [hidden] {
+  display: none !important;
+}
+
 .counterspell-plus-dialog .csp-summary,
 .counterspell-plus-dialog .csp-panel {
   border: 1px solid var(--color-border-light-primary);
@@ -101,6 +105,48 @@
 
 .counterspell-plus-dialog .csp-target-search small {
   opacity: 0.75;
+}
+
+.counterspell-plus-dialog .csp-restoration-options {
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.counterspell-plus-dialog .csp-restoration-option {
+  align-items: center;
+  border: 1px solid var(--color-border-light-primary);
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.counterspell-plus-dialog .csp-restoration-option:has(input:checked) {
+  background: color-mix(in srgb, #2f7d32 15%, transparent);
+  border-color: #3c9440;
+}
+
+.counterspell-plus-dialog .csp-material-note,
+.counterspell-plus-chat .csp-material-note {
+  border-left: 4px solid #b36b25;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+}
+
+.counterspell-plus-chat .csp-restoration-result .csp-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.counterspell-plus-chat .csp-restoration-result .csp-result span {
+  font-size: 0.8em;
+  font-weight: 400;
 }
 
 .counterspell-plus-chat h3 {
@@ -321,5 +367,9 @@
   .counterspell-plus-chat .csp-dispel-result > div:last-child,
   .counterspell-plus-chat .csp-remove-curse-result > div:last-child {
     text-align: left;
+  }
+
+  .counterspell-plus-dialog .csp-restoration-options {
+    grid-template-columns: 1fr;
   }
 }

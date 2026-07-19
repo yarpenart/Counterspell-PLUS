@@ -155,7 +155,7 @@ async function handleSocket(message) {
         result = await executeTargetRoll(message.payload.target);
         break;
       default:
-        if (["dispel-", "remove-curse-"].some(prefix => String(message.type).startsWith(prefix))) return;
+        if (["dispel-", "remove-curse-", "restoration-"].some(prefix => String(message.type).startsWith(prefix))) return;
         debug("Unknown socket message", message.type);
     }
     await answerRequest(message, result);
@@ -450,7 +450,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.3.3"
+    version: "0.4.0"
   };
 
   debug("Ready");

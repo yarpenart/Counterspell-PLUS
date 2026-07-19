@@ -83,6 +83,40 @@ export function isRemoveCurseActivity(activity) {
   return configured.some(name => itemName === name || itemName.startsWith(`${name} (`));
 }
 
+function matchesConfiguredItemName(item, setting) {
+  const configured = String(game.settings.get(MODULE_ID, setting) ?? "")
+    .split(",")
+    .map(normalizeName)
+    .filter(Boolean);
+  const itemName = normalizeName(item?.name);
+  return configured.some(name => itemName === name || itemName.startsWith(`${name} (`));
+}
+
+export function getRestorationActivityType(activity) {
+  if (!game.settings.get(MODULE_ID, "restorationEnabled")) return null;
+
+  const item = getActivityItem(activity);
+  if (!item || item.type !== "spell") return null;
+
+  const ruleset = game.settings.get(MODULE_ID, "restorationRuleset");
+  const identifier = normalizeName(item.system?.identifier).replaceAll("-", "");
+
+  if (ruleset === "official2014") {
+    if (identifier === "lesserrestoration" || matchesConfiguredItemName(item, "lesserRestorationNames")) {
+      return "lesser";
+    }
+    if (identifier === "greaterrestoration" || matchesConfiguredItemName(item, "greaterRestorationNames")) {
+      return "greater";
+    }
+    return null;
+  }
+
+  if (identifier === "restoration" || matchesConfiguredItemName(item, "restorationNames")) {
+    return "restoration";
+  }
+  return null;
+}
+
 export function isCounterspellName(name) {
   const normalized = normalizeName(name);
   return normalized.startsWith("counterspell")

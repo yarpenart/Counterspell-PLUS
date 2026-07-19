@@ -1,8 +1,8 @@
 {
   "id": "counterspell-plus",
   "title": "Counterspell PLUS",
-  "description": "Automated Counterspell, Dispel Magic and Remove Curse resolution for D&D5e, with selectable homebrew and official 2014 rules.",
-  "version": "0.3.3",
+  "description": "Automated Counterspell, Dispel Magic, Remove Curse and Restoration resolution for D&D5e, with selectable homebrew and official 2014 rules.",
+  "version": "0.4.0",
   "authors": [
     {
       "name": "YarpenArt"
@@ -51,6 +51,6 @@
   },
   "url": "https://github.com/yarpenart/Counterspell-PLUS",
   "manifest": "https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.json",
-  "download": "https://github.com/yarpenart/Counterspell-PLUS/releases/download/v0.3.3/counterspell-plus.zip",
+  "download": "https://github.com/yarpenart/Counterspell-PLUS/releases/download/v0.4.0/counterspell-plus.zip",
   "license": "MIT"
 }

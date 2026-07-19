@@ -91,13 +91,47 @@
         "Name": "Recognized Remove Curse names",
         "Hint": "Comma-separated curse names. Parenthetical suffixes are recognized automatically."
       },
+      "RestorationEnabled": {
+        "Name": "Enable Restoration automation",
+        "Hint": "Enables Lesser Restoration and Greater Restoration in Official 2014 mode, or Restoration in Homebrew mode."
+      },
+      "RestorationRuleset": {
+        "Name": "Restoration rules",
+        "Hint": "Choose which restoration spells Counterspell PLUS recognizes and automates.",
+        "Homebrew": "Homebrew: Restoration",
+        "Official2014": "Official 2014: Lesser & Greater Restoration"
+      },
+      "RestorationSpecialMinimum": {
+        "Name": "Restoration: Special Spellcaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Restoration caster as a Special Spellcaster. Range: 1–20. Default: 15."
+      },
+      "RestorationCurseDefenseBase": {
+        "Name": "Restoration: One Curse defense base",
+        "Hint": "Homebrew base for removing One Curse with 5th-level Restoration. Default: 8."
+      },
+      "RestorationAttunementDefenseBase": {
+        "Name": "Restoration: cursed-item attunement defense base",
+        "Hint": "Homebrew base for removing Attunement to a Cursed Item with 5th-level Restoration. Default: 7."
+      },
+      "LesserRestorationNames": {
+        "Name": "Recognized Lesser Restoration names",
+        "Hint": "Comma-separated spell names used in Official 2014 mode. Parenthetical suffixes are recognized automatically."
+      },
+      "GreaterRestorationNames": {
+        "Name": "Recognized Greater Restoration names",
+        "Hint": "Comma-separated spell names used in Official 2014 mode. Parenthetical suffixes are recognized automatically."
+      },
+      "RestorationNames": {
+        "Name": "Recognized Restoration names",
+        "Hint": "Comma-separated spell names used in Homebrew mode. Parenthetical suffixes are recognized automatically."
+      },
       "IncludeProficiency": {
         "Name": "Homebrew: add proficiency bonus",
-        "Hint": "When enabled, proficiency is added to all homebrew Counterspell, Dispel Magic and Remove Curse rolls and passive or fixed defenses. Official 2014 remains unchanged."
+        "Hint": "When enabled, proficiency is added to all homebrew Counterspell, Dispel Magic, Remove Curse and Restoration rolls and passive or fixed defenses. Official 2014 remains unchanged."
       },
       "AbjurerEnabled": {
         "Name": "Homebrew: enable Abjurer option",
-        "Hint": "Shows an Abjurer declaration for Counterspell, Dispel Magic and Remove Curse. An Abjurer adds one extra proficiency bonus to their caster roll: double proficiency when proficiency is normally included, or single proficiency when it is disabled. The GM confirms the declaration."
+        "Hint": "Shows an Abjurer declaration for Counterspell, Dispel Magic, Remove Curse and Restoration. An Abjurer adds one extra proficiency bonus to their caster roll: double proficiency when proficiency is normally included, or single proficiency when it is disabled. The GM confirms the declaration."
       }
     },
     "Rules": {
@@ -290,6 +324,109 @@
         "CancelledByGM": "The GM cancelled the Dispel Magic workflow.",
         "CancelledByPlayer": "The Dispel Magic caster cancelled the workflow.",
         "GenericError": "The Dispel Magic workflow encountered an error."
+      }
+    },
+    "Restoration": {
+      "Dialog": {
+        "CasterTitle": "Counterspell PLUS — your Restoration",
+        "EffectTitle": "Counterspell PLUS — choose a restorative effect",
+        "GMReviewTitle": "Counterspell PLUS — final Restoration review",
+        "Resolve": "Resolve",
+        "Slot": "Restoration slot",
+        "SlotStandard": "Level {level} spell slot ({value} available)",
+        "SlotPact": "Level {level} Pact Magic slot ({value} available)",
+        "CastLevel": "Cast at level {level}",
+        "ChooseEffect": "Choose one effect",
+        "Effect": "Restorative effect",
+        "ExclusiveTierHint": "The effect lists are separate by casting level; higher tiers do not include effects from lower tiers.",
+        "Target": "Creature receiving Restoration",
+        "MaterialComponent": "Material component",
+        "MaterialValue": "{material} worth {cost} gp, consumed by the spell.",
+        "MaterialInformational": "Informational only. Counterspell PLUS does not remove this component from inventory.",
+        "NoMaterial": "No priced material component is required.",
+        "KnowsCurse": "I know this curse",
+        "KnowsCurseHint": "Homebrew: subtract 5 from the selected curse or cursed item's defense DC. The GM confirms this declaration.",
+        "GMConfirmKnown": "The Restoration caster knows this curse",
+        "SpecialSpellcaster": "Restoration caster is a Special Spellcaster",
+        "GMConfirmDisadvantage": "The Restoration caster has disadvantage",
+        "DefenseRollMode": "Curse defense roll mode",
+        "CurseName": "Curse name",
+        "CurseLevel": "Curse level",
+        "CurseModifier": "Curse ability modifier",
+        "CurseProficiency": "Curse proficiency bonus",
+        "ItemName": "Cursed item name",
+        "ItemRarity": "Cursed item rarity",
+        "GMReviewHint": "Confirm or correct the target, chosen effect and every declaration. The spell slot is consumed only after you press Resolve. Materials are not removed automatically."
+      },
+      "Effects": {
+        "disease": "One disease",
+        "blinded": "Blinded",
+        "deafened": "Deafened",
+        "frightened": "Frightened",
+        "paralyzed": "Paralyzed",
+        "poisoned": "Poisoned",
+        "charmed": "Charmed",
+        "exhaustion": "Exhaustion (1 level)",
+        "abilityReduction": "Reduction to one Ability Score",
+        "hpMaxReduction": "Hit Point Maximum Reduction",
+        "petrified": "Petrified",
+        "curse": "One Curse",
+        "cursedAttunement": "Attunement to a Cursed Item"
+      },
+      "Rarity": {
+        "common": "Common — modifier {value}",
+        "uncommon": "Uncommon — modifier {value}",
+        "rare": "Rare — modifier {value}",
+        "veryRare": "Very Rare — modifier {value}",
+        "legendary": "Legendary — modifier {value}",
+        "artifact": "Artifact — modifier {value}"
+      },
+      "Chat": {
+        "Roll": "Restoration: {actor}",
+        "DefenseTitle": "Restoration — curse defense",
+        "RarityModifier": "The ability modifier is replaced by the cursed item's rarity modifier.",
+        "CurseModifier": "The curse's own ability modifier is used; these are not target statistics.",
+        "Success": "SUCCESS",
+        "Failure": "FAILURE",
+        "Automatic": "This selected restorative effect requires no roll.",
+        "NumericResult": "Result: {total}; DC: {dc}.",
+        "HiddenResult": "At least one relevant value used a hidden roll mode.",
+        "Target": "Target: {target}",
+        "Effect": "Chosen effect: {effect}",
+        "Material": "Material: {material}, {cost} gp, consumed by the spell. Informational only.",
+        "NoMaterial": "Material: no priced component.",
+        "ManualEffect": "The module reports the result; the GM applies or removes the relevant condition, curse or attunement manually."
+      },
+      "Outcome": {
+        "DramaticFailure": {
+          "Title": "Dramatic Restoration Failure",
+          "Body": "Restoration failed by {minimum} or more. This carries significant complications. The GM determines the effect."
+        },
+        "Failure": {
+          "Title": "Failed Restoration",
+          "Body": "Restoration failed by {minimum}–{maximum}. This carries minor complications. The GM determines the effect."
+        },
+        "BarelySuccess": {
+          "Title": "Barely Successful Restoration",
+          "Body": "Restoration succeeded by {minimum}–{maximum}. The curse is removed, but this carries minor complications. The GM determines the effect."
+        },
+        "Success": {
+          "Title": "Successful Restoration",
+          "Body": "Restoration succeeded by {minimum} or more. The curse is removed without negative effects."
+        }
+      },
+      "Notifications": {
+        "NoSlots": "This actor has no available spell slot capable of casting this restoration spell.",
+        "TargetNotFound": "The selected Restoration target could not be found.",
+        "ActorNotFound": "The Restoration actor could not be found.",
+        "SlotUnavailable": "The selected Restoration slot is no longer available.",
+        "NoGM": "An active GM is required to resolve Restoration.",
+        "AlreadyPending": "This actor already has a pending Restoration workflow.",
+        "RequestTimeout": "The Restoration request expired after three minutes.",
+        "DefensePostFailed": "The GM could not publish the Restoration curse defense.",
+        "CancelledByGM": "The GM cancelled the Restoration workflow.",
+        "CancelledByPlayer": "The Restoration caster cancelled the workflow.",
+        "GenericError": "The Restoration workflow encountered an error."
       }
     },
     "RemoveCurse": {

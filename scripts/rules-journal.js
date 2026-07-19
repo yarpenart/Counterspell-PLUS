@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 1;
+const CONTENT_VERSION = 2;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -26,11 +26,14 @@ function configuration() {
     dispelScrollBase: configuredNumber("dispelScrollDefenseBase", 7),
     dispelGlyphBase: configuredNumber("dispelGlyphDefenseBase", 10),
     removeCurseBase: configuredNumber("removeCurseDefenseBase", 10),
+    restorationCurseBase: configuredNumber("restorationCurseDefenseBase", 8),
+    restorationAttunementBase: configuredNumber("restorationAttunementDefenseBase", 7),
     dramaticFailureMin,
     barelySuccessMax,
     counterspellMinimum: getSpecialMinimum("counterspellSpecialMinimum"),
     dispelMinimum: getSpecialMinimum("dispelSpecialMinimum"),
-    removeCurseMinimum: getSpecialMinimum("removeCurseSpecialMinimum")
+    removeCurseMinimum: getSpecialMinimum("removeCurseSpecialMinimum"),
+    restorationMinimum: getSpecialMinimum("restorationSpecialMinimum")
   };
 }
 
@@ -38,7 +41,7 @@ function officialRules(config) {
   return `
     <article class="counterspell-plus-rules">
       <h1>Official 2014 Rules</h1>
-      <p class="csp-rules-lead">A player-facing quick reference for Counterspell, Dispel Magic and Remove Curse. The resolution notes below describe the <strong>Official D&amp;D 2014</strong> mode available in Counterspell PLUS.</p>
+      <p class="csp-rules-lead">A player-facing quick reference for Counterspell, Dispel Magic, Remove Curse, Lesser Restoration and Greater Restoration. The resolution notes below describe the <strong>Official D&amp;D 2014</strong> mode available in Counterspell PLUS.</p>
 
       <section>
         <h2>Counterspell</h2>
@@ -88,6 +91,23 @@ function officialRules(config) {
       </section>
 
       <section>
+        <h2>Lesser Restoration</h2>
+        <ul>
+          <li>Cast at 2nd level or higher and choose exactly one option: one disease, Blinded, Deafened, Paralyzed or Poisoned.</li>
+          <li>The chosen disease or condition ends automatically; no ability check is made.</li>
+          <li>There is no priced material component.</li>
+        </ul>
+
+        <h2>Greater Restoration</h2>
+        <ul>
+          <li>Cast at 5th level or higher and choose exactly one option: one level of Exhaustion, Charmed, Petrified, one curse, attunement to a cursed item, one Ability Score reduction, or Hit Point Maximum reduction.</li>
+          <li>The selected effect ends automatically; no ability check is made.</li>
+          <li>The material is <strong>Diamond Dust worth 100 gp</strong>, consumed by the spell. Counterspell PLUS shows this requirement but never removes inventory.</li>
+        </ul>
+        <div class="csp-rules-note">The effect list belongs to the selected spell. Casting from a scroll uses the scroll level and consumes no character spell slot; scroll inventory remains manual.</div>
+      </section>
+
+      <section>
         <h2>Shared module procedure</h2>
         <ol>
           <li>The caster selects normal or scroll casting, spellcasting ability, casting level, roll mode, optional dice and disadvantage.</li>
@@ -111,7 +131,7 @@ function homebrewRules(config) {
   return `
     <article class="counterspell-plus-rules">
       <h1>Homebrew Rules</h1>
-      <p class="csp-rules-lead">The complete Counterspell PLUS homebrew reference for Counterspell, Dispel Magic and Remove Curse. Numerical values shown here reflect the current world settings.</p>
+      <p class="csp-rules-lead">The complete Counterspell PLUS homebrew reference for Counterspell, Dispel Magic, Remove Curse and Restoration. Numerical values shown here reflect the current world settings.</p>
 
       <section>
         <h2>Shared caster rules</h2>
@@ -126,7 +146,7 @@ function homebrewRules(config) {
         <ul>
           <li>An ordinary caster adds <strong>${ordinaryMultiplier}× proficiency</strong> to their homebrew caster roll.</li>
           <li>When the Abjurer option is available and confirmed by the GM, an Abjurer adds <strong>${abjurerMultiplier}× proficiency</strong> to their caster roll.</li>
-          <li>Abjurer changes only the caster's Counterspell, Dispel Magic or Remove Curse roll. It does not change the opposing spell roll or a passive defense DC.</li>
+          <li>Abjurer changes only the caster's Counterspell, Dispel Magic, Remove Curse or Restoration roll. It does not change the opposing spell roll or a passive defense DC.</li>
           <li>When one of these spells is cast from a scroll, its level, ability modifier and proficiency come from the scroll author. No character spell slot is consumed, and the scroll item is removed manually.</li>
           <li>Optional dice, disadvantage and roll visibility are selected by the appropriate participant and remain editable by the GM.</li>
         </ul>
@@ -202,6 +222,52 @@ function homebrewRules(config) {
       </section>
 
       <section>
+        <h2>Restoration</h2>
+        <p>Restoration uses separate, non-cumulative effect lists for each casting tier. A 5th-level casting does not offer the effects from levels 2–4.</p>
+        <table>
+          <thead><tr><th>Cast level</th><th>Diamond Dust</th><th>Choose one effect</th></tr></thead>
+          <tbody>
+            <tr><td>2nd</td><td>None</td><td>One disease; Blinded; Deafened; Frightened; Paralyzed; Poisoned</td></tr>
+            <tr><td>3rd</td><td>10 gp</td><td>Charmed; one level of Exhaustion</td></tr>
+            <tr><td>4th</td><td>50 gp</td><td>Reduction to one Ability Score; Hit Point Maximum Reduction</td></tr>
+            <tr><td>5th or higher</td><td>100 gp</td><td>Petrified; One Curse; Attunement to a Cursed Item</td></tr>
+          </tbody>
+        </table>
+        <p>The displayed Diamond Dust is consumed by the spell under the described rule, but the module treats the component as information only and never edits inventory.</p>
+
+        <h3>Automatic options</h3>
+        <p>Every listed option is automatic except <strong>One Curse</strong> and <strong>Attunement to a Cursed Item</strong>. Petrified requires no roll.</p>
+
+        <h3>One Curse</h3>
+        <div class="csp-rules-formula"><strong>Restoration roll:</strong> 1d20 + Restoration level + ability modifier + caster proficiency + optional dice<br><strong>Curse DC:</strong> ${config.restorationCurseBase} + curse level + curse ability modifier + normal curse proficiency − 5 if known</div>
+        <ul>
+          <li>The result must be strictly higher than the DC; a tie is a failure.</li>
+          <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.restorationMinimum}</strong>.</li>
+          <li>The shared proficiency, Abjurer, scroll-author, disadvantage, bonus-dice and roll-mode rules all apply.</li>
+          <li>One Curse uses the same four complication bands as Remove Curse: dramatic failure at ${config.dramaticFailureMin} or more below DC; ordinary failure through a tie; barely successful at 1–${config.barelySuccessMax} above DC; full success at ${config.barelySuccessMax + 1} or more above DC.</li>
+        </ul>
+
+        <h3>Attunement to a Cursed Item</h3>
+        <div class="csp-rules-formula"><strong>Restoration roll:</strong> 1d20 + Restoration level + ability modifier + caster proficiency + optional dice<br><strong>Item DC:</strong> ${config.restorationAttunementBase} + curse level + rarity modifier + normal curse proficiency − 5 if known</div>
+        <table>
+          <thead><tr><th>Rarity</th><th>Modifier</th></tr></thead>
+          <tbody>
+            <tr><td>Common</td><td>1</td></tr>
+            <tr><td>Uncommon</td><td>2</td></tr>
+            <tr><td>Rare</td><td>3</td></tr>
+            <tr><td>Very Rare</td><td>5</td></tr>
+            <tr><td>Legendary</td><td>6</td></tr>
+            <tr><td>Artifact</td><td>8</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>Rarity replaces the curse ability modifier; target statistics are never used.</li>
+          <li>The test inherits the same caster options and strict tie rule as One Curse.</li>
+          <li>This option posts only <strong>Success</strong> or <strong>Failure</strong>. It never posts the four complication outcome cards.</li>
+        </ul>
+      </section>
+
+      <section>
         <h2>Roll presentation and GM control</h2>
         <ul>
           <li>Players choose Public Roll, Private GM Roll or Blind GM Roll for their side. The GM reviews the declarations before rolling.</li>
@@ -217,13 +283,13 @@ function pageDefinitions(config) {
   return [
     {
       key: "official",
-      name: "Official Rules — Counterspell, Dispel Magic & Remove Curse",
+      name: "Official Rules — Counterspell, Dispel Magic, Remove Curse & Restoration",
       sort: 100000,
       content: officialRules(config)
     },
     {
       key: "homebrew",
-      name: "Homebrew Rules — Counterspell, Dispel Magic & Remove Curse",
+      name: "Homebrew Rules — Counterspell, Dispel Magic, Remove Curse & Restoration",
       sort: 200000,
       content: homebrewRules(config)
     }

@@ -194,6 +194,61 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "restorationEnabled", {
+    name: "COUNTERSPELL_PLUS.Settings.RestorationEnabled.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RestorationEnabled.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "restorationRuleset", {
+    name: "COUNTERSPELL_PLUS.Settings.RestorationRuleset.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RestorationRuleset.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      [RULESETS.HOMEBREW]: "COUNTERSPELL_PLUS.Settings.RestorationRuleset.Homebrew",
+      [RULESETS.OFFICIAL_2014]: "COUNTERSPELL_PLUS.Settings.RestorationRuleset.Official2014"
+    },
+    default: RULESETS.HOMEBREW,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "restorationSpecialMinimum", {
+    name: "COUNTERSPELL_PLUS.Settings.RestorationSpecialMinimum.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RestorationSpecialMinimum.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 1, max: 20, step: 1 },
+    default: 15,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "restorationCurseDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.RestorationCurseDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RestorationCurseDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 8,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "restorationAttunementDefenseBase", {
+    name: "COUNTERSPELL_PLUS.Settings.RestorationAttunementDefenseBase.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RestorationAttunementDefenseBase.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 7,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "scrollDefenseBase", {
     name: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Name",
     hint: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Hint",
@@ -241,6 +296,36 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "Remove Curse, Zdjęcie klątwy, Usunięcie klątwy",
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "lesserRestorationNames", {
+    name: "COUNTERSPELL_PLUS.Settings.LesserRestorationNames.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.LesserRestorationNames.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "Lesser Restoration",
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "greaterRestorationNames", {
+    name: "COUNTERSPELL_PLUS.Settings.GreaterRestorationNames.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.GreaterRestorationNames.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "Greater Restoration",
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "restorationNames", {
+    name: "COUNTERSPELL_PLUS.Settings.RestorationNames.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.RestorationNames.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "Restoration",
     restricted: true
   });
 
