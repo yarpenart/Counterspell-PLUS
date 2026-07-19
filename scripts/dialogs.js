@@ -86,11 +86,9 @@ export async function promptCounterspeller(actor, item, ruleset) {
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
   const slots = getSlotChoices(actor, item);
-
-  if (!slots.length) {
-    ui.notifications.warn(t("Notifications.NoSlots"));
-    return null;
-  }
+  const slotOptions = slots.length
+    ? selectOptions(slots)
+    : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
 
   const rollMode = defaultRollMode();
   const knowledgeField = ruleset === RULESETS.HOMEBREW
@@ -119,6 +117,13 @@ export async function promptCounterspeller(actor, item, ruleset) {
         <span>${escapeHTML(ruleset === RULESETS.HOMEBREW ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
       </div>
       <div class="form-group">
+        <label>${t("Dialog.CastingMethod")}</label>
+        <div class="form-fields"><select name="castingSource">
+          <option value="spell">${t("Dialog.CastNormally")}</option>
+          <option value="scroll">${t("Dialog.CastFromScroll")}</option>
+        </select></div>
+      </div>
+      <div class="form-group">
         <label>${t("Dialog.Ability")}</label>
         <div class="form-fields">
           <select name="ability">${selectOptions(abilities)}</select>
@@ -127,9 +132,22 @@ export async function promptCounterspeller(actor, item, ruleset) {
       <div class="form-group">
         <label>${t("Dialog.CounterspellSlot")}</label>
         <div class="form-fields">
-          <select name="slotKey">${selectOptions(slots)}</select>
+          <select name="slotKey">${slotOptions}</select>
         </div>
       </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollLevel")}</label>
+        <div class="form-fields"><select name="scrollLevel">${levelOptions(3, 3)}</select></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollAuthorModifier")}</label>
+        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1"></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollAuthorProficiency")}</label>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1"></div>
+      </div>
+      <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       <div class="form-group">
         <label>${t("Dialog.RollMode")}</label>
         <div class="form-fields">
@@ -153,15 +171,30 @@ export async function promptCounterspeller(actor, item, ruleset) {
   });
   if (!result) return null;
 
+  const castingSource = String(result.castingSource) === "scroll" ? "scroll" : "spell";
   const selectedSlot = slots.find(slot => slot.key === result.slotKey);
-  if (!selectedSlot) return null;
+  if (castingSource === "spell" && !selectedSlot) {
+    ui.notifications.warn(t("Notifications.NoSlots"));
+    return null;
+  }
   const ability = String(result.ability);
+  const abilityData = castingSource === "scroll"
+    ? {
+        ability,
+        abilityMod: parseNumber(result.scrollAuthorMod, 0),
+        proficiency: parseNumber(result.scrollAuthorProf, 0)
+      }
+    : getAbilityData(actor, ability);
+  const slotLevel = castingSource === "scroll"
+    ? parseNumber(result.scrollLevel, 3)
+    : selectedSlot.level;
 
   return {
-    ...getAbilityData(actor, ability),
-    slotKey: selectedSlot.key,
-    slotLevel: selectedSlot.level,
-    slotLabel: selectedSlot.label,
+    ...abilityData,
+    castingSource,
+    slotKey: castingSource === "scroll" ? null : selectedSlot.key,
+    slotLevel,
+    slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
     bonusFormula: normalizeBonusFormula(result.bonusFormula),
     knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
@@ -460,6 +493,7 @@ export async function promptGMReview(counter, target) {
         <p class="hint">${t("Dialog.GMDisadvantageHint")}</p>
       </div>`
     : "";
+  const counterUsesScroll = counter.castingSource === "scroll";
 
   const content = `
     <div class="csp-form">
@@ -468,6 +502,7 @@ export async function promptGMReview(counter, target) {
           <h3>${t("Dialog.CounterspellData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(counter.actorName)}</dd>
+            <dt>${t("Dialog.CastingMethod")}</dt><dd>${counterUsesScroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
             <dt>${t("Dialog.AbilityModifier")}</dt><dd>${counter.abilityMod >= 0 ? "+" : ""}${counter.abilityMod}</dd>
             <dt>${t("Dialog.Proficiency")}</dt><dd>${counter.proficiency >= 0 ? "+" : ""}${counter.proficiency}</dd>
             <dt>${t("Dialog.SlotLevel")}</dt><dd>${counter.slotLevel}</dd>
@@ -483,6 +518,19 @@ export async function promptGMReview(counter, target) {
           </dl>
         </div>
       </div>
+      <div class="form-group">
+        <label>${counterUsesScroll ? t("Dialog.ScrollAuthorModifier") : t("Dialog.AbilityModifier")}</label>
+        <div class="form-fields"><input type="number" name="counterAbilityMod" value="${counter.abilityMod}" step="1"></div>
+      </div>
+      <div class="form-group">
+        <label>${counterUsesScroll ? t("Dialog.ScrollAuthorProficiency") : t("Dialog.Proficiency")}</label>
+        <div class="form-fields"><input type="number" name="counterProficiency" value="${counter.proficiency}" min="0" step="1"></div>
+      </div>
+      ${counterUsesScroll ? `
+        <div class="form-group">
+          <label>${t("Dialog.ScrollLevel")}</label>
+          <div class="form-fields"><input type="number" name="counterScrollLevel" value="${counter.slotLevel}" min="3" max="9" step="1"></div>
+        </div>` : ""}
       <div class="form-group">
         <label>${t("Dialog.SpellName")}</label>
         <div class="form-fields"><input type="text" name="spellName" value="${escapeHTML(target.spellName)}" required></div>
@@ -546,8 +594,15 @@ export async function promptGMReview(counter, target) {
   reviewed.disadvantage = counter.ruleset === RULESETS.HOMEBREW
     && !isFixedSource
     && Boolean(result.targetDisadvantage);
+  const reviewedCounterScrollLevel = Math.min(9, Math.max(3, Math.trunc(parseNumber(result.counterScrollLevel, counter.slotLevel))));
   const reviewedCounter = {
     ...counter,
+    abilityMod: parseNumber(result.counterAbilityMod, counter.abilityMod),
+    proficiency: parseNumber(result.counterProficiency, counter.proficiency),
+    slotLevel: counterUsesScroll ? reviewedCounterScrollLevel : counter.slotLevel,
+    slotLabel: counterUsesScroll
+      ? tf("Dialog.ScrollCastingLevel", { level: reviewedCounterScrollLevel })
+      : counter.slotLabel,
     bonusFormula: normalizeBonusFormula(result.counterBonusFormula),
     specialSpellcaster: Boolean(result.specialSpellcaster),
     knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),

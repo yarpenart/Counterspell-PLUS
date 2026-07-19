@@ -127,7 +127,10 @@ export function getAbilityData(actor, ability) {
   };
 }
 
-export function getSlotChoices(actor, item) {
+export function getSlotChoices(actor, item, {
+  standardLabelKey = "Dialog.SlotStandard",
+  pactLabelKey = "Dialog.SlotPact"
+} = {}) {
   const minimumLevel = Math.max(1, Number(item?.system?.level ?? 3));
   const choices = [];
 
@@ -140,7 +143,7 @@ export function getSlotChoices(actor, item) {
       key,
       level,
       value,
-      label: tf("Dialog.SlotStandard", { level, value })
+      label: tf(standardLabelKey, { level, value })
     });
   }
 
@@ -152,7 +155,7 @@ export function getSlotChoices(actor, item) {
       key: "pact",
       level: pactLevel,
       value: pactValue,
-      label: tf("Dialog.SlotPact", { level: pactLevel, value: pactValue })
+      label: tf(pactLabelKey, { level: pactLevel, value: pactValue })
     });
   }
 
@@ -260,6 +263,10 @@ export function getSpecialMinimum(setting) {
   const configured = Number(game.settings.get(MODULE_ID, setting));
   if (!Number.isFinite(configured)) return 15;
   return Math.min(20, Math.max(1, Math.trunc(configured)));
+}
+
+export function usesHomebrewProficiency() {
+  return Boolean(game.settings.get(MODULE_ID, "includeProficiency"));
 }
 
 export function activateTargetSearch(_event, dialog) {

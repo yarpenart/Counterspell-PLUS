@@ -100,10 +100,9 @@ export async function promptDispeller(actor, item, ruleset) {
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
   const slots = getSlotChoices(actor, item);
-  if (!slots.length) {
-    ui.notifications.warn(t("Dispel.Notifications.NoSlots"));
-    return null;
-  }
+  const slotOptions = slots.length
+    ? selectOptions(slots)
+    : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
 
   const homebrewBonus = ruleset === RULESETS.HOMEBREW
     ? `
@@ -121,13 +120,33 @@ export async function promptDispeller(actor, item, ruleset) {
         <span>${escapeHTML(ruleset === RULESETS.HOMEBREW ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
       </div>
       <div class="form-group">
+        <label>${t("Dialog.CastingMethod")}</label>
+        <div class="form-fields"><select name="castingSource">
+          <option value="spell">${t("Dialog.CastNormally")}</option>
+          <option value="scroll">${t("Dialog.CastFromScroll")}</option>
+        </select></div>
+      </div>
+      <div class="form-group">
         <label>${t("Dialog.Ability")}</label>
         <div class="form-fields"><select name="ability">${selectOptions(abilities)}</select></div>
       </div>
       <div class="form-group">
         <label>${t("Dispel.Dialog.DispelSlot")}</label>
-        <div class="form-fields"><select name="slotKey">${selectOptions(slots)}</select></div>
+        <div class="form-fields"><select name="slotKey">${slotOptions}</select></div>
       </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollLevel")}</label>
+        <div class="form-fields"><select name="scrollLevel">${levelOptions(3, 3)}</select></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollAuthorModifier")}</label>
+        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1"></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollAuthorProficiency")}</label>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1"></div>
+      </div>
+      <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       <div class="form-group">
         <label>${t("Dialog.RollMode")}</label>
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
@@ -150,18 +169,33 @@ export async function promptDispeller(actor, item, ruleset) {
   });
   if (!result) return null;
 
+  const castingSource = String(result.castingSource) === "scroll" ? "scroll" : "spell";
   const selectedSlot = slots.find(slot => slot.key === result.slotKey);
-  if (!selectedSlot) return null;
+  if (castingSource === "spell" && !selectedSlot) {
+    ui.notifications.warn(t("Dispel.Notifications.NoSlots"));
+    return null;
+  }
   const ability = String(result.ability);
+  const abilityData = castingSource === "scroll"
+    ? {
+        ability,
+        abilityMod: parseNumber(result.scrollAuthorMod, 0),
+        proficiency: parseNumber(result.scrollAuthorProf, 0)
+      }
+    : getAbilityData(actor, ability);
+  const slotLevel = castingSource === "scroll"
+    ? parseNumber(result.scrollLevel, 3)
+    : selectedSlot.level;
   return {
-    ...getAbilityData(actor, ability),
+    ...abilityData,
+    castingSource,
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
     itemName: item.name,
-    slotKey: selectedSlot.key,
-    slotLevel: selectedSlot.level,
-    slotLabel: selectedSlot.label,
+    slotKey: castingSource === "scroll" ? null : selectedSlot.key,
+    slotLevel,
+    slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
     bonusFormula: ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
     disadvantage: Boolean(result.disadvantage),
@@ -379,6 +413,7 @@ export async function promptGMDispelReview(dispeller, setup) {
   const homebrew = dispeller.ruleset === RULESETS.HOMEBREW;
   const glyphTarget = setup.targetType === "glyph";
   const specialMinimum = getSpecialMinimum("dispelSpecialMinimum");
+  const dispellerUsesScroll = dispeller.castingSource === "scroll";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
@@ -432,7 +467,8 @@ export async function promptGMDispelReview(dispeller, setup) {
           <h3>${t("Dispel.Dialog.DispelData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(dispeller.actorName)}</dd>
-            <dt>${t("Dialog.Ability")}</dt><dd>${escapeHTML(dispeller.ability.toUpperCase())}</dd>
+            <dt>${t("Dialog.CastingMethod")}</dt><dd>${dispellerUsesScroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
+            <dt>${t("Dialog.Ability")}</dt><dd>${dispellerUsesScroll ? t("Dialog.ScrollAuthor") : escapeHTML(dispeller.ability.toUpperCase())}</dd>
             <dt>${t("Dialog.AbilityModifier")}</dt><dd>${dispeller.abilityMod >= 0 ? "+" : ""}${dispeller.abilityMod}</dd>
             <dt>${t("Dialog.Proficiency")}</dt><dd>${dispeller.proficiency >= 0 ? "+" : ""}${dispeller.proficiency}</dd>
             <dt>${t("Dispel.Dialog.DispelSlot")}</dt><dd>${dispeller.slotLevel}</dd>
@@ -448,6 +484,19 @@ export async function promptGMDispelReview(dispeller, setup) {
           </dl>
         </div>
       </div>
+      <div class="form-group">
+        <label>${dispellerUsesScroll ? t("Dialog.ScrollAuthorModifier") : t("Dialog.AbilityModifier")}</label>
+        <div class="form-fields"><input type="number" name="dispellerAbilityMod" value="${dispeller.abilityMod}" step="1"></div>
+      </div>
+      <div class="form-group">
+        <label>${dispellerUsesScroll ? t("Dialog.ScrollAuthorProficiency") : t("Dialog.Proficiency")}</label>
+        <div class="form-fields"><input type="number" name="dispellerProficiency" value="${dispeller.proficiency}" min="0" step="1"></div>
+      </div>
+      ${dispellerUsesScroll ? `
+        <div class="form-group">
+          <label>${t("Dialog.ScrollLevel")}</label>
+          <div class="form-fields"><input type="number" name="dispellerScrollLevel" value="${dispeller.slotLevel}" min="3" max="9" step="1"></div>
+        </div>` : ""}
       ${generalBonus}
       <div class="form-group stacked">
         <label class="checkbox">
@@ -486,10 +535,17 @@ export async function promptGMDispelReview(dispeller, setup) {
     known: homebrew && Boolean(result[`known${index}`]),
     bonusFormula: !homebrew ? normalizeBonusFormula(result[`effectBonus${index}`]) : ""
   }));
+  const reviewedScrollLevel = Math.min(9, Math.max(3, Math.trunc(parseNumber(result.dispellerScrollLevel, dispeller.slotLevel))));
 
   return {
     dispeller: {
       ...dispeller,
+      abilityMod: parseNumber(result.dispellerAbilityMod, dispeller.abilityMod),
+      proficiency: parseNumber(result.dispellerProficiency, dispeller.proficiency),
+      slotLevel: dispellerUsesScroll ? reviewedScrollLevel : dispeller.slotLevel,
+      slotLabel: dispellerUsesScroll
+        ? tf("Dialog.ScrollCastingLevel", { level: reviewedScrollLevel })
+        : dispeller.slotLabel,
       bonusFormula: homebrew ? normalizeBonusFormula(result.bonusFormula) : "",
       specialSpellcaster: Boolean(result.specialSpellcaster),
       disadvantage: Boolean(result.disadvantage)

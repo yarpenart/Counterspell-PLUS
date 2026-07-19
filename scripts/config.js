@@ -31,6 +31,16 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "includeProficiency", {
+    name: "COUNTERSPELL_PLUS.Settings.IncludeProficiency.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.IncludeProficiency.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "counterspellSpecialMinimum", {
     name: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Name",
     hint: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Hint",
@@ -145,26 +155,6 @@ export function registerSettings() {
   game.settings.register(MODULE_ID, "removeCurseDefenseBase", {
     name: "COUNTERSPELL_PLUS.Settings.RemoveCurseDefenseBase.Name",
     hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseDefenseBase.Hint",
-    scope: "world",
-    config: true,
-    type: Number,
-    default: 10,
-    restricted: true
-  });
-
-  game.settings.register(MODULE_ID, "removeCurseScrollDefenseBase", {
-    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseScrollDefenseBase.Name",
-    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseScrollDefenseBase.Hint",
-    scope: "world",
-    config: true,
-    type: Number,
-    default: 7,
-    restricted: true
-  });
-
-  game.settings.register(MODULE_ID, "removeCurseGlyphDefenseBase", {
-    name: "COUNTERSPELL_PLUS.Settings.RemoveCurseGlyphDefenseBase.Name",
-    hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseGlyphDefenseBase.Hint",
     scope: "world",
     config: true,
     type: Number,

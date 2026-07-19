@@ -20,6 +20,7 @@ import {
   speakerFor,
   t,
   tf,
+  usesHomebrewProficiency,
   validateBonusFormula
 } from "./utils.js";
 
@@ -158,6 +159,7 @@ async function postRoll(roll, { actor, alias, flavor, rollMode }) {
 }
 
 async function consumeDispelSlot(dispeller) {
+  if (dispeller.castingSource === "scroll") return;
   const actor = getActorFromUuidSync(dispeller.actorUuid);
   if (!actor) throw new Error(t("Dispel.Notifications.ActorNotFound"));
 
@@ -180,16 +182,17 @@ function getHomebrewBase(sourceType) {
 
 function calculateHomebrewDefenses(setup) {
   const countBonus = setup.effects.length > 1 ? setup.effects.length : 0;
+  const proficiencyIncluded = usesHomebrewProficiency();
   return setup.effects.map(effect => {
     const base = getHomebrewBase(effect.sourceType);
     const knownReduction = effect.known ? 5 : 0;
     const dc = base
       + Number(effect.spellLevel)
       + Number(effect.casterMod)
-      + Number(effect.casterProf)
+      + (proficiencyIncluded ? Number(effect.casterProf) : 0)
       + countBonus
       - knownReduction;
-    return { ...effect, base, countBonus, knownReduction, dc };
+    return { ...effect, base, countBonus, knownReduction, proficiencyIncluded, dc };
   });
 }
 
@@ -213,7 +216,7 @@ async function postDefenseSummary(dispeller, setup, defenses) {
   const homebrew = dispeller.ruleset === RULESETS.HOMEBREW;
   const rows = defenses.map(effect => {
     const formula = homebrew
-      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod} + ${effect.casterProf}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
+      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod}${effect.proficiencyIncluded ? ` + ${effect.casterProf}` : ""}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
       : `10 + ${effect.spellLevel}`;
     return `
       <tr>
@@ -274,7 +277,7 @@ async function resolveHomebrew(dispeller, setup) {
   const specialMinimum = dispeller.specialSpellcaster
     ? getSpecialMinimum("dispelSpecialMinimum")
     : undefined;
-  const parts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
+  const parts = ["@slot", "@mod", usesHomebrewProficiency() ? "@prof" : null, bonusPart].filter(Boolean);
   const roll = await createD20Roll(parts, {
     slot: dispeller.slotLevel,
     mod: dispeller.abilityMod,
@@ -431,6 +434,6 @@ export function initializeDispelWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startDispelFromActivity = startDispelMagic;
-  game.counterspellPlus.version = "0.3.0";
+  game.counterspellPlus.version = "0.3.1";
   debug("Ready");
 }

@@ -20,6 +20,7 @@ import {
   speakerFor,
   t,
   tf,
+  usesHomebrewProficiency,
   validateBonusFormula
 } from "./utils.js";
 
@@ -153,7 +154,7 @@ async function handleSocket(message) {
         result = await executeTargetRoll(message.payload.target);
         break;
       default:
-        if (String(message.type).startsWith("dispel-")) return;
+        if (["dispel-", "remove-curse-"].some(prefix => String(message.type).startsWith(prefix))) return;
         debug("Unknown socket message", message.type);
     }
     await answerRequest(message, result);
@@ -164,6 +165,7 @@ async function handleSocket(message) {
 }
 
 async function consumeCounterspellSlot(counter) {
+  if (counter.castingSource === "scroll") return;
   const actor = getActorFromUuidSync(counter.actorUuid);
   if (!actor) throw new Error(t("Notifications.ActorNotFound"));
 
@@ -187,14 +189,15 @@ async function postRoll(roll, { actor, alias, flavor, rollMode }) {
   return roll.toMessage(messageData, { rollMode });
 }
 
-async function postFixedTarget(target, total, base) {
+async function postFixedTarget(target, total, base, proficiencyIncluded) {
   const title = target.sourceType === "glyph" ? t("Chat.GlyphDefense") : t("Chat.ScrollDefense");
+  const proficiencyPart = proficiencyIncluded ? ` + ${target.creatorProf}` : "";
   const messageData = applyRollMode({
     speaker: speakerFor(null, target.actorName),
     content: `
       <div class="counterspell-plus-chat csp-fixed">
         <h3>${title}</h3>
-        <p class="csp-formula">${base} + ${target.spellLevel} + ${target.creatorMod} + ${target.creatorProf}${target.knowledgeReduction ? ` - ${target.knowledgeReduction}` : ""} = <strong>${total}</strong></p>
+        <p class="csp-formula">${base} + ${target.spellLevel} + ${target.creatorMod}${proficiencyPart}${target.knowledgeReduction ? ` - ${target.knowledgeReduction}` : ""} = <strong>${total}</strong></p>
       </div>`
   }, target.rollMode);
   return ChatMessage.create(messageData);
@@ -244,16 +247,18 @@ async function postResult({ counter, target, counterTotal, targetTotal, success,
 }
 
 async function executeTargetRoll(target) {
+  const proficiencyIncluded = usesHomebrewProficiency();
   if (["scroll", "glyph"].includes(target.sourceType)) {
     const base = getFixedDefenseBase(target.sourceType);
-    const total = base + target.spellLevel + target.creatorMod + target.creatorProf - Number(target.knowledgeReduction ?? 0);
-    await postFixedTarget(target, total, base);
+    const proficiency = proficiencyIncluded ? target.creatorProf : 0;
+    const total = base + target.spellLevel + target.creatorMod + proficiency - Number(target.knowledgeReduction ?? 0);
+    await postFixedTarget(target, total, base, proficiencyIncluded);
     return { total };
   }
 
   const targetActor = getActorFromUuidSync(target.actorUuid);
   const bonusPart = bonusRollPart(target.bonusFormula);
-  const targetParts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
+  const targetParts = ["@slot", "@mod", proficiencyIncluded ? "@prof" : null, bonusPart].filter(Boolean);
   const targetRoll = await createD20Roll(targetParts, {
     slot: target.spellLevel,
     mod: target.abilityMod,
@@ -280,7 +285,7 @@ async function resolveHomebrew(counter, target) {
   const specialMinimum = counter.specialSpellcaster
     ? getSpecialMinimum("counterspellSpecialMinimum")
     : undefined;
-  const counterParts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
+  const counterParts = ["@slot", "@mod", usesHomebrewProficiency() ? "@prof" : null, bonusPart].filter(Boolean);
   const counterRoll = await createD20Roll(counterParts, {
     slot: counter.slotLevel,
     mod: counter.abilityMod,
@@ -438,7 +443,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.3.0"
+    version: "0.3.1"
   };
 
   debug("Ready");

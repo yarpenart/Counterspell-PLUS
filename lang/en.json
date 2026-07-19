@@ -63,7 +63,7 @@
       },
       "RemoveCurseEnabled": {
         "Name": "Enable Remove Curse workflow",
-        "Hint": "Intercept recognized Remove Curse spells and use the Counterspell PLUS workflow."
+        "Hint": "Intercept recognized Remove Curse activities and use the Counterspell PLUS workflow."
       },
       "RemoveCurseRuleset": {
         "Name": "Remove Curse rules",
@@ -72,20 +72,12 @@
         "Official2014": "Official D&D 2014"
       },
       "RemoveCurseSpecialMinimum": {
-        "Name": "Remove Curse: Special Spellcaster minimum d20",
-        "Hint": "Minimum kept d20 result when the GM marks the Remove Curse caster as a Special Spellcaster. Range: 1–20. Default: 15."
+        "Name": "Remove Curse: Special Cursecaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Remove Curse caster as a Special Cursecaster. Range: 1–20. Default: 15."
       },
       "RemoveCurseDefenseBase": {
-        "Name": "Remove Curse: normal curse defense base",
-        "Hint": "Homebrew base for an ordinary curse effect. Default: 10. Any numeric value is allowed."
-      },
-      "RemoveCurseScrollDefenseBase": {
-        "Name": "Remove Curse: spell scroll defense base",
-        "Hint": "Independent homebrew base for a curse cast from a scroll. Default: 7. Any numeric value is allowed."
-      },
-      "RemoveCurseGlyphDefenseBase": {
-        "Name": "Remove Curse: Spell Glyph defense base",
-        "Hint": "Independent homebrew base for a curse cast from a Glyph. Default: 10. Any numeric value is allowed."
+        "Name": "Remove Curse: curse defense base",
+        "Hint": "Homebrew defense base used by every curse. Default: 10. Any numeric value is allowed."
       },
       "RemoveCurseDramaticFailureMin": {
         "Name": "Remove Curse outcome: Dramatic Failure starts at",
@@ -105,7 +97,11 @@
       },
       "RemoveCurseNames": {
         "Name": "Recognized Remove Curse names",
-        "Hint": "Comma-separated spell names. Parenthetical suffixes are recognized automatically."
+        "Hint": "Comma-separated curse names. Parenthetical suffixes are recognized automatically."
+      },
+      "IncludeProficiency": {
+        "Name": "Homebrew: add proficiency bonus",
+        "Hint": "When enabled, proficiency is added to all homebrew Counterspell, Dispel Magic and Remove Curse rolls and passive or fixed defenses. Official 2014 remains unchanged."
       }
     },
     "Rules": {
@@ -184,7 +180,17 @@
       "ManualDataHint": "These values are used for a Scroll or Glyph creator and as manual caster values when the target is Unknown. A selected actor's sheet values take precedence for a normal spell.",
       "YouAreCountered": "Your spell is being countered",
       "PlayerDataHint": "Your modifier and proficiency bonus will be read from this character sheet. The GM will review the result.",
-      "GMReviewHint": "Confirm or correct the target spell data. The Counterspell slot is consumed only after you press Roll."
+      "GMReviewHint": "Confirm or correct the target spell data. The Counterspell slot is consumed only after you press Roll.",
+      "CastingMethod": "Casting method",
+      "CastNormally": "Normal casting",
+      "CastFromScroll": "Cast from a spell scroll",
+      "ScrollLevel": "Spell scroll level",
+      "ScrollAuthorModifier": "Scroll author's ability modifier",
+      "ScrollAuthorProficiency": "Scroll author's proficiency bonus",
+      "ScrollAuthor": "Scroll author",
+      "ScrollCastingHint": "Normal casting uses the selected slot and character statistics. Scroll casting uses the scroll level and its author's statistics, and consumes no character spell slot. The GM will review these values. The module does not delete a scroll item automatically.",
+      "NoSlotsAvailable": "No available spell slots — choose scroll casting",
+      "ScrollCastingLevel": "Level {level} spell scroll"
     },
     "Chat": {
       "UnknownCaster": "Unknown caster",
@@ -297,14 +303,14 @@
         "EffectCount": "Number of curses on the target",
         "DefenseRollMode": "Passive defense roll mode",
         "SetupHint": "Enter the total number of curses. With more than one curse, the homebrew rule adds that total to every curse's DC.",
-        "SpecialTargetHint": "Choose an actor/token or a special target: Unknown, Glyph or Object. A Glyph target automatically forces every curse source to Glyph.",
+        "SpecialTargetHint": "Choose an actor/token or a special target: Unknown or Object. The target identifies who or what is cursed; curse DC modifiers are entered separately.",
         "GMSetupTitle": "Counterspell PLUS — Remove Curse target",
         "EffectNumber": "Curse {index} of {count}",
         "EffectName": "Curse name",
-        "EffectLevel": "Curse spell level",
-        "CasterCreatorModifier": "Original caster / creator ability modifier",
-        "CasterCreatorProficiency": "Original caster / creator proficiency bonus",
-        "SourceBaseHint": "Normal spell, Scroll and Glyph use their own independently configurable homebrew bases. Creator values are used for Scroll and Glyph.",
+        "EffectLevel": "Curse level",
+        "CasterCreatorModifier": "Curse ability modifier",
+        "CasterCreatorProficiency": "Curse proficiency bonus",
+        "SourceBaseHint": "Every curse uses the independently configurable Remove Curse homebrew defense base. Curse ability and proficiency are entered separately from the target; the shared Homebrew proficiency setting decides whether proficiency is added.",
         "GMEffectTitle": "Remove Curse — curse {index} of {count}",
         "KnowsEffect": "I know this curse",
         "KnowsEffectHint": "Homebrew: subtract 5 from this individual curse's DC. The GM will confirm this declaration.",
@@ -317,17 +323,22 @@
         "EffectsSummary": "{count} curse(s)",
         "PlayerEffectsTitle": "Counterspell PLUS — curses affected by your Remove Curse",
         "GMConfirmKnown": "The Remove Curse caster knows this curse",
-        "SpecialSpellcaster": "Remove Curse caster is a Special Spellcaster",
+        "SpecialSpellcaster": "Remove Curse caster is a Special Cursecaster",
         "GMConfirmDisadvantage": "The Remove Curse caster has disadvantage",
         "TargetData": "Target and passive defenses",
         "EffectsToResolve": "Curses",
         "GMReviewHint": "Confirm or correct every curse and player declaration. The Remove Curse slot is consumed only after you press Roll.",
-        "GMReviewTitle": "Counterspell PLUS — final Remove Curse review"
+        "GMReviewTitle": "Counterspell PLUS — final Remove Curse review",
+        "Ability": "Cursecasting ability",
+        "SlotStandard": "Level {level} curse slot ({value} available)",
+        "SlotPact": "Level {level} Pact Curse slot ({value} available)",
+        "CurseSource": "Curse",
+        "SpecialCursecasterHint": "Uses a minimum kept d20 result of {minimum}, read from the module's world settings."
       },
       "Chat": {
         "DefenseTitle": "Remove Curse — curse defenses",
         "HomebrewRoll": "Remove Curse: {actor}",
-        "OfficialRoll": "Remove Curse check against {spell} — DC {dc}",
+        "OfficialRoll": "Remove Curse check against {curse} — DC {dc}",
         "Dispelled": "CURSE REMOVED",
         "Remains": "CURSE REMAINS",
         "Automatic": "Automatic under the official 2014 rule.",
@@ -335,7 +346,8 @@
         "HiddenResult": "At least one relevant value used a hidden roll mode.",
         "TieRule": "Under the homebrew rule, the Remove Curse result must be strictly higher than the curse DC; a tie is a failure.",
         "TargetSummary": "Target: {target}",
-        "ManualRemoval": "The module only identifies which curses should be removed; the GM removes them manually."
+        "ManualRemoval": "The module only identifies which curses should be removed; the GM removes them manually.",
+        "UnknownCurse": "Unknown curse"
       },
       "Outcome": {
         "DramaticFailure": {
@@ -356,7 +368,7 @@
         }
       },
       "Notifications": {
-        "NoSlots": "This actor has no available spell slot capable of casting Remove Curse.",
+        "NoSlots": "This actor has no available curse slot capable of using Remove Curse.",
         "NoTargets": "No actors or tokens are available for the GM to select.",
         "TargetNotFound": "The selected Remove Curse target could not be found.",
         "ActorNotFound": "The Remove Curse actor could not be found.",

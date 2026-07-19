@@ -18,7 +18,6 @@ import {
 
 const DialogV2 = foundry.applications.api.DialogV2;
 const SPECIAL_TARGET_UNKNOWN = "special:unknown";
-const SPECIAL_TARGET_GLYPH = "special:glyph";
 const SPECIAL_TARGET_OBJECT = "special:object";
 
 function selectOptions(entries, valueKey = "key", labelKey = "label") {
@@ -55,18 +54,8 @@ function rollModeLabel(mode) {
   return getRollModeEntries(mode).find(entry => entry.key === mode)?.label ?? mode;
 }
 
-function sourceLabel(sourceType) {
-  if (sourceType === "scroll") return t("Dialog.Scroll");
-  if (sourceType === "glyph") return t("Dialog.Glyph");
-  return t("Dialog.NormalSpell");
-}
-
-function sourceOptions(selected = "spell") {
-  return [
-    { key: "spell", label: t("Dialog.NormalSpell") },
-    { key: "scroll", label: t("Dialog.Scroll") },
-    { key: "glyph", label: t("Dialog.Glyph") }
-  ].map(entry => `<option value="${entry.key}"${entry.key === selected ? " selected" : ""}>${escapeHTML(entry.label)}</option>`).join("");
+function sourceLabel() {
+  return t("RemoveCurse.Dialog.CurseSource");
 }
 
 async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 620, onRender }) {
@@ -99,11 +88,13 @@ async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), wi
 export async function promptCurseRemover(actor, item, ruleset) {
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
-  const slots = getSlotChoices(actor, item);
-  if (!slots.length) {
-    ui.notifications.warn(t("RemoveCurse.Notifications.NoSlots"));
-    return null;
-  }
+  const slots = getSlotChoices(actor, item, {
+    standardLabelKey: "RemoveCurse.Dialog.SlotStandard",
+    pactLabelKey: "RemoveCurse.Dialog.SlotPact"
+  });
+  const slotOptions = slots.length
+    ? selectOptions(slots)
+    : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
 
   const homebrewBonus = ruleset === RULESETS.HOMEBREW
     ? `
@@ -121,13 +112,33 @@ export async function promptCurseRemover(actor, item, ruleset) {
         <span>${escapeHTML(ruleset === RULESETS.HOMEBREW ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
       </div>
       <div class="form-group">
-        <label>${t("Dialog.Ability")}</label>
+        <label>${t("Dialog.CastingMethod")}</label>
+        <div class="form-fields"><select name="castingSource">
+          <option value="spell">${t("Dialog.CastNormally")}</option>
+          <option value="scroll">${t("Dialog.CastFromScroll")}</option>
+        </select></div>
+      </div>
+      <div class="form-group">
+        <label>${t("RemoveCurse.Dialog.Ability")}</label>
         <div class="form-fields"><select name="ability">${selectOptions(abilities)}</select></div>
       </div>
       <div class="form-group">
         <label>${t("RemoveCurse.Dialog.DispelSlot")}</label>
-        <div class="form-fields"><select name="slotKey">${selectOptions(slots)}</select></div>
+        <div class="form-fields"><select name="slotKey">${slotOptions}</select></div>
       </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollLevel")}</label>
+        <div class="form-fields"><select name="scrollLevel">${levelOptions(3, 3)}</select></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollAuthorModifier")}</label>
+        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1"></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.ScrollAuthorProficiency")}</label>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1"></div>
+      </div>
+      <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       <div class="form-group">
         <label>${t("Dialog.RollMode")}</label>
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
@@ -150,18 +161,33 @@ export async function promptCurseRemover(actor, item, ruleset) {
   });
   if (!result) return null;
 
+  const castingSource = String(result.castingSource) === "scroll" ? "scroll" : "spell";
   const selectedSlot = slots.find(slot => slot.key === result.slotKey);
-  if (!selectedSlot) return null;
+  if (castingSource === "spell" && !selectedSlot) {
+    ui.notifications.warn(t("RemoveCurse.Notifications.NoSlots"));
+    return null;
+  }
   const ability = String(result.ability);
+  const abilityData = castingSource === "scroll"
+    ? {
+        ability,
+        abilityMod: parseNumber(result.scrollAuthorMod, 0),
+        proficiency: parseNumber(result.scrollAuthorProf, 0)
+      }
+    : getAbilityData(actor, ability);
+  const slotLevel = castingSource === "scroll"
+    ? parseNumber(result.scrollLevel, 3)
+    : selectedSlot.level;
   return {
-    ...getAbilityData(actor, ability),
+    ...abilityData,
+    castingSource,
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
     itemName: item.name,
-    slotKey: selectedSlot.key,
-    slotLevel: selectedSlot.level,
-    slotLabel: selectedSlot.label,
+    slotKey: castingSource === "scroll" ? null : selectedSlot.key,
+    slotLevel,
+    slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
     bonusFormula: ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
     disadvantage: Boolean(result.disadvantage),
@@ -184,7 +210,6 @@ export async function promptGMRemoveCurseSetup(remover) {
   }));
   targetOptions.push(
     { key: SPECIAL_TARGET_UNKNOWN, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }), name: t("Dialog.SpecialUnknown"), kind: "special", selected: false },
-    { key: SPECIAL_TARGET_GLYPH, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialGlyph") }), name: t("Dialog.SpecialGlyph"), kind: "special", selected: false },
     { key: SPECIAL_TARGET_OBJECT, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialObject") }), name: t("Dialog.SpecialObject"), kind: "special", selected: false }
   );
   targetOptions = searchableEntries(targetOptions);
@@ -236,7 +261,6 @@ export async function promptGMRemoveCurseSetup(remover) {
   }
   const specialLabels = {
     [SPECIAL_TARGET_UNKNOWN]: t("Dialog.SpecialUnknown"),
-    [SPECIAL_TARGET_GLYPH]: t("Dialog.SpecialGlyph"),
     [SPECIAL_TARGET_OBJECT]: t("Dialog.SpecialObject")
   };
   const targetType = targetChoice.startsWith("special:")
@@ -260,21 +284,15 @@ export async function promptGMRemoveCurseSetup(remover) {
 }
 
 export async function promptGMRemoveCurseEffect(index, count, targetType = "actor") {
-  const glyphTarget = targetType === "glyph";
-  const sourceField = glyphTarget
-    ? `
-      <div class="form-group">
-        <label>${t("Dialog.SourceType")}</label>
-        <div class="form-fields">
-          <input type="hidden" name="sourceType" value="glyph">
-          <strong>${t("Dialog.Glyph")}</strong>
-        </div>
-      </div>`
-    : `
-      <div class="form-group">
-        <label>${t("Dialog.SourceType")}</label>
-        <div class="form-fields"><select name="sourceType">${sourceOptions()}</select></div>
-      </div>`;
+  void targetType;
+  const sourceField = `
+    <div class="form-group">
+      <label>${t("Dialog.SourceType")}</label>
+      <div class="form-fields">
+        <input type="hidden" name="sourceType" value="curse">
+        <strong>${t("RemoveCurse.Dialog.CurseSource")}</strong>
+      </div>
+    </div>`;
   const content = `
     <div class="csp-form">
       <div class="csp-summary">
@@ -283,7 +301,7 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
       ${sourceField}
       <div class="form-group">
         <label>${t("RemoveCurse.Dialog.EffectName")}</label>
-        <div class="form-fields"><input type="text" name="spellName" placeholder="Bless" required></div>
+        <div class="form-fields"><input type="text" name="spellName" placeholder="Mummy Rot" required></div>
       </div>
       <div class="form-group">
         <label>${t("RemoveCurse.Dialog.EffectLevel")}</label>
@@ -308,8 +326,8 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
   if (!result) return null;
 
   return {
-    sourceType: glyphTarget ? "glyph" : String(result.sourceType),
-    spellName: String(result.spellName || t("Chat.UnknownSpell")),
+    sourceType: "curse",
+    spellName: String(result.spellName || t("RemoveCurse.Chat.UnknownCurse")),
     spellLevel: parseNumber(result.spellLevel, 0),
     casterMod: parseNumber(result.casterMod, 0),
     casterProf: parseNumber(result.casterProf, 0),
@@ -377,16 +395,14 @@ export async function promptCurseRemoverEffects(remover, setup) {
 
 export async function promptGMRemoveCurseReview(remover, setup) {
   const homebrew = remover.ruleset === RULESETS.HOMEBREW;
-  const glyphTarget = setup.targetType === "glyph";
   const specialMinimum = getSpecialMinimum("removeCurseSpecialMinimum");
+  const removerUsesScroll = remover.castingSource === "scroll";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${tf("RemoveCurse.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
       <div class="form-group">
         <label>${t("Dialog.SourceType")}</label>
-        <div class="form-fields">${glyphTarget
-          ? `<input type="hidden" name="source${index}" value="glyph"><strong>${t("Dialog.Glyph")}</strong>`
-          : `<select name="source${index}">${sourceOptions(effect.sourceType)}</select>`}</div>
+        <div class="form-fields"><input type="hidden" name="source${index}" value="curse"><strong>${t("RemoveCurse.Dialog.CurseSource")}</strong></div>
       </div>
       <div class="form-group">
         <label>${t("RemoveCurse.Dialog.EffectName")}</label>
@@ -432,7 +448,8 @@ export async function promptGMRemoveCurseReview(remover, setup) {
           <h3>${t("RemoveCurse.Dialog.DispelData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(remover.actorName)}</dd>
-            <dt>${t("Dialog.Ability")}</dt><dd>${escapeHTML(remover.ability.toUpperCase())}</dd>
+            <dt>${t("Dialog.CastingMethod")}</dt><dd>${removerUsesScroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
+            <dt>${t("RemoveCurse.Dialog.Ability")}</dt><dd>${removerUsesScroll ? t("Dialog.ScrollAuthor") : escapeHTML(remover.ability.toUpperCase())}</dd>
             <dt>${t("Dialog.AbilityModifier")}</dt><dd>${remover.abilityMod >= 0 ? "+" : ""}${remover.abilityMod}</dd>
             <dt>${t("Dialog.Proficiency")}</dt><dd>${remover.proficiency >= 0 ? "+" : ""}${remover.proficiency}</dd>
             <dt>${t("RemoveCurse.Dialog.DispelSlot")}</dt><dd>${remover.slotLevel}</dd>
@@ -448,13 +465,26 @@ export async function promptGMRemoveCurseReview(remover, setup) {
           </dl>
         </div>
       </div>
+      <div class="form-group">
+        <label>${removerUsesScroll ? t("Dialog.ScrollAuthorModifier") : t("Dialog.AbilityModifier")}</label>
+        <div class="form-fields"><input type="number" name="removerAbilityMod" value="${remover.abilityMod}" step="1"></div>
+      </div>
+      <div class="form-group">
+        <label>${removerUsesScroll ? t("Dialog.ScrollAuthorProficiency") : t("Dialog.Proficiency")}</label>
+        <div class="form-fields"><input type="number" name="removerProficiency" value="${remover.proficiency}" min="0" step="1"></div>
+      </div>
+      ${removerUsesScroll ? `
+        <div class="form-group">
+          <label>${t("Dialog.ScrollLevel")}</label>
+          <div class="form-fields"><input type="number" name="removerScrollLevel" value="${remover.slotLevel}" min="3" max="9" step="1"></div>
+        </div>` : ""}
       ${generalBonus}
       <div class="form-group stacked">
         <label class="checkbox">
           <input type="checkbox" name="specialSpellcaster"${remover.specialSpellcaster ? " checked" : ""}>
           ${t("RemoveCurse.Dialog.SpecialSpellcaster")}
         </label>
-        <p class="hint">${tf("Dialog.SpecialSpellcasterHint", { minimum: specialMinimum })}</p>
+        <p class="hint">${tf("RemoveCurse.Dialog.SpecialCursecasterHint", { minimum: specialMinimum })}</p>
       </div>
       <div class="form-group stacked">
         <label class="checkbox">
@@ -478,7 +508,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
 
   const reviewedEffects = setup.effects.map((effect, index) => ({
     ...effect,
-    sourceType: glyphTarget ? "glyph" : String(result[`source${index}`]),
+    sourceType: "curse",
     spellName: String(result[`name${index}`] || effect.spellName),
     spellLevel: parseNumber(result[`level${index}`], effect.spellLevel),
     casterMod: parseNumber(result[`mod${index}`], effect.casterMod),
@@ -486,10 +516,17 @@ export async function promptGMRemoveCurseReview(remover, setup) {
     known: homebrew && Boolean(result[`known${index}`]),
     bonusFormula: !homebrew ? normalizeBonusFormula(result[`effectBonus${index}`]) : ""
   }));
+  const reviewedScrollLevel = Math.min(9, Math.max(3, Math.trunc(parseNumber(result.removerScrollLevel, remover.slotLevel))));
 
   return {
     remover: {
       ...remover,
+      abilityMod: parseNumber(result.removerAbilityMod, remover.abilityMod),
+      proficiency: parseNumber(result.removerProficiency, remover.proficiency),
+      slotLevel: removerUsesScroll ? reviewedScrollLevel : remover.slotLevel,
+      slotLabel: removerUsesScroll
+        ? tf("Dialog.ScrollCastingLevel", { level: reviewedScrollLevel })
+        : remover.slotLabel,
       bonusFormula: homebrew ? normalizeBonusFormula(result.bonusFormula) : "",
       specialSpellcaster: Boolean(result.specialSpellcaster),
       disadvantage: Boolean(result.disadvantage)
@@ -497,4 +534,3 @@ export async function promptGMRemoveCurseReview(remover, setup) {
     setup: { ...setup, effects: reviewedEffects }
   };
 }
-

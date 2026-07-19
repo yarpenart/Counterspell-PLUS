@@ -20,6 +20,7 @@ import {
   speakerFor,
   t,
   tf,
+  usesHomebrewProficiency,
   validateBonusFormula
 } from "./utils.js";
 
@@ -158,6 +159,7 @@ async function postRoll(roll, { actor, alias, flavor, rollMode }) {
 }
 
 async function consumeRemoveCurseSlot(remover) {
+  if (remover.castingSource === "scroll") return;
   const actor = getActorFromUuidSync(remover.actorUuid);
   if (!actor) throw new Error(t("RemoveCurse.Notifications.ActorNotFound"));
 
@@ -172,24 +174,23 @@ function configuredNumber(setting, fallback) {
   return Number.isFinite(configured) ? configured : fallback;
 }
 
-function getHomebrewBase(sourceType) {
-  if (sourceType === "scroll") return configuredNumber("removeCurseScrollDefenseBase", 7);
-  if (sourceType === "glyph") return configuredNumber("removeCurseGlyphDefenseBase", 10);
+function getHomebrewBase() {
   return configuredNumber("removeCurseDefenseBase", 10);
 }
 
 function calculateHomebrewDefenses(setup) {
   const countBonus = setup.effects.length > 1 ? setup.effects.length : 0;
+  const proficiencyIncluded = usesHomebrewProficiency();
   return setup.effects.map(effect => {
-    const base = getHomebrewBase(effect.sourceType);
+    const base = getHomebrewBase();
     const knownReduction = effect.known ? 5 : 0;
     const dc = base
       + Number(effect.spellLevel)
       + Number(effect.casterMod)
-      + Number(effect.casterProf)
+      + (proficiencyIncluded ? Number(effect.casterProf) : 0)
       + countBonus
       - knownReduction;
-    return { ...effect, base, countBonus, knownReduction, dc };
+    return { ...effect, base, countBonus, knownReduction, proficiencyIncluded, dc };
   });
 }
 
@@ -203,17 +204,15 @@ function calculateOfficialDefenses(setup) {
   }));
 }
 
-function sourceLabel(sourceType) {
-  if (sourceType === "scroll") return t("Dialog.Scroll");
-  if (sourceType === "glyph") return t("Dialog.Glyph");
-  return t("Dialog.NormalSpell");
+function sourceLabel() {
+  return t("RemoveCurse.Dialog.CurseSource");
 }
 
 async function postDefenseSummary(remover, setup, defenses) {
   const homebrew = remover.ruleset === RULESETS.HOMEBREW;
   const rows = defenses.map(effect => {
     const formula = homebrew
-      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod} + ${effect.casterProf}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
+      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod}${effect.proficiencyIncluded ? ` + ${effect.casterProf}` : ""}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
       : `10 + ${effect.spellLevel}`;
     return `
       <tr>
@@ -335,7 +334,7 @@ async function resolveHomebrew(remover, setup) {
   const specialMinimum = remover.specialSpellcaster
     ? getSpecialMinimum("removeCurseSpecialMinimum")
     : undefined;
-  const parts = ["@slot", "@mod", "@prof", bonusPart].filter(Boolean);
+  const parts = ["@slot", "@mod", usesHomebrewProficiency() ? "@prof" : null, bonusPart].filter(Boolean);
   const roll = await createD20Roll(parts, {
     slot: remover.slotLevel,
     mod: remover.abilityMod,
@@ -399,7 +398,7 @@ async function resolveOfficial2014(remover, setup) {
     await postRoll(roll, {
       actor,
       alias: remover.actorName,
-      flavor: `${tf("RemoveCurse.Chat.OfficialRoll", { spell: effect.spellName, dc: effect.dc })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
+      flavor: `${tf("RemoveCurse.Chat.OfficialRoll", { curse: effect.spellName, dc: effect.dc })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
       rollMode: remover.rollMode
     });
     results.push({
@@ -493,6 +492,6 @@ export function initializeRemoveCurseWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRemoveCurseFromActivity = startRemoveCurse;
-  game.counterspellPlus.version = "0.3.0";
+  game.counterspellPlus.version = "0.3.1";
   debug("Ready");
 }
