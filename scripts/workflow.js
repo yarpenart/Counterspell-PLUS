@@ -204,7 +204,11 @@ async function executeTargetRoll(target) {
 
 async function resolveHomebrew(counter, target) {
   const counterActor = getActorFromUuidSync(counter.actorUuid);
-  const counterRoll = await new Roll("1d20 + @slot + @mod + @prof", {
+  const hasAdvantage = Boolean(counter.knowsTargetSpell) && !isCounterspellName(target.spellName);
+  const formula = hasAdvantage
+    ? "2d20kh + @slot + @mod + @prof"
+    : "1d20 + @slot + @mod + @prof";
+  const counterRoll = await new Roll(formula, {
     slot: counter.slotLevel,
     mod: counter.abilityMod,
     prof: counter.proficiency
@@ -213,7 +217,9 @@ async function resolveHomebrew(counter, target) {
   await postRoll(counterRoll, {
     actor: counterActor,
     alias: counter.actorName,
-    flavor: tf("Chat.CounterspellRoll", { actor: counter.actorName }),
+    flavor: tf(hasAdvantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", {
+      actor: counter.actorName
+    }),
     rollMode: counter.rollMode
   });
 
@@ -284,7 +290,7 @@ async function startCounterspell(activity) {
   activeActors.add(actor.uuid);
   try {
     const ruleset = game.settings.get(MODULE_ID, "ruleset");
-    const counter = await promptCounterspeller(actor, item, ruleset);
+    let counter = await promptCounterspeller(actor, item, ruleset);
     if (!counter) return;
 
     let target = await requestRemote("gm-target", gm.id, { counter });
@@ -302,11 +308,13 @@ async function startCounterspell(activity) {
       target = playerTarget;
     }
 
-    target = await requestRemote("gm-review", gm.id, { counter, target });
-    if (!target) {
+    const review = await requestRemote("gm-review", gm.id, { counter, target });
+    if (!review?.counter || !review?.target) {
       ui.notifications.info(t("Notifications.CancelledByGM"));
       return;
     }
+    counter = review.counter;
+    target = review.target;
 
     await consumeCounterspellSlot(counter);
 
@@ -334,7 +342,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.1.3"
+    version: "0.1.4"
   };
 
   debug("Ready");
