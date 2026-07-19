@@ -2,7 +2,7 @@
 
 Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system.
 
-## Version 0.1.4 scope
+## Version 0.1.5 scope
 
 - Intercepts Counterspell use from a D&D5e spell activity.
 - Lets the Counterspell caster choose their spellcasting ability, actual slot resource and roll mode.
@@ -15,6 +15,9 @@ Counterspell automation for Foundry VTT 13, Build 351 and the D&D5e 5.3.3 system
 - The final success or failure is public, while hidden numerical results remain hidden.
 - In the homebrew rules, the Counterspell caster can declare that they know the target spell; the GM confirms or corrects this before rolling.
 - Knowing the target spell grants advantage on the Counterspell roll, except when Counterspell targets another Counterspell.
+- Each rolling side can independently declare disadvantage, for example from exhaustion or another effect, and the GM can correct both declarations.
+- Advantage and disadvantage cancel each other, resulting in a normal `1d20` roll.
+- Natural 20 and natural 1 on the kept d20 are highlighted using the D&D5e system's standard critical and fumble colors.
 - Uses ordinary Foundry chat rolls, so Dice So Nice animates them automatically when installed and enabled.
 - Supports Polish and English Foundry interface languages.
 
@@ -33,6 +36,8 @@ Counterspell:    1d20 + actual slot level + ability modifier + proficiency bonus
 
 Counterspell succeeds only if its result is higher. A tie favors the original spell.
 
+If a rolling side has disadvantage, it rolls `2d20kl`. Advantage and disadvantage cancel each other and produce a normal `1d20` roll. A scroll has a fixed defense and therefore cannot have disadvantage.
+
 If the Counterspell caster knows the target spell and the target spell is not Counterspell, the Counterspell roll is made with advantage:
 
 ```text
@@ -48,6 +53,8 @@ Scroll defense = 7 + spell level + creator ability modifier + creator proficienc
 Only the Counterspell caster rolls against this fixed result.
 
 Counterspelling another Counterspell also creates a Wild Magic chat message.
+
+Natural 20 and natural 1 are visual highlights only. The opposed totals still determine success, and a tie still favors the original spell.
 
 ### Official D&D 2014
 
@@ -74,7 +81,7 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 
 ## Current limitations
 
-- Version 0.1.4 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
+- Version 0.1.5 handles Counterspell only. Dispel Magic and Remove Curse are planned separately.
 - The original spell is assumed to have already been cast, so this module does not consume its slot.
 - The module currently identifies the target spell and its slot level through participant dialogs rather than reading an interrupted cast automatically.
 

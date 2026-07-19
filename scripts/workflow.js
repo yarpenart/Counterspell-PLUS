@@ -69,6 +69,42 @@ async function answerRequest(message, result) {
   });
 }
 
+function createD20Roll(parts, data, { advantage = false, disadvantage = false } = {}) {
+  const RollClass = CONFIG.Dice.D20Roll;
+  const formula = ["1d20", ...parts].join(" + ");
+  if ( RollClass ) {
+    return new RollClass(formula, data, {
+      advantage,
+      disadvantage,
+      criticalSuccess: 20,
+      criticalFailure: 1
+    });
+  }
+
+  const die = advantage && !disadvantage
+    ? "2d20kh"
+    : disadvantage && !advantage
+      ? "2d20kl"
+      : "1d20";
+  return new Roll([die, ...parts].join(" + "), data);
+}
+
+function getNaturalD20(roll) {
+  const die = roll?.dice?.find(term => term.faces === 20);
+  const natural = Number(die?.total);
+  return Number.isFinite(natural) ? natural : null;
+}
+
+function highlightNaturalD20(message, html) {
+  if (!message.getFlag(MODULE_ID, "highlightD20")) return;
+  const total = html.querySelector(".dice-total");
+  if (!total) return;
+
+  const natural = getNaturalD20(message.rolls?.[0]);
+  if (natural === 20) total.classList.add("critical");
+  else if (natural === 1) total.classList.add("fumble");
+}
+
 async function handleSocket(message) {
   if (!message || message.recipientId !== game.user.id) return;
 
@@ -119,10 +155,16 @@ async function consumeCounterspellSlot(counter) {
 }
 
 async function postRoll(roll, { actor, alias, flavor, rollMode }) {
-  return roll.toMessage({
+  const messageData = {
     speaker: speakerFor(actor, alias),
-    flavor
-  }, { rollMode });
+    flavor,
+    flags: { [MODULE_ID]: { highlightD20: true } }
+  };
+  const D20Roll = CONFIG.Dice.D20Roll;
+  if (D20Roll && roll instanceof D20Roll) {
+    return D20Roll.toMessage([roll], messageData, { rollMode });
+  }
+  return roll.toMessage(messageData, { rollMode });
 }
 
 async function postFixedTarget(target, total) {
@@ -188,10 +230,12 @@ async function executeTargetRoll(target) {
   }
 
   const targetActor = getActorFromUuidSync(target.actorUuid);
-  const targetRoll = await new Roll("1d20 + @slot + @mod + @prof", {
+  const targetRoll = await createD20Roll(["@slot", "@mod", "@prof"], {
     slot: target.spellLevel,
     mod: target.abilityMod,
     prof: target.proficiency
+  }, {
+    disadvantage: Boolean(target.disadvantage)
   }).evaluate();
   await postRoll(targetRoll, {
     actor: targetActor,
@@ -205,21 +249,19 @@ async function executeTargetRoll(target) {
 async function resolveHomebrew(counter, target) {
   const counterActor = getActorFromUuidSync(counter.actorUuid);
   const hasAdvantage = Boolean(counter.knowsTargetSpell) && !isCounterspellName(target.spellName);
-  const formula = hasAdvantage
-    ? "2d20kh + @slot + @mod + @prof"
-    : "1d20 + @slot + @mod + @prof";
-  const counterRoll = await new Roll(formula, {
+  const counterRoll = await createD20Roll(["@slot", "@mod", "@prof"], {
     slot: counter.slotLevel,
     mod: counter.abilityMod,
     prof: counter.proficiency
+  }, {
+    advantage: hasAdvantage,
+    disadvantage: Boolean(counter.disadvantage)
   }).evaluate();
 
   await postRoll(counterRoll, {
     actor: counterActor,
     alias: counter.actorName,
-    flavor: tf(hasAdvantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", {
-      actor: counter.actorName
-    }),
+    flavor: tf("Chat.CounterspellRoll", { actor: counter.actorName }),
     rollMode: counter.rollMode
   });
 
@@ -251,7 +293,9 @@ async function resolveOfficial2014(counter, target) {
 
   const counterActor = getActorFromUuidSync(counter.actorUuid);
   const dc = 10 + target.spellLevel;
-  const roll = await new Roll("1d20 + @mod", { mod: counter.abilityMod }).evaluate();
+  const roll = await createD20Roll(["@mod"], { mod: counter.abilityMod }, {
+    disadvantage: Boolean(counter.disadvantage)
+  }).evaluate();
   await postRoll(roll, {
     actor: counterActor,
     alias: counter.actorName,
@@ -333,6 +377,7 @@ async function startCounterspell(activity) {
 
 export function initializeWorkflow() {
   game.socket.on(SOCKET_NAME, handleSocket);
+  Hooks.on("renderChatMessageHTML", highlightNaturalD20);
 
   Hooks.on("dnd5e.preUseActivity", activity => {
     if (!isCounterspellActivity(activity)) return;
@@ -342,7 +387,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.1.4"
+    version: "0.1.5"
   };
 
   debug("Ready");
