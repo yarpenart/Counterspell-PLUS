@@ -1,0 +1,48 @@
+name: Create Foundry release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate version
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          MODULE_VERSION="$(node -p "require('./module.json').version")"
+          if [ "$TAG_VERSION" != "$MODULE_VERSION" ]; then
+            echo "Tag version $TAG_VERSION does not match module.json version $MODULE_VERSION"
+            exit 1
+          fi
+
+      - name: Package module
+        shell: bash
+        run: |
+          mkdir -p dist/counterspell-plus
+          cp module.json LICENSE README.md dist/counterspell-plus/
+          cp -R scripts styles lang dist/counterspell-plus/
+          cd dist/counterspell-plus
+          zip -r ../counterspell-plus.zip .
+          cd ../..
+          cp module.json dist/module.json
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/counterspell-plus.zip \
+            dist/module.json \
+            --title "Counterspell PLUS $GITHUB_REF_NAME" \
+            --generate-notes

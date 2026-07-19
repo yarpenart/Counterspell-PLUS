@@ -1,0 +1,96 @@
+{
+  "COUNTERSPELL_PLUS": {
+    "Settings": {
+      "Enabled": {
+        "Name": "Włącz obsługę Counterspella",
+        "Hint": "Przechwytuje rozpoznane zaklęcia Counterspell i uruchamia procedurę Counterspell PLUS."
+      },
+      "Ruleset": {
+        "Name": "Zasady Counterspella",
+        "Hint": "Wybierz zasadę używaną do rozstrzygania Counterspella.",
+        "Homebrew": "Homebrew: rzuty przeciwstawne",
+        "Official2014": "Oficjalne D&D 2014"
+      },
+      "Names": {
+        "Name": "Rozpoznawane nazwy Counterspella",
+        "Hint": "Nazwy oddzielone przecinkami. Dopiski w nawiasach, np. Counterspell (Alternate), są rozpoznawane automatycznie."
+      },
+      "WildMagic": {
+        "Name": "Komunikat Dzikiej Magii",
+        "Hint": "Publikuje komunikat Dzikiej Magii, gdy Counterspell jest używany przeciwko innemu Counterspellowi."
+      }
+    },
+    "Rules": {
+      "Homebrew": "Homebrew — rzut przeciwstawny",
+      "Official2014": "Oficjalne D&D 2014"
+    },
+    "Dialog": {
+      "Confirm": "Potwierdź",
+      "Cancel": "Anuluj",
+      "Continue": "Dalej",
+      "Roll": "Wykonaj rzuty",
+      "SendToGM": "Wyślij do GM",
+      "Ability": "Cecha rzucania czarów",
+      "AbilityModifier": "Modyfikator cechy",
+      "Proficiency": "Premia z biegłości",
+      "CounterspellSlot": "Komórka Counterspella",
+      "SpellSlotLevel": "Faktyczny poziom komórki zaklęcia",
+      "SlotLevel": "Poziom komórki",
+      "SlotStandard": "Komórka {level}. poziomu (dostępne: {value})",
+      "SlotPact": "Komórka Magii Paktu {level}. poziomu (dostępne: {value})",
+      "RollMode": "Tryb rzutu",
+      "GMWillReview": "Aktywny GM otrzyma i sprawdzi wszystkie wybrane wartości przed wykonaniem rzutów.",
+      "CounterspellerTitle": "Counterspell PLUS — twój Counterspell",
+      "GMTargetTitle": "Counterspell PLUS — wybór celu",
+      "TargetPlayerTitle": "Counterspell PLUS — twoje zaklęcie jest kontrowane",
+      "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie GM",
+      "CounterspellData": "Counterspell",
+      "TargetData": "Kontrowane zaklęcie",
+      "Caster": "Rzucający",
+      "TargetCaster": "Kto jest counterspellowany?",
+      "TargetAbility": "Cecha rzucania czarów celu",
+      "SourceType": "Źródło zaklęcia",
+      "NormalSpell": "Zwykłe zaklęcie",
+      "Scroll": "Zwój zaklęcia",
+      "SpellName": "Nazwa kontrowanego zaklęcia",
+      "AskOwner": "Zapytaj aktywnego właściciela tej postaci",
+      "AskOwnerHint": "Jeżeli wybrana postać należy do aktywnego gracza, otrzyma on własne okno danych.",
+      "ScrollCreator": "Dane twórcy zwoju",
+      "CreatorModifier": "Modyfikator cechy twórcy",
+      "CreatorProficiency": "Premia z biegłości twórcy",
+      "ScrollHint": "Dane twórcy są używane wyłącznie po wybraniu źródła „Zwój zaklęcia”.",
+      "YouAreCountered": "Twoje zaklęcie jest counterspellowane",
+      "PlayerDataHint": "Modyfikator i biegłość zostaną pobrane z tej karty postaci. GM otrzyma je do zatwierdzenia.",
+      "GMReviewHint": "Potwierdź lub popraw dane celu. Komórka Counterspella zostanie zużyta dopiero po kliknięciu „Wykonaj rzuty”."
+    },
+    "Chat": {
+      "UnknownCaster": "Nieznany rzucający",
+      "UnknownSpell": "Nieznane zaklęcie",
+      "CounterspellRoll": "Counterspell: {actor}",
+      "TargetRoll": "{spell}: {actor}",
+      "OfficialRoll": "Test cechy Counterspella — ST {dc}",
+      "ScrollDefense": "Wynik obrony zwoju",
+      "Countered": "ZAKLĘCIE SKONTROWANE",
+      "NotCountered": "COUNTERSPELL NIEUDANY",
+      "AutomaticSuccess": "Komórka Counterspella ma co najmniej poziom kontrowanego zaklęcia. Zaklęcie zostaje skontrowane automatycznie.",
+      "OfficialResult": "Wynik Counterspella: {counterTotal}; ST: {dc}.",
+      "OpposedResult": "Wynik Counterspella: {counterTotal}; wynik kontrowanego zaklęcia: {targetTotal}.",
+      "TieRule": "W zasadzie rzutów przeciwstawnych remis wygrywa pierwotne zaklęcie.",
+      "WildMagicTitle": "Dzika Magia",
+      "WildMagicBody": "Użycie Counterspella przeciwko innemu Counterspellowi wywołuje efekt Dzikiej Magii. Efekt określa GM."
+    },
+    "Notifications": {
+      "NoSlots": "Ta postać nie ma dostępnej komórki pozwalającej rzucić Counterspell.",
+      "NoCasters": "GM nie ma dostępnych aktorów ani tokenów do wybrania.",
+      "CasterNotFound": "Nie udało się odnaleźć wybranego rzucającego.",
+      "ActorNotFound": "Nie udało się odnaleźć postaci rzucającej Counterspell.",
+      "SlotUnavailable": "Wybrana komórka Counterspella nie jest już dostępna.",
+      "NoGM": "Do rozstrzygnięcia Counterspella potrzebny jest aktywny GM.",
+      "AlreadyPending": "Ta postać ma już oczekującą procedurę Counterspella.",
+      "RequestTimeout": "Prośba Counterspella wygasła po trzech minutach.",
+      "CancelledByGM": "GM anulował procedurę Counterspella.",
+      "CancelledByTarget": "Gracz będący celem anulował procedurę Counterspella.",
+      "GenericError": "Podczas obsługi Counterspella wystąpił błąd."
+    }
+  }
+}
