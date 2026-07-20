@@ -9,7 +9,6 @@ import {
   getDefaultAbility,
   getRollModeEntries,
   getSceneCasterEntries,
-  getSlotChoices,
   isAbjurerOptionEnabled,
   getSpecialMinimum,
   normalizeBonusFormula,
@@ -52,6 +51,39 @@ function levelOptions(selected, minimum = 0) {
     .join("");
 }
 
+function getRestorationSlotChoices(actor, item) {
+  const minimumLevel = Math.max(1, Number(item?.system?.level ?? 2));
+  const choices = [];
+  for (let level = minimumLevel; level <= 9; level += 1) {
+    const key = `spell${level}`;
+    const value = Number(actor?.system?.spells?.[key]?.value ?? 0);
+    choices.push({
+      key,
+      level,
+      value,
+      label: tf("Restoration.Dialog.SlotStandard", { level, value }),
+      selected: false
+    });
+  }
+
+  const pact = actor?.system?.spells?.pact;
+  const pactLevel = Number(pact?.level ?? 0);
+  if (pactLevel >= minimumLevel) {
+    const value = Number(pact?.value ?? 0);
+    choices.push({
+      key: "pact",
+      level: pactLevel,
+      value,
+      label: tf("Restoration.Dialog.SlotPact", { level: pactLevel, value }),
+      selected: false
+    });
+  }
+
+  const defaultChoice = choices.find(choice => choice.value > 0) ?? choices[0];
+  if (defaultChoice) defaultChoice.selected = true;
+  return choices;
+}
+
 function defaultRollMode() {
   const configured = game.settings.get("core", "rollMode");
   return ["publicroll", "gmroll", "blindroll"].includes(configured) ? configured : "publicroll";
@@ -74,7 +106,8 @@ function materialMarkup(material) {
         material: escapeHTML(material.name),
         cost: material.cost
       })}</span>
-      <small>${t("Restoration.Dialog.MaterialInformational")}</small>
+      <br>
+      <span>${t("Restoration.Dialog.MaterialInformational")}</span>
     </div>`;
 }
 
@@ -109,10 +142,7 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
   const homebrew = ruleset === RULESETS.HOMEBREW;
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
-  const slots = getSlotChoices(actor, item, {
-    standardLabelKey: "Restoration.Dialog.SlotStandard",
-    pactLabelKey: "Restoration.Dialog.SlotPact"
-  });
+  const slots = getRestorationSlotChoices(actor, item);
   const slotOptions = slots.length
     ? selectOptions(slots)
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
@@ -189,6 +219,10 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
   const selectedSlot = slots.find(slot => slot.key === result.slotKey);
   if (castingSource === "spell" && !selectedSlot) {
     ui.notifications.warn(t("Restoration.Notifications.NoSlots"));
+    return null;
+  }
+  if (castingSource === "spell" && selectedSlot.value <= 0) {
+    ui.notifications.warn(tf("Restoration.Notifications.NoSlotAtLevel", { level: selectedSlot.level }));
     return null;
   }
   const ability = String(result.ability);

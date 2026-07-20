@@ -2,11 +2,12 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.4.0
+## Version 0.4.1
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse and the Restoration family: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
 - Standard and Pact Magic slots are supported and the selected slot is consumed only after GM approval.
+- Restoration always lists every casting level through 9 with its current available-slot count, so higher-level tiers remain visible instead of disappearing when Foundry reports zero remaining slots.
 - Every rolling participant chooses Public Roll, Private GM Roll or Blind GM Roll independently.
 - Final outcomes are public, while hidden numerical values remain protected by the selected roll modes.
 - Ordinary D&D5e d20 rolls support Dice So Nice and use the system's standard natural 20 / natural 1 colors.

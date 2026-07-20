@@ -393,7 +393,8 @@
         "HiddenResult": "At least one relevant value used a hidden roll mode.",
         "Target": "Target: {target}",
         "Effect": "Chosen effect: {effect}",
-        "Material": "Material: {material}, {cost} gp, consumed by the spell. Informational only.",
+        "Material": "Material: {material}, {cost} gp, consumed by the spell.",
+        "MaterialInformational": "Informational only — Counterspell PLUS does not remove it from inventory.",
         "NoMaterial": "Material: no priced component.",
         "ManualEffect": "The module reports the result; the GM applies or removes the relevant condition, curse or attunement manually."
       },
@@ -416,7 +417,8 @@
         }
       },
       "Notifications": {
-        "NoSlots": "This actor has no available spell slot capable of casting this restoration spell.",
+        "NoSlots": "This actor has no spell slot entry capable of casting this restoration spell.",
+        "NoSlotAtLevel": "There is no available level {level} spell slot. Choose a level showing at least 1 available, or cast from a scroll.",
         "TargetNotFound": "The selected Restoration target could not be found.",
         "ActorNotFound": "The Restoration actor could not be found.",
         "SlotUnavailable": "The selected Restoration slot is no longer available.",

@@ -240,7 +240,10 @@ async function postFinalResult(restorer, selection, result) {
         <h3>${escapeHTML(restorer.itemName)}</h3>
         <p>${tf("Restoration.Chat.Target", { target: escapeHTML(selection.targetName) })}</p>
         <p>${tf("Restoration.Chat.Effect", { effect: escapeHTML(selection.effectName) })}</p>
-        <p class="csp-material-note"><strong>${escapeHTML(materialLine(selection.material))}</strong></p>
+        <div class="csp-material-note">
+          <strong>${escapeHTML(materialLine(selection.material))}</strong>
+          ${selection.material ? `<br><span>${t("Restoration.Chat.MaterialInformational")}</span>` : ""}
+        </div>
         <div class="csp-result ${resultClass}"><strong>${escapeHTML(status)}</strong><span>${escapeHTML(detail)}</span></div>
         <p class="csp-effect-note">${t("Restoration.Chat.ManualEffect")}</p>
       </div>`
@@ -407,6 +410,6 @@ export function initializeRestorationWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRestorationFromActivity = startRestoration;
-  game.counterspellPlus.version = "0.4.0";
+  game.counterspellPlus.version = "0.4.1";
   debug("Ready");
 }
