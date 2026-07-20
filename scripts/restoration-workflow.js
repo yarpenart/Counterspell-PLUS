@@ -244,7 +244,11 @@ async function postFinalResult(restorer, selection, result) {
           <strong>${escapeHTML(materialLine(selection.material))}</strong>
           ${selection.material ? `<br><span>${t("Restoration.Chat.MaterialInformational")}</span>` : ""}
         </div>
-        <div class="csp-result ${resultClass}"><strong>${escapeHTML(status)}</strong><span>${escapeHTML(detail)}</span></div>
+        <div class="csp-result ${resultClass}">
+          <strong>${escapeHTML(status)}</strong>
+          <br>
+          <span>${escapeHTML(detail)}</span>
+        </div>
         <p class="csp-effect-note">${t("Restoration.Chat.ManualEffect")}</p>
       </div>`
   }, "publicroll");
@@ -410,6 +414,6 @@ export function initializeRestorationWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRestorationFromActivity = startRestoration;
-  game.counterspellPlus.version = "0.4.1";
+  game.counterspellPlus.version = "0.4.2";
   debug("Ready");
 }

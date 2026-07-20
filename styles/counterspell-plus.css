@@ -138,13 +138,13 @@
   padding: 0.45rem 0.65rem;
 }
 
-.counterspell-plus-chat .csp-restoration-result .csp-result {
+.counterspell-plus-chat.csp-restoration-result .csp-result {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
 }
 
-.counterspell-plus-chat .csp-restoration-result .csp-result span {
+.counterspell-plus-chat.csp-restoration-result .csp-result span {
   font-size: 0.8em;
   font-weight: 400;
 }

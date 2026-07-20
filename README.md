@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
 
-## Version 0.4.1
+## Version 0.4.2
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse and the Restoration family: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
