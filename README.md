@@ -1,6 +1,6 @@
 # Counterspell PLUS
 
-Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 13 Build 351 with D&D5e 5.3.3.
+Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
 ## Version 0.4.2
 
