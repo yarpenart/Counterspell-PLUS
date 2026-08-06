@@ -130,7 +130,7 @@ async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), wi
         label: confirmLabel,
         icon: "fa-solid fa-check",
         default: true,
-        callback: (_event, button) => new FormDataExtended(button.form).object
+        callback: (_event, button) => new foundry.applications.ux.FormDataExtended(button.form).object
       }
     ],
     rejectClose: false,
