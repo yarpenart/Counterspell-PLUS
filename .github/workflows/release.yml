@@ -36,13 +36,20 @@ jobs:
           cd ../..
           cp module.json dist/module.json
 
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            dist/counterspell-plus.zip \
-            dist/module.json \
-            --title "Counterspell PLUS $GITHUB_REF_NAME" \
-            --generate-notes
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" \
+              dist/counterspell-plus.zip \
+              dist/module.json \
+              --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              dist/counterspell-plus.zip \
+              dist/module.json \
+              --title "Counterspell PLUS $GITHUB_REF_NAME" \
+              --generate-notes
+          fi
