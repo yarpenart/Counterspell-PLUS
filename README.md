@@ -1,10 +1,10 @@
 # Counterspell PLUS
 
-Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
+Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.4.8
+## Version 0.5.0
 
-- Independent world settings for Counterspell, Dispel Magic, Remove Curse and the Restoration family: Homebrew or Official D&D 2014.
+- Independent world settings for Counterspell, Dispel Magic, Remove Curse, the Restoration family and Identify: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
 - Standard and Pact Magic slots are supported and the selected slot is consumed only after GM approval.
 - Restoration always lists every casting level through 9 with its current available-slot count, so higher-level tiers remain visible instead of disappearing when Foundry reports zero remaining slots.
@@ -23,6 +23,9 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
 - The GM can mark a Counterspell, Dispel Magic, Remove Curse or Restoration caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
 - Homebrew Remove Curse and Restoration: One Curse can optionally require special curse-removal conditions. The GM confirms each requirement, may describe it, chooses whether its status message is public or GM-only, and an unmet requirement increases the curse DC by a configurable amount (default +5). Official 2014 rules and cursed-item attunement are unchanged.
+- Identify lets the caster select or drop an inventory item, or type any item name. The GM can search every World Item and actor inventory, correct the name, select or drop the actual Item document, and write exactly what is revealed.
+- Identify supports Normal Casting, Scroll Casting and Ritual Casting. Curse information is hidden by default in both rulesets and is revealed only through a separate GM-controlled field.
+- Homebrew Identify can optionally carry risk. Only a risky identification opens Stat Shift's editable Homebrew Save window with the caster locked as the target and the Identify cast level automatically added to the saving throw. No risk means no saving throw. Official 2014 Identify never adds this homebrew risk roll.
 - English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
 - The primary active GM automatically receives a player-visible `Counterspell PLUS — Rules Reference` Journal Entry with two pages: Official 2014 Rules and the complete Homebrew Rules. The module updates its managed pages when relevant world settings change.
 
@@ -118,6 +121,32 @@ Under the Homebrew rule, every curse also posts a public outcome card. The defau
 
 Two world sliders define these bands. The negative slider sets where Dramatic Failure begins; ordinary Failure automatically covers every smaller failure through a tie at 0. The positive slider sets the upper limit of Barely Successful; full Success automatically begins at the next value. Card descriptions are generated from the configured values. A homebrew tie is a failure. The Official 2014 mode follows the same automatic-level and separate-check procedure configured for Dispel Magic in this module.
 
+## Identify
+
+The caster first chooses a casting method:
+
+- **Normal Casting** uses an available spell slot, consumed only after final GM approval.
+- **Scroll Casting** uses the selected scroll level without consuming a character spell slot; scroll inventory remains manual.
+- **Ritual Casting** uses the normal Identify spell level and consumes no spell slot.
+
+The caster may then select an item from their own inventory, drop an Item document into the field, or type any name such as `strange ring`. Typed names also work for homebrew objects that do not yet exist in Foundry.
+
+The GM receives a searchable list combining World Items with every actor's embedded items. The GM may confirm the player's text, choose the actual item, drop an Item document, and edit the final displayed name. The item's stored description is visible in a GM-only preview but is never copied into the revealed text automatically.
+
+After approval, the module whispers the selected description only to all GMs and the user who cast Identify. If no actual Item document exists, the private message confirms successful identification and states that the GM will provide details shortly.
+
+### Official D&D 2014
+
+Identification succeeds after GM approval and requires no saving throw. The material component (a pearl worth at least 100 gp and an owl feather) is informational; inventory is not modified. Curse information remains hidden unless the GM explicitly enables the separate curse-reveal option and enters the details.
+
+### Homebrew risk and Stat Shift
+
+The GM may mark a specific identification as risky. Only then does Counterspell PLUS call `game.statShift.openHomebrewSave(...)` and open Stat Shift for the GM. The identifying actor is locked as the save target, while the GM may edit the ability, DC, roll mode, automatic bonus, success and failure effects, modifiers, duration, icons and description.
+
+The automatic saving-throw bonus starts at the level used to cast Identify. The caster then makes the saving throw through Stat Shift. The risk save resolves the configured consequence; the GM's approval separately determines that the identification succeeded. If risk is not selected, Stat Shift does not open and no saving throw is made.
+
+Stat Shift **0.1.6 or newer** is recommended rather than required. If it is unavailable, Identify still posts the private identification result and warns the GM that the risk save could not be opened.
+
 ## Natural 20 and natural 1
 
 The kept d20 is highlighted with the D&D5e system's normal critical or fumble color. This is visual only: natural 20 is not an automatic success and natural 1 is not an automatic failure unless the compared totals say so.
@@ -160,6 +189,7 @@ Open **Configure Settings → Module Settings → Counterspell PLUS** to configu
 - Remove Curse enabled state, ruleset, recognized names, Curse defense base and two outcome sliders.
 - Optional Homebrew curse-removal requirements and their editable unmet-requirement DC penalty (default `+5`).
 - Restoration enabled state, ruleset, recognized Lesser/Greater/Homebrew names, One Curse base and cursed-attunement base.
+- Identify enabled state, independent Official/Homebrew ruleset and recognized names.
 - One shared Homebrew proficiency checkbox for Counterspell, Dispel Magic, Remove Curse and Restoration.
 - Optional Homebrew Abjurer declarations for all four caster rolls.
 - Independent Special Spellcaster minimum d20 values for Counterspell, Dispel Magic, Remove Curse and Restoration.
@@ -170,8 +200,8 @@ Every base accepts any numeric value.
 
 On world startup, the primary active GM creates one shared Journal Entry named **Counterspell PLUS — Rules Reference**. Its two player-visible pages provide a sequential reference for:
 
-- Official 2014 Counterspell, Dispel Magic, Remove Curse, Lesser Restoration and Greater Restoration rules, including a clear note about the module's requested Dispel-style Official Remove Curse procedure.
-- All Homebrew formulas, Restoration tiers and materials, ties, known-spell benefits, multiple-effect bonuses, Scroll and Glyph handling, proficiency, Abjurer, Special Spellcaster, roll visibility, natural d20 colors and configurable Remove Curse outcome bands.
+- Official 2014 Counterspell, Dispel Magic, Remove Curse, Lesser Restoration, Greater Restoration and Identify rules, including the GM-controlled private Identify description and hidden-by-default curse information.
+- All Homebrew formulas, Restoration tiers and materials, Identify selection and optional Stat Shift risk, ties, known-spell benefits, multiple-effect bonuses, Scroll and Glyph handling, proficiency, Abjurer, Special Spellcaster, roll visibility, natural d20 colors and configurable Remove Curse outcome bands.
 
 The entry is identified with module flags, so it is not duplicated on later startups. The module updates only its two managed pages when the reference content or relevant world settings change.
 
@@ -204,6 +234,12 @@ Homebrew Restoration:
 
 - Restoration
 
+Identify:
+
+- Identify
+- Identyfikacja
+- Rozpoznanie
+
 The comma-separated lists may be edited in module settings. Parenthetical suffixes are recognized automatically.
 
 ## Installation
@@ -219,6 +255,8 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 - The target spell effects and their source data are entered through participant dialogs rather than detected automatically.
 - Original spell slots are not consumed.
 - The scroll-casting option does not automatically locate or delete a consumable scroll item; inventory handling remains manual.
+- Identify does not consume its pearl or owl feather automatically, and it does not change an Item document's identified state.
+- Risk consequences require an active compatible Stat Shift module; without it, identification still completes and the GM receives a warning.
 
 ## License
 
