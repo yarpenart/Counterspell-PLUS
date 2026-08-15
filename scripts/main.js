@@ -3,6 +3,7 @@ import { initializeWorkflow } from "./workflow.js";
 import { initializeDispelWorkflow } from "./dispel-workflow.js";
 import { initializeRemoveCurseWorkflow } from "./remove-curse-workflow.js";
 import { initializeRestorationWorkflow } from "./restoration-workflow.js";
+import { initializeIdentifyWorkflow } from "./identify-workflow.js";
 import { initializeRulesJournal } from "./rules-journal.js";
 
 Hooks.once("init", () => {
@@ -16,5 +17,6 @@ Hooks.once("ready", () => {
   initializeDispelWorkflow();
   initializeRemoveCurseWorkflow();
   initializeRestorationWorkflow();
+  initializeIdentifyWorkflow();
   initializeRulesJournal();
 });

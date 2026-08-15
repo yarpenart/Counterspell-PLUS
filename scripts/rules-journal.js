@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 4;
+const CONTENT_VERSION = 5;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -43,7 +43,7 @@ function officialRules(config) {
   return `
     <article class="counterspell-plus-rules">
       <h1>Official 2014 Rules</h1>
-      <p class="csp-rules-lead">A player-facing quick reference for Counterspell, Dispel Magic, Remove Curse, Lesser Restoration and Greater Restoration. The resolution notes below describe the <strong>Official D&amp;D 2014</strong> mode available in Counterspell PLUS.</p>
+      <p class="csp-rules-lead">A player-facing quick reference for Counterspell, Dispel Magic, Remove Curse, Lesser Restoration, Greater Restoration and Identify. The resolution notes below describe the <strong>Official D&amp;D 2014</strong> mode available in Counterspell PLUS.</p>
 
       <section>
         <h2>Counterspell</h2>
@@ -110,6 +110,19 @@ function officialRules(config) {
       </section>
 
       <section>
+        <h2>Identify</h2>
+        <ul>
+          <li>The caster may select an item from their inventory, type any name, or drop an Item document into the selection field.</li>
+          <li>The GM confirms the submitted name or links it to an actual World Item or an item embedded in any actor. The GM may also keep a manual name for a homebrew item that does not yet exist as a document.</li>
+          <li>Identify may be cast normally, from a scroll, or as a ritual. Normal casting consumes the approved spell slot; scroll inventory and material components remain manual.</li>
+          <li>The informational material component is a pearl worth at least 100 gp and an owl feather.</li>
+          <li>Official 2014 Identify requires no saving throw. The GM approves the identification and chooses the exact description revealed to the caster.</li>
+          <li>A curse is <strong>never revealed automatically</strong>. The GM has a separate, disabled-by-default option for revealing curse information.</li>
+          <li>The result is whispered only to the identifying user and GMs. If no real Item document exists, the message confirms success and says that the GM will provide details shortly.</li>
+        </ul>
+      </section>
+
+      <section>
         <h2>Shared module procedure</h2>
         <ol>
           <li>The caster selects normal or scroll casting, spellcasting ability, casting level, roll mode, optional dice and disadvantage.</li>
@@ -134,7 +147,7 @@ function homebrewRules(config) {
   return `
     <article class="counterspell-plus-rules">
       <h1>Homebrew Rules</h1>
-      <p class="csp-rules-lead">The complete Counterspell PLUS homebrew reference for Counterspell, Dispel Magic, Remove Curse and Restoration. Numerical values shown here reflect the current world settings.</p>
+      <p class="csp-rules-lead">The complete Counterspell PLUS homebrew reference for Counterspell, Dispel Magic, Remove Curse, Restoration and Identify. Numerical values shown here reflect the current world settings.</p>
 
       <section>
         <h2>Shared caster rules</h2>
@@ -276,6 +289,23 @@ function homebrewRules(config) {
       </section>
 
       <section>
+        <h2>Identify</h2>
+        <ol>
+          <li>The caster chooses Normal Casting, Scroll Casting or Ritual Casting, then selects an inventory item, drops it into the field, or types any item name.</li>
+          <li>The GM may confirm the player's text, search all World Items and actor inventories, or drop the actual Item document into the GM field.</li>
+          <li>The GM writes the description that will be revealed. Stored Item text is shown only in the GM preview and is never copied automatically.</li>
+          <li>Curse information is hidden by default. It is included only when the GM explicitly enables the separate reveal option and supplies curse details.</li>
+        </ol>
+        <div class="csp-rules-note"><strong>Optional identification risk.</strong> The GM may mark a Homebrew identification as risky. Only then does Counterspell PLUS open Stat Shift's editable <strong>Homebrew Save</strong> window. The identifying caster is locked as the target, and the level at which Identify was cast is automatically added to the saving throw. If the GM does not mark a risk, <strong>no saving throw is made</strong>.</div>
+        <ul>
+          <li>The GM can edit the saving ability, DC, automatic spell-level bonus, roll mode, outcome modifiers, duration, icons and description before sending the Stat Shift request.</li>
+          <li>The risk saving throw determines the consequence configured in Stat Shift; GM approval determines whether the item was successfully identified.</li>
+          <li>Normal casting consumes its spell slot after GM approval. Scroll and ritual casting consume no character spell slot.</li>
+          <li>The final description is whispered only to the identifying user and GMs. A manual item with no document receives a success notice and a promise of details from the GM.</li>
+        </ul>
+      </section>
+
+      <section>
         <h2>Roll presentation and GM control</h2>
         <ul>
           <li>Players choose Public Roll, Private GM Roll or Blind GM Roll for their side. The GM reviews the declarations before rolling.</li>
@@ -291,13 +321,13 @@ function pageDefinitions(config) {
   return [
     {
       key: "official",
-      name: "Official Rules — Counterspell, Dispel Magic, Remove Curse & Restoration",
+      name: "Official Rules — Counterspell, Dispel Magic, Remove Curse, Restoration & Identify",
       sort: 100000,
       content: officialRules(config)
     },
     {
       key: "homebrew",
-      name: "Homebrew Rules — Counterspell, Dispel Magic, Remove Curse & Restoration",
+      name: "Homebrew Rules — Counterspell, Dispel Magic, Remove Curse, Restoration & Identify",
       sort: 200000,
       content: homebrewRules(config)
     }

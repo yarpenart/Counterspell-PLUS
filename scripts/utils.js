@@ -117,6 +117,17 @@ export function getRestorationActivityType(activity) {
   return null;
 }
 
+export function isIdentifyActivity(activity) {
+  if (!game.settings.get(MODULE_ID, "identifyEnabled")) return false;
+
+  const item = getActivityItem(activity);
+  if (!item || item.type !== "spell") return false;
+
+  const identifier = normalizeName(item.system?.identifier).replaceAll("-", "");
+  if (identifier === "identify") return true;
+  return matchesConfiguredItemName(item, "identifyNames");
+}
+
 export function isCounterspellName(name) {
   const normalized = normalizeName(name);
   return normalized.startsWith("counterspell")
