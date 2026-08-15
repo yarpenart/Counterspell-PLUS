@@ -113,6 +113,14 @@
         "Name": "Restoration: cursed-item attunement defense base",
         "Hint": "Homebrew base for removing Attunement to a Cursed Item with 5th-level Restoration. Default: 7."
       },
+      "CurseRequirementsEnabled": {
+        "Name": "Homebrew: enable curse-removal requirements",
+        "Hint": "Lets the GM decide whether curse-removal requirements are fulfilled for Homebrew Remove Curse and Restoration: One Curse. Official rules and cursed-item attunement are unchanged. Disabled by default."
+      },
+      "CurseRequirementsDcPenalty": {
+        "Name": "Homebrew: unmet curse-requirement DC penalty",
+        "Hint": "Added to a curse's defense DC when its removal requirements are not fulfilled. Applies only while curse-removal requirements are enabled. Default: +5."
+      },
       "LesserRestorationNames": {
         "Name": "Recognized Lesser Restoration names",
         "Hint": "Comma-separated spell names used in Official 2014 mode. Parenthetical suffixes are recognized automatically."
@@ -137,6 +145,28 @@
     "Rules": {
       "Homebrew": "Homebrew opposed roll",
       "Official2014": "Official D&D 2014"
+    },
+    "Requirements": {
+      "Dialog": {
+        "Title": "Curse-removal requirements",
+        "Met": "The character fulfils the requirements to remove this curse",
+        "MetHint": "The GM decides this. If left unchecked, this curse's DC increases by +{penalty}.",
+        "Note": "Requirements note",
+        "NotePlaceholder": "e.g. possesses the required component or killed the curse's source",
+        "NoteHint": "Optional. This note is included in the requirements chat message.",
+        "ChatVisibility": "Requirements message visibility",
+        "ChatPublic": "Public",
+        "ChatGMOnly": "GM only",
+        "ChatVisibilityHint": "Choose whether the requirements status is public or visible only to GMs."
+      },
+      "Chat": {
+        "Title": "Curse-removal requirements",
+        "Met": "REQUIREMENTS FULFILLED",
+        "NotMet": "REQUIREMENTS NOT FULFILLED",
+        "Penalty": "Curse DC increased by +{penalty}.",
+        "NoPenalty": "No requirements penalty is added to the curse DC.",
+        "Note": "Requirement: {note}"
+      }
     },
     "Dialog": {
       "Confirm": "Confirm",
