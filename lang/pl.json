@@ -133,6 +133,20 @@
         "Name": "Recognized Restoration names",
         "Hint": "Comma-separated spell names used in Homebrew mode. Parenthetical suffixes are recognized automatically."
       },
+      "IdentifyEnabled": {
+        "Name": "Włącz obsługę Identify",
+        "Hint": "Przechwytuje rozpoznane użycia Identify i pozwala rzucającemu wybrać przedmiot do identyfikacji zatwierdzanej przez GM-a."
+      },
+      "IdentifyRuleset": {
+        "Name": "Zasady Identify",
+        "Hint": "Wybierz procedurę Identify niezależnie od pozostałych zaklęć obsługiwanych przez moduł.",
+        "Homebrew": "Homebrew: opcjonalne ryzyko identyfikacji",
+        "Official2014": "Oficjalne D&D 2014"
+      },
+      "IdentifyNames": {
+        "Name": "Rozpoznawane nazwy Identify",
+        "Hint": "Nazwy zaklęcia Identify oddzielone przecinkami. Dopiski w nawiasach są rozpoznawane automatycznie."
+      },
       "IncludeProficiency": {
         "Name": "Homebrew: dodawaj premię z biegłości",
         "Hint": "Po włączeniu premia z biegłości jest dodawana do wszystkich homebrewowych rzutów oraz pasywnych i stałych obron Counterspell, Dispel Magic, Remove Curse i Restoration. Tryb Official 2014 pozostaje bez zmian."
@@ -459,6 +473,84 @@
         "CancelledByGM": "The GM cancelled the Restoration workflow.",
         "CancelledByPlayer": "The Restoration caster cancelled the workflow.",
         "GenericError": "The Restoration workflow encountered an error."
+      }
+    },
+    "Identify": {
+      "Dialog": {
+        "CasterTitle": "Counterspell PLUS — twoje Identify",
+        "GMTitle": "Counterspell PLUS — zatwierdzenie Identify przez GM-a",
+        "Approve": "Zatwierdź identyfikację",
+        "CastAsRitual": "Rzucanie rytualne",
+        "Slot": "Komórka Identify",
+        "RitualLevel": "Poziom zaklęcia rytualnego",
+        "RiskRollHint": "Homebrew: ta cecha i tryb rzutu uzupełnią Stat Shift tylko wtedy, gdy GM oznaczy przedmiot jako ryzykowny. Bez ryzyka nie wykonuje się rzutu obronnego.",
+        "InventoryItem": "Przedmiot z ekwipunku rzucającego",
+        "SearchInventory": "Przeszukaj ekwipunek…",
+        "ManualItem": "Nazwa ręczna / przedmiotu nie ma na liście",
+        "TypedName": "Nazwa podana przez rzucającego",
+        "TypedNamePlaceholder": "np. dziwny pierścień",
+        "TypedNameHint": "Możesz wpisać dowolną nazwę, także przedmiotu homebrew, który nie istnieje jeszcze jako dokument Foundry.",
+        "DropInventoryHint": "Upuść tutaj przedmiot z ekwipunku albo wybierz go powyżej",
+        "MaterialTitle": "Komponent materialny:",
+        "MaterialText": "perła warta co najmniej 100 sz i sowie pióro. Moduł wyświetla tę informację, ale nie zużywa komponentu.",
+        "ItemsFound": "Znalezione przedmioty: {count}",
+        "WorldItem": "Przedmiot świata",
+        "ActorItem": "Aktor: {actor}",
+        "DroppedItem": "Upuszczony przedmiot",
+        "WorldSearch": "Faktyczny przedmiot w tym świecie",
+        "SearchWorld": "Przeszukaj wszystkie przedmioty świata i ekwipunki aktorów…",
+        "NoActualItem": "Nazwa ręczna / brak istniejącego dokumentu Item",
+        "DropWorldHint": "Upuść tutaj dokument przedmiotu",
+        "FinalName": "Nazwa ujawniana rzucającemu",
+        "FinalNameHint": "Potwierdź tekst gracza albo zastąp go faktyczną nazwą przedmiotu.",
+        "NoStoredDescription": "Ten dokument przedmiotu nie ma zapisanego opisu.",
+        "LoadStoredDescription": "Skopiuj zapisany opis do opisu ujawnianego",
+        "RevealedDescription": "Opis ujawniany po identyfikacji",
+        "RevealedDescriptionHint": "Wysyłany jest wyłącznie ten edytowalny tekst. Zapisany opis nigdy nie jest kopiowany automatycznie, dzięki czemu informacje o klątwie nie zostaną ujawnione przypadkiem.",
+        "RevealCurse": "Ujawnij informacje o klątwie",
+        "RevealCurseHint": "Domyślnie wyłączone w obu zestawach zasad. Włącz tylko wtedy, gdy Identify ma ujawnić klątwę, a następnie wpisz jej szczegóły poniżej.",
+        "CurseDetails": "Szczegóły klątwy ujawniane rzucającemu",
+        "Risk": "Ta identyfikacja niesie ryzyko homebrew",
+        "RiskHint": "Po zatwierdzeniu Stat Shift otworzy Homebrew Save z rzucającym Identify zablokowanym jako cel. Poziom Identify ({level}) zostanie automatycznie dodany do rzutu obronnego. Gdy pole jest wyłączone, nie wykonuje się rzutu.",
+        "OfficialNoRisk": "Tryb Official 2014 nie dodaje rzutu obronnego za ryzyko. Szczegóły klątwy pozostają osobną decyzją GM-a i są domyślnie ukryte.",
+        "PrivateResultHint": "Zatwierdzony wynik i ujawniony opis otrzymają szeptem wyłącznie GM-owie i użytkownik, który rzucił Identify.",
+        "CastLevelSummary": "Identify rzucone na poziomie {level}",
+        "Source": {
+          "spell": "Rzucanie normalne",
+          "scroll": "Rzucanie ze zwoju",
+          "ritual": "Rzucanie rytualne"
+        }
+      },
+      "Chat": {
+        "Success": "Identyfikacja udana",
+        "CastSummary": "{caster} używa Identify na poziomie {level} ({source}).",
+        "DetailsSoon": "GM nie podał jeszcze ujawnianego opisu i przekaże szczegóły wkrótce.",
+        "MissingItemDetailsSoon": "Identyfikacja zakończyła się sukcesem. Ten przedmiot nie istnieje jeszcze jako dokument Item; GM poda szczegóły wkrótce.",
+        "CurseTitle": "Ujawnione informacje o klątwie",
+        "PrivateRecipients": "Wynik prywatny: widoczny wyłącznie dla identyfikującego użytkownika i GM-ów.",
+        "GMNotice": "Identify — komunikat dla GM-a"
+      },
+      "StatShift": {
+        "Source": "Counterspell PLUS — Identify: {item}",
+        "Title": "Ryzyko Identify — {item}",
+        "EffectName": "Konsekwencja identyfikacji — {item}",
+        "Description": "Ryzyko homebrew podczas Identify. Rzucający jest zablokowany jako cel. Poziom Identify ({level}) jest automatycznie dodawany do rzutu obronnego. GM może edytować wszystkie pola rzutu i skutków."
+      },
+      "Notifications": {
+        "InvalidDrop": "Upuść dokument przedmiotu, a nie dokument innego typu.",
+        "DescriptionLoaded": "Skopiowano zapisany opis. Sprawdź go uważnie przed zatwierdzeniem, szczególnie pod kątem ukrytych informacji o klątwie.",
+        "DescriptionRequired": "Wpisz bezpieczny opis ujawniany dla wybranego dokumentu przedmiotu. Komórka zaklęcia nie została zużyta.",
+        "NoSlots": "Nie wybrano dostępnej komórki Identify. Wybierz komórkę, rzut ze zwoju albo rytuał.",
+        "ItemRequired": "Wybierz przedmiot albo wpisz nazwę przedmiotu poddawanego identyfikacji.",
+        "ActorNotFound": "Nie znaleziono postaci rzucającej Identify.",
+        "SlotUnavailable": "Wybrana komórka Identify nie jest już dostępna.",
+        "NoGM": "Do rozstrzygnięcia Identify potrzebny jest aktywny GM.",
+        "AlreadyPending": "Ta postać ma już oczekującą procedurę Identify.",
+        "RequestTimeout": "Żądanie Identify wygasło po trzech minutach.",
+        "CancelledByGM": "GM anulował procedurę Identify.",
+        "Approved": "GM zatwierdził identyfikację.",
+        "StatShiftMissing": "Przedmiot jest ryzykowny, ale Stat Shift nie jest aktywny albo nie udostępnia API integracji Identify. Wynik identyfikacji został mimo to opublikowany.",
+        "GenericError": "W procedurze Identify wystąpił błąd."
       }
     },
     "RemoveCurse": {

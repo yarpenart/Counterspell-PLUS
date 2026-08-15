@@ -270,6 +270,40 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "identifyEnabled", {
+    name: "COUNTERSPELL_PLUS.Settings.IdentifyEnabled.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.IdentifyEnabled.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "identifyRuleset", {
+    name: "COUNTERSPELL_PLUS.Settings.IdentifyRuleset.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.IdentifyRuleset.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      [RULESETS.HOMEBREW]: "COUNTERSPELL_PLUS.Settings.IdentifyRuleset.Homebrew",
+      [RULESETS.OFFICIAL_2014]: "COUNTERSPELL_PLUS.Settings.IdentifyRuleset.Official2014"
+    },
+    default: RULESETS.HOMEBREW,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "identifyNames", {
+    name: "COUNTERSPELL_PLUS.Settings.IdentifyNames.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.IdentifyNames.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "Identify, Identyfikacja, Rozpoznanie",
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "scrollDefenseBase", {
     name: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Name",
     hint: "COUNTERSPELL_PLUS.Settings.ScrollDefenseBase.Hint",

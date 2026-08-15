@@ -402,6 +402,97 @@
   opacity: 0.55;
 }
 
+.identify-plus-dialog select[size] {
+  min-height: 8rem;
+  width: 100%;
+}
+
+.identify-plus-dialog .csp-identify-drop {
+  align-items: center;
+  border: 2px dashed var(--color-border-light-primary, #777);
+  border-radius: 6px;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: center;
+  margin: 0.65rem 0;
+  min-height: 3.5rem;
+  padding: 0.65rem;
+  text-align: center;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.identify-plus-dialog .csp-identify-drop.dragover {
+  background: color-mix(in srgb, #7b2cbf 15%, transparent);
+  border-color: #8a4ebf;
+}
+
+.identify-plus-dialog .csp-identify-cast-summary {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  margin: 0 0 0.7rem;
+}
+
+.identify-plus-dialog .csp-identify-preview {
+  border: 1px solid var(--color-border-light-primary, #777);
+  border-radius: 6px;
+  margin: 0.65rem 0;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.6rem;
+}
+
+.identify-plus-dialog .csp-identify-preview header,
+.counterspell-plus-chat .csp-identify-result-header {
+  align-items: center;
+  display: flex;
+  gap: 0.65rem;
+}
+
+.identify-plus-dialog .csp-identify-preview header img,
+.counterspell-plus-chat .csp-identify-result-header img {
+  border: 0;
+  height: 42px;
+  object-fit: cover;
+  width: 42px;
+}
+
+.identify-plus-dialog .csp-identify-preview header div,
+.counterspell-plus-chat .csp-identify-result-header div {
+  display: flex;
+  flex-direction: column;
+}
+
+.identify-plus-dialog .csp-identify-preview-description {
+  border-top: 1px solid var(--color-border-light-primary, #777);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.counterspell-plus-chat.csp-identify-result {
+  border: 1px solid #2f7d32;
+  border-radius: 6px;
+  padding: 0.7rem;
+}
+
+.counterspell-plus-chat .csp-identify-result-header h3 {
+  margin: 0;
+}
+
+.counterspell-plus-chat .csp-identify-description,
+.counterspell-plus-chat .csp-identify-curse {
+  border-top: 1px solid var(--color-border-light-primary, #777);
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+}
+
+.counterspell-plus-chat .csp-identify-curse {
+  background: color-mix(in srgb, #8b2d2d 12%, transparent);
+  border: 1px solid #8b2d2d;
+  border-radius: 5px;
+  padding: 0.55rem;
+}
+
 @media (max-width: 520px) {
   .counterspell-plus-dialog .csp-grid {
     grid-template-columns: 1fr;

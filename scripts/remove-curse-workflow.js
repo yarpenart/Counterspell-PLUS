@@ -548,6 +548,6 @@ export function initializeRemoveCurseWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRemoveCurseFromActivity = startRemoveCurse;
-  game.counterspellPlus.version = "0.4.8";
+  game.counterspellPlus.version = "0.5.0";
   debug("Ready");
 }
