@@ -182,14 +182,14 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
     </div>` : "";
 
   const content = `
-    <div class="csp-form">
+    <div class="csp-form"${homebrew ? " data-csp-homebrew-casting" : ""}>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(homebrew ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
       </div>
       <div class="form-group">
         <label>${t("Dialog.CastingMethod")}</label>
-        <div class="form-fields"><select name="castingSource">
+        <div class="form-fields"><select name="castingSource" data-csp-casting-source-select>
           <option value="spell">${t("Dialog.CastNormally")}</option>
           <option value="scroll">${t("Dialog.CastFromScroll")}</option>
         </select></div>
@@ -200,19 +200,19 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
       </div>
       <div class="form-group">
         <label>${t("Restoration.Dialog.Slot")}</label>
-        <div class="form-fields"><select name="slotKey">${slotOptions}</select></div>
+        <div class="form-fields"><select name="slotKey" data-csp-casting-source="spell">${slotOptions}</select></div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollLevel")}</label>
-        <div class="form-fields"><select name="scrollLevel">${levelOptions(minimumLevel, minimumLevel)}</select></div>
+        <div class="form-fields"><select name="scrollLevel" data-csp-casting-source="scroll">${levelOptions(minimumLevel, minimumLevel)}</select></div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollAuthorModifier")}</label>
-        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1"></div>
+        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1" data-csp-casting-source="scroll"></div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollAuthorProficiency")}</label>
-        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1" data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"></div>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1" data-csp-casting-source="scroll" data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"></div>
       </div>
       <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       ${rollFields}
