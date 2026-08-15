@@ -398,6 +398,10 @@
   padding-top: 0.5rem;
 }
 
+.counterspell-plus-dialog .form-group.csp-field-disabled {
+  opacity: 0.55;
+}
+
 @media (max-width: 520px) {
   .counterspell-plus-dialog .csp-grid {
     grid-template-columns: 1fr;
