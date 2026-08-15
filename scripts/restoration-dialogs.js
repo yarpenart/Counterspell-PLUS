@@ -1,4 +1,4 @@
-import { RULESETS } from "./config.js";
+import { MODULE_ID, RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
   activateTargetSearch,
@@ -95,6 +95,18 @@ function rollModeLabel(mode) {
 
 function effectLabel(effectId) {
   return t(`Restoration.Effects.${effectId}`);
+}
+
+function requirementsPenalty() {
+  const value = Number(game.settings.get(MODULE_ID, "curseRequirementsDcPenalty"));
+  return Math.max(0, Number.isFinite(value) ? Math.trunc(value) : 5);
+}
+
+function requirementsRollModeOptions(selected = "gmroll") {
+  return selectOptions([
+    { key: "publicroll", label: t("Requirements.Dialog.ChatPublic"), selected: selected === "publicroll" },
+    { key: "gmroll", label: t("Requirements.Dialog.ChatGMOnly"), selected: selected !== "publicroll" }
+  ]);
 }
 
 function materialMarkup(material) {
@@ -316,6 +328,9 @@ export async function promptRestorationEffect(restorer) {
 
 export async function promptGMRestorationReview(restorer, selection) {
   const homebrew = restorer.ruleset === RULESETS.HOMEBREW;
+  const showRequirements = homebrew
+    && Boolean(game.settings.get(MODULE_ID, "curseRequirementsEnabled"));
+  const unmetPenalty = requirementsPenalty();
   const effectIds = getRestorationEffectIds(restorer.activityType, restorer.slotLevel);
   const material = getRestorationMaterial(restorer.activityType, restorer.slotLevel);
   const targets = getSceneCasterEntries();
@@ -410,6 +425,25 @@ export async function promptGMRestorationReview(restorer, selection) {
         <div class="form-group"><label>${t("Restoration.Dialog.CurseLevel")}</label><div class="form-fields"><select name="curseLevel">${levelOptions(1)}</select></div></div>
         <div class="form-group"><label>${t("Restoration.Dialog.CurseModifier")}</label><div class="form-fields"><input type="number" name="curseMod" value="0" step="1"></div></div>
         <div class="form-group"><label>${t("Restoration.Dialog.CurseProficiency")}</label><div class="form-fields"><input type="number" name="curseProf" value="0" min="0" step="1"></div></div>
+        ${showRequirements ? `
+          <div class="csp-requirements-fields">
+            <h4>${t("Requirements.Dialog.Title")}</h4>
+            <label class="checkbox">
+              <input type="checkbox" name="requirementsMet"${selection.requirementsMet ? " checked" : ""}>
+              ${t("Requirements.Dialog.Met")}
+            </label>
+            <p class="hint">${tf("Requirements.Dialog.MetHint", { penalty: unmetPenalty })}</p>
+            <div class="form-group stacked">
+              <label>${t("Requirements.Dialog.Note")}</label>
+              <div class="form-fields"><input type="text" name="requirementsNote" value="${escapeHTML(selection.requirementsNote ?? "")}" placeholder="${escapeHTML(t("Requirements.Dialog.NotePlaceholder"))}"></div>
+              <p class="hint">${t("Requirements.Dialog.NoteHint")}</p>
+            </div>
+            <div class="form-group">
+              <label>${t("Requirements.Dialog.ChatVisibility")}</label>
+              <div class="form-fields"><select name="requirementsRollMode">${requirementsRollModeOptions(selection.requirementsRollMode ?? "gmroll")}</select></div>
+            </div>
+            <p class="hint">${t("Requirements.Dialog.ChatVisibilityHint")}</p>
+          </div>` : ""}
       </fieldset>
       <fieldset class="csp-effect-card" data-csp-restoration-attunement>
         <legend>${t("Restoration.Effects.cursedAttunement")}</legend>
@@ -473,6 +507,10 @@ export async function promptGMRestorationReview(restorer, selection) {
   }
   const effectId = effectIds.includes(String(result.effectId)) ? String(result.effectId) : selection.effectId;
   const checkRequired = restorationEffectNeedsCheck(restorer.activityType, effectId);
+  const requirementsApplicable = showRequirements && effectId === RESTORATION_EFFECTS.CURSE;
+  const requirementsRollMode = ["publicroll", "gmroll"].includes(String(result.requirementsRollMode))
+    ? String(result.requirementsRollMode)
+    : "gmroll";
   const reviewedSelection = {
     effectId,
     effectName: effectLabel(effectId),
@@ -486,6 +524,9 @@ export async function promptGMRestorationReview(restorer, selection) {
     curseLevel: parseNumber(result.curseLevel, 1),
     curseMod: parseNumber(result.curseMod, 0),
     curseProf: parseNumber(result.curseProf, 0),
+    requirementsMet: requirementsApplicable ? Boolean(result.requirementsMet) : true,
+    requirementsNote: requirementsApplicable ? String(result.requirementsNote ?? "").trim() : "",
+    requirementsRollMode: requirementsApplicable ? requirementsRollMode : "gmroll",
     itemName: String(result.itemName || "Unknown cursed item"),
     itemCurseLevel: parseNumber(result.itemCurseLevel, 1),
     rarity: String(result.rarity || "common"),
