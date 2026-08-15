@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.5.0
+## Version 0.5.1
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse, the Restoration family and Identify: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -143,9 +143,11 @@ Identification succeeds after GM approval and requires no saving throw. The mate
 
 The GM may mark a specific identification as risky. Only then does Counterspell PLUS call `game.statShift.openHomebrewSave(...)` and open Stat Shift for the GM. The identifying actor is locked as the save target, while the GM may edit the ability, DC, roll mode, automatic bonus, success and failure effects, modifiers, duration, icons and description.
 
+The Identify caster does not select a spellcasting ability. If the item is risky, the GM chooses the saving throw ability directly in Stat Shift.
+
 The automatic saving-throw bonus starts at the level used to cast Identify. The caster then makes the saving throw through Stat Shift. The risk save resolves the configured consequence; the GM's approval separately determines that the identification succeeded. If risk is not selected, Stat Shift does not open and no saving throw is made.
 
-Stat Shift **0.1.6 or newer** is recommended rather than required. If it is unavailable, Identify still posts the private identification result and warns the GM that the risk save could not be opened.
+Stat Shift **0.1.7 or newer** is recommended rather than required. If it is unavailable, Identify still posts the private identification result and warns the GM that the risk save could not be opened.
 
 ## Natural 20 and natural 1
 

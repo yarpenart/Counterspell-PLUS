@@ -483,7 +483,7 @@
         "CastAsRitual": "Ritual Casting",
         "Slot": "Identify spell slot",
         "RitualLevel": "Ritual spell level",
-        "RiskRollHint": "Homebrew: this ability and roll mode prefill Stat Shift only if the GM marks the item as risky. Without risk, no saving throw is made.",
+        "RiskRollHint": "Homebrew: this roll mode prefills Stat Shift only if the GM marks the item as risky. The GM chooses the saving throw ability there. Without risk, no saving throw is made.",
         "InventoryItem": "Item from the caster's inventory",
         "SearchInventory": "Search the inventory…",
         "ManualItem": "Manual name / item not listed",
