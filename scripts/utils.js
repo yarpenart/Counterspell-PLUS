@@ -314,16 +314,28 @@ export function getHomebrewProficiencyMultiplier(abjurer = false) {
 export function activateAbjurerProficiency(_event, dialog) {
   const root = dialog?.element;
   const abjurer = root?.querySelector("[data-csp-abjurer]");
-  const proficiencyInputs = root?.querySelectorAll("[data-csp-scroll-author-prof]") ?? [];
+  const castingRoot = root?.querySelector("[data-csp-homebrew-casting]");
+  const castingSource = castingRoot?.querySelector("[data-csp-casting-source-select]");
+  const controlledInputs = root?.querySelectorAll("[data-csp-casting-source], [data-csp-scroll-author-prof]") ?? [];
 
   const updateInputs = () => {
-    for (const input of proficiencyInputs) {
-      const globallyIncluded = input.dataset.baseProficiency === "true";
-      input.disabled = !globallyIncluded && !Boolean(abjurer?.checked);
+    const selectedSource = String(castingSource?.value ?? "");
+    for (const input of controlledInputs) {
+      const requiredSource = input.dataset.cspCastingSource;
+      const sourceDisabled = Boolean(castingSource && requiredSource && requiredSource !== selectedSource);
+      const proficiencyDisabled = input.hasAttribute("data-csp-scroll-author-prof")
+        && input.dataset.baseProficiency !== "true"
+        && !Boolean(abjurer?.checked);
+      input.disabled = sourceDisabled || proficiencyDisabled;
+
+      const group = input.closest(".form-group");
+      group?.classList.toggle("csp-field-disabled", input.disabled);
+      group?.setAttribute("aria-disabled", String(input.disabled));
     }
   };
 
   abjurer?.addEventListener("change", updateInputs);
+  castingSource?.addEventListener("change", updateInputs);
   updateInputs();
 }
 
@@ -339,6 +351,35 @@ export function activateTargetSearch(_event, dialog) {
     label: option.textContent ?? option.value
   }));
 
+  const sourceScope = root?.querySelector("[data-csp-homebrew-target-source]");
+  const sourceType = sourceScope?.querySelector("[data-csp-source-type-select]");
+  const manualCreatorInputs = sourceScope?.querySelectorAll("[data-csp-manual-creator]") ?? [];
+  const normalSourceInputs = sourceScope?.querySelectorAll("[data-csp-normal-source]") ?? [];
+
+  const setDisabled = (control, disabled) => {
+    control.disabled = disabled;
+    const group = control.closest(".form-group");
+    group?.classList.toggle("csp-field-disabled", disabled);
+    group?.setAttribute("aria-disabled", String(disabled));
+  };
+
+  const updateSourceControls = () => {
+    if (!sourceType) return;
+    const targetChoice = String(select.value ?? "");
+    const glyphTarget = targetChoice === "special:glyph";
+    const unknownTarget = targetChoice === "special:unknown";
+    if (glyphTarget) sourceType.value = "glyph";
+    sourceType.disabled = glyphTarget;
+
+    const fixedSource = sourceType.value === "scroll" || sourceType.value === "glyph";
+    for (const control of manualCreatorInputs) {
+      setDisabled(control, !fixedSource && !unknownTarget);
+    }
+    for (const control of normalSourceInputs) {
+      setDisabled(control, fixedSource);
+    }
+  };
+
   const filterEntries = () => {
     const query = normalizeName(input.value);
     const previous = select.value;
@@ -353,6 +394,7 @@ export function activateTargetSearch(_event, dialog) {
     select.replaceChildren(fragment);
     if (matches.some(entry => entry.value === previous)) select.value = previous;
     if (count) count.textContent = tf("Dialog.TargetsFound", { count: matches.length });
+    updateSourceControls();
   };
 
   input.addEventListener("input", filterEntries);
@@ -361,6 +403,8 @@ export function activateTargetSearch(_event, dialog) {
     event.preventDefault();
     select.focus();
   });
+  select.addEventListener("change", updateSourceControls);
+  sourceType?.addEventListener("change", updateSourceControls);
   filterEntries();
 }
 
