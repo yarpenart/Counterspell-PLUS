@@ -126,14 +126,14 @@ export async function promptCounterspeller(actor, item, ruleset) {
     : "";
 
   const content = `
-    <div class="csp-form">
+    <div class="csp-form"${ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-casting" : ""}>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(ruleset === RULESETS.HOMEBREW ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
       </div>
       <div class="form-group">
         <label>${t("Dialog.CastingMethod")}</label>
-        <div class="form-fields"><select name="castingSource">
+        <div class="form-fields"><select name="castingSource" data-csp-casting-source-select>
           <option value="spell">${t("Dialog.CastNormally")}</option>
           <option value="scroll">${t("Dialog.CastFromScroll")}</option>
         </select></div>
@@ -147,20 +147,20 @@ export async function promptCounterspeller(actor, item, ruleset) {
       <div class="form-group">
         <label>${t("Dialog.CounterspellSlot")}</label>
         <div class="form-fields">
-          <select name="slotKey">${slotOptions}</select>
+          <select name="slotKey" data-csp-casting-source="spell">${slotOptions}</select>
         </div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollLevel")}</label>
-        <div class="form-fields"><select name="scrollLevel">${levelOptions(3, 3)}</select></div>
+        <div class="form-fields"><select name="scrollLevel" data-csp-casting-source="scroll">${levelOptions(3, 3)}</select></div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollAuthorModifier")}</label>
-        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1"></div>
+        <div class="form-fields"><input type="number" name="scrollAuthorMod" value="0" step="1" data-csp-casting-source="scroll"></div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.ScrollAuthorProficiency")}</label>
-        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1" data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"></div>
+        <div class="form-fields"><input type="number" name="scrollAuthorProf" value="0" min="0" step="1" data-csp-casting-source="scroll" data-csp-scroll-author-prof data-base-proficiency="${proficiencyIncluded}"></div>
       </div>
       <p class="hint">${t("Dialog.ScrollCastingHint")}</p>
       <div class="form-group">
@@ -239,7 +239,7 @@ export async function promptGMTarget(counter) {
     ? `
       <div class="form-group stacked">
         <label class="checkbox">
-          <input type="checkbox" name="disadvantage">
+          <input type="checkbox" name="disadvantage" data-csp-normal-source>
           ${t("Dialog.GMTargetDisadvantage")}
         </label>
         <p class="hint">${t("Dialog.GMTargetDisadvantageHint")}</p>
@@ -249,7 +249,7 @@ export async function promptGMTarget(counter) {
     ? `
       <div class="form-group stacked">
         <label>${t("Dialog.TargetBonusDice")}</label>
-        <div class="form-fields"><input type="text" name="bonusFormula" placeholder="1d4 + 1d8"></div>
+        <div class="form-fields"><input type="text" name="bonusFormula" placeholder="1d4 + 1d8" data-csp-normal-source></div>
         <p class="hint">${t("Dialog.TargetBonusDiceHint")}</p>
       </div>`
     : "";
@@ -267,7 +267,7 @@ export async function promptGMTarget(counter) {
   casterOptions = searchableEntries(casterOptions);
 
   const content = `
-    <div class="csp-form">
+    <div class="csp-form"${counter.ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-target-source" : ""}>
       <div class="csp-panel">
         <h3>${t("Dialog.CounterspellData")}</h3>
         <dl>
@@ -289,7 +289,7 @@ export async function promptGMTarget(counter) {
       <div class="form-group">
         <label>${t("Dialog.SourceType")}</label>
         <div class="form-fields">
-          <select name="sourceType">
+          <select name="sourceType" data-csp-source-type-select>
             <option value="spell">${t("Dialog.NormalSpell")}</option>
             <option value="scroll">${t("Dialog.Scroll")}</option>
             <option value="glyph">${t("Dialog.Glyph")}</option>
@@ -316,7 +316,7 @@ export async function promptGMTarget(counter) {
       ${targetDisadvantageField}
       <div class="form-group stacked">
         <label class="checkbox">
-          <input type="checkbox" name="askOwner" checked>
+          <input type="checkbox" name="askOwner" checked data-csp-normal-source>
           ${t("Dialog.AskOwner")}
         </label>
         <p class="hint">${t("Dialog.AskOwnerHint")}</p>
@@ -325,11 +325,11 @@ export async function promptGMTarget(counter) {
         <legend>${t("Dialog.ManualCasterCreator")}</legend>
         <div class="form-group">
           <label>${t("Dialog.CreatorModifier")}</label>
-          <div class="form-fields"><input type="number" name="creatorMod" value="0" step="1"></div>
+          <div class="form-fields"><input type="number" name="creatorMod" value="0" step="1" data-csp-manual-creator></div>
         </div>
         <div class="form-group">
           <label>${t("Dialog.CreatorProficiency")}</label>
-          <div class="form-fields"><input type="number" name="creatorProf" value="0" min="0" step="1"></div>
+          <div class="form-fields"><input type="number" name="creatorProf" value="0" min="0" step="1" data-csp-manual-creator></div>
         </div>
       </fieldset>
       <p class="hint">${t("Dialog.ManualDataHint")}</p>
