@@ -183,6 +183,11 @@ export function calculateRestorationDefense(selection) {
   const level = Number(selection.curseLevel);
   const modifier = Number(selection.curseMod);
   const proficiency = proficiencyIncluded ? Number(selection.curseProf) : 0;
+  const requirementsEnabled = selection.effectId === RESTORATION_EFFECTS.CURSE
+    && Boolean(game.settings.get(MODULE_ID, "curseRequirementsEnabled"));
+  const requirementsPenalty = requirementsEnabled && !selection.requirementsMet
+    ? Math.max(0, Math.trunc(configuredNumber("curseRequirementsDcPenalty", 5)))
+    : 0;
   return {
     type: "curse",
     name: selection.curseName,
@@ -192,13 +197,18 @@ export function calculateRestorationDefense(selection) {
     proficiency,
     proficiencyIncluded,
     knownReduction,
-    dc: base + level + modifier + proficiency - knownReduction
+    requirementsEnabled,
+    requirementsMet: Boolean(selection.requirementsMet),
+    requirementsNote: String(selection.requirementsNote ?? "").trim(),
+    requirementsPenalty,
+    dc: base + level + modifier + proficiency + requirementsPenalty - knownReduction
   };
 }
 
 async function postDefenseSummary(selection, defense) {
   const proficiencyPart = defense.proficiencyIncluded ? ` + ${defense.proficiency}` : "";
   const knownPart = defense.knownReduction ? ` - ${defense.knownReduction}` : "";
+  const requirementsPart = defense.requirementsPenalty ? ` + ${defense.requirementsPenalty}` : "";
   const modifierLabel = defense.type === "attunement"
     ? t("Restoration.Chat.RarityModifier")
     : t("Restoration.Chat.CurseModifier");
@@ -208,11 +218,41 @@ async function postDefenseSummary(selection, defense) {
       <div class="counterspell-plus-chat csp-restoration-defense">
         <h3>${t("Restoration.Chat.DefenseTitle")}</h3>
         <p><strong>${escapeHTML(defense.name)}</strong></p>
-        <p class="csp-formula">${defense.base} + ${defense.level} + ${defense.modifier}${proficiencyPart}${knownPart} = <strong>${defense.dc}</strong></p>
+        <p class="csp-formula">${defense.base} + ${defense.level} + ${defense.modifier}${proficiencyPart}${requirementsPart}${knownPart} = <strong>${defense.dc}</strong></p>
         <small>${escapeHTML(modifierLabel)}</small>
       </div>`
   }, selection.defenseRollMode);
   await ChatMessage.create(data);
+  await postRequirementsSummary(selection, defense);
+}
+
+async function postRequirementsSummary(selection, defense) {
+  if (!defense.requirementsEnabled) return;
+  const met = Boolean(defense.requirementsMet);
+  const status = met ? t("Requirements.Chat.Met") : t("Requirements.Chat.NotMet");
+  const penalty = met
+    ? t("Requirements.Chat.NoPenalty")
+    : tf("Requirements.Chat.Penalty", { penalty: defense.requirementsPenalty });
+  const note = String(defense.requirementsNote ?? "").trim();
+  const rollMode = ["publicroll", "gmroll"].includes(selection.requirementsRollMode)
+    ? selection.requirementsRollMode
+    : "gmroll";
+  await ChatMessage.create(applyRollMode({
+    speaker: speakerFor(null, selection.targetName),
+    content: `
+      <div class="counterspell-plus-chat csp-requirements-status">
+        <h3>${t("Requirements.Chat.Title")}</h3>
+        <p>${tf("Restoration.Chat.Target", { target: escapeHTML(selection.targetName) })}</p>
+        <ul>
+          <li class="csp-requirements-entry ${met ? "success" : "failure"}">
+            <strong>${escapeHTML(defense.name)}</strong>
+            <span>${escapeHTML(status)}</span>
+            <small>${escapeHTML(penalty)}</small>
+            ${note ? `<small>${tf("Requirements.Chat.Note", { note: escapeHTML(note) })}</small>` : ""}
+          </li>
+        </ul>
+      </div>`
+  }, rollMode));
 }
 
 function materialLine(material) {
@@ -414,6 +454,6 @@ export function initializeRestorationWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRestorationFromActivity = startRestoration;
-  game.counterspellPlus.version = "0.4.2";
+  game.counterspellPlus.version = "0.4.7";
   debug("Ready");
 }
