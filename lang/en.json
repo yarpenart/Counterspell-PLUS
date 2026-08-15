@@ -133,6 +133,20 @@
         "Name": "Recognized Restoration names",
         "Hint": "Comma-separated spell names used in Homebrew mode. Parenthetical suffixes are recognized automatically."
       },
+      "IdentifyEnabled": {
+        "Name": "Enable Identify workflow",
+        "Hint": "Intercept recognized Identify activities and let the caster select an item for GM-approved identification."
+      },
+      "IdentifyRuleset": {
+        "Name": "Identify rules",
+        "Hint": "Choose the Identify workflow independently from the other supported spells.",
+        "Homebrew": "Homebrew: optional identification risk",
+        "Official2014": "Official D&D 2014"
+      },
+      "IdentifyNames": {
+        "Name": "Recognized Identify names",
+        "Hint": "Comma-separated Identify spell names. Parenthetical suffixes are recognized automatically."
+      },
       "IncludeProficiency": {
         "Name": "Homebrew: add proficiency bonus",
         "Hint": "When enabled, proficiency is added to all homebrew Counterspell, Dispel Magic, Remove Curse and Restoration rolls and passive or fixed defenses. Official 2014 remains unchanged."
@@ -459,6 +473,84 @@
         "CancelledByGM": "The GM cancelled the Restoration workflow.",
         "CancelledByPlayer": "The Restoration caster cancelled the workflow.",
         "GenericError": "The Restoration workflow encountered an error."
+      }
+    },
+    "Identify": {
+      "Dialog": {
+        "CasterTitle": "Counterspell PLUS — your Identify",
+        "GMTitle": "Counterspell PLUS — Identify GM review",
+        "Approve": "Approve identification",
+        "CastAsRitual": "Ritual Casting",
+        "Slot": "Identify spell slot",
+        "RitualLevel": "Ritual spell level",
+        "RiskRollHint": "Homebrew: this ability and roll mode prefill Stat Shift only if the GM marks the item as risky. Without risk, no saving throw is made.",
+        "InventoryItem": "Item from the caster's inventory",
+        "SearchInventory": "Search the inventory…",
+        "ManualItem": "Manual name / item not listed",
+        "TypedName": "Name supplied by the caster",
+        "TypedNamePlaceholder": "e.g. strange ring",
+        "TypedNameHint": "You may type any name, including a homebrew item that does not yet exist as a Foundry document.",
+        "DropInventoryHint": "Drop an inventory item here or choose it above",
+        "MaterialTitle": "Material component:",
+        "MaterialText": "a pearl worth at least 100 gp and an owl feather. The module presents this as information and does not consume it.",
+        "ItemsFound": "Items found: {count}",
+        "WorldItem": "World Item",
+        "ActorItem": "Actor: {actor}",
+        "DroppedItem": "Dropped Item",
+        "WorldSearch": "Actual item in this world",
+        "SearchWorld": "Search all World Items and actor inventories…",
+        "NoActualItem": "Manual name / no existing Item document",
+        "DropWorldHint": "Drop an Item document here",
+        "FinalName": "Name revealed to the caster",
+        "FinalNameHint": "Confirm the player's text or replace it with the actual item's name.",
+        "NoStoredDescription": "This Item document has no stored description.",
+        "LoadStoredDescription": "Copy stored description into the revealed description",
+        "RevealedDescription": "Description revealed after identification",
+        "RevealedDescriptionHint": "Only this editable text is sent. The stored description is never copied automatically, so hidden curse information is not exposed accidentally.",
+        "RevealCurse": "Reveal curse information",
+        "RevealCurseHint": "Disabled by default in both rulesets. Enable it only when Identify should reveal the curse, then enter the details below.",
+        "CurseDetails": "Curse details revealed to the caster",
+        "Risk": "This identification carries a homebrew risk",
+        "RiskHint": "After approval, Stat Shift opens a locked Homebrew Save for the identifying caster. Identify level {level} is automatically added to that saving throw. If this is unchecked, no saving throw occurs.",
+        "OfficialNoRisk": "Official 2014 mode does not add a risk saving throw. Curse details remain a separate GM choice and are hidden by default.",
+        "PrivateResultHint": "The approved result and revealed description are whispered only to GMs and the user who cast Identify.",
+        "CastLevelSummary": "Identify cast at level {level}",
+        "Source": {
+          "spell": "Normal Casting",
+          "scroll": "Scroll Casting",
+          "ritual": "Ritual Casting"
+        }
+      },
+      "Chat": {
+        "Success": "Identification successful",
+        "CastSummary": "{caster} used Identify at level {level} ({source}).",
+        "DetailsSoon": "The GM did not provide a revealed description yet and will provide details shortly.",
+        "MissingItemDetailsSoon": "The identification succeeded. This item does not yet exist as an Item document; the GM will provide details shortly.",
+        "CurseTitle": "Revealed curse information",
+        "PrivateRecipients": "Private result: visible only to the identifying user and GMs.",
+        "GMNotice": "Identify — GM notice"
+      },
+      "StatShift": {
+        "Source": "Counterspell PLUS — Identify: {item}",
+        "Title": "Identify risk — {item}",
+        "EffectName": "Identification consequence — {item}",
+        "Description": "Homebrew Identify risk. The identifying caster is the locked target. Identify level {level} is automatically added to the saving throw. The GM may edit all save and outcome fields."
+      },
+      "Notifications": {
+        "InvalidDrop": "Drop an Item document, not another document type.",
+        "DescriptionLoaded": "The stored description was copied. Review it carefully before approval, especially for hidden curse information.",
+        "DescriptionRequired": "Enter the safe description to reveal for the selected Item document. The spell slot was not consumed.",
+        "NoSlots": "No available Identify spell slot was selected. Choose a slot, Scroll Casting, or Ritual Casting.",
+        "ItemRequired": "Choose an item or enter the name of the item being identified.",
+        "ActorNotFound": "The Identify caster could not be found.",
+        "SlotUnavailable": "The selected Identify spell slot is no longer available.",
+        "NoGM": "An active GM is required to resolve Identify.",
+        "AlreadyPending": "This actor already has a pending Identify workflow.",
+        "RequestTimeout": "The Identify request expired after three minutes.",
+        "CancelledByGM": "The GM cancelled the Identify workflow.",
+        "Approved": "The GM approved the identification.",
+        "StatShiftMissing": "This item is risky, but Stat Shift is not active or does not provide the Identify integration API. The identification result was still posted.",
+        "GenericError": "The Identify workflow encountered an error."
       }
     },
     "RemoveCurse": {
