@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 3;
+const CONTENT_VERSION = 4;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -204,6 +204,7 @@ function homebrewRules(config) {
       <section>
         <h2>Remove Curse</h2>
         <p>Remove Curse follows the Dispel Magic homebrew structure. The caster rolls once and compares that total with every curse. The target merely identifies the cursed creature or object; each curse has separate creator/caster values entered and confirmed by the GM.</p>
+        <div class="csp-rules-note"><strong>Curse-removal requirements.</strong> Some curses require a specific condition before they can be removed, such as possessing a particular component or defeating the source of the curse. When the optional requirements rule is enabled, failing to fulfil that condition makes the curse harder to remove by increasing its DC by <strong>+${config.curseRequirementsPenalty}</strong>. The GM decides whether the requirement has been fulfilled.</div>
         <div class="csp-rules-formula"><strong>Remove Curse roll:</strong> 1d20 + Remove Curse level + ability modifier + caster proficiency + optional dice<br><strong>Each curse DC:</strong> ${config.removeCurseBase} + curse level + curse caster/creator modifier + normal curse proficiency + multiple-curse bonus${config.curseRequirementsEnabled ? ` + ${config.curseRequirementsPenalty} if removal requirements are unmet` : ""} − knowledge reduction</div>
         <ul>
           <li>Remove Curse offers only the <strong>Curse</strong> affected-source type. A scroll may still be used to cast Remove Curse itself.</li>
@@ -244,6 +245,7 @@ function homebrewRules(config) {
         <p>Every listed option is automatic except <strong>One Curse</strong> and <strong>Attunement to a Cursed Item</strong>. Petrified requires no roll.</p>
 
         <h3>One Curse</h3>
+        <div class="csp-rules-note"><strong>Special requirements may apply.</strong> As with Remove Curse, some curses require an additional condition to be fulfilled. If the GM marks that condition as unmet while the optional requirements rule is enabled, removing the curse is more difficult and its DC increases by <strong>+${config.curseRequirementsPenalty}</strong>.</div>
         <div class="csp-rules-formula"><strong>Restoration roll:</strong> 1d20 + Restoration level + ability modifier + caster proficiency + optional dice<br><strong>Curse DC:</strong> ${config.restorationCurseBase} + curse level + curse ability modifier + normal curse proficiency${config.curseRequirementsEnabled ? ` + ${config.curseRequirementsPenalty} if removal requirements are unmet` : ""} − 5 if known</div>
         <ul>
           <li>The result must be strictly higher than the DC; a tie is a failure.</li>
