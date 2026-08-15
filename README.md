@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.4.7
+## Version 0.4.8
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse and the Restoration family: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -14,6 +14,7 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - Optional additional dice formulas such as `1d4` or `1d4 + 1d8` are supported and editable by the GM.
 - One world checkbox controls whether proficiency is included in all four Homebrew workflows. Official 2014 calculations remain unchanged. An optional world setting enables an `Abjurer` declaration: it adds one extra proficiency bonus to the caster roll, producing single proficiency when the shared proficiency option is off and expertise when it is on.
 - Counterspell, Dispel Magic, Remove Curse and Restoration spells can be declared as cast normally or from a spell scroll. Scroll casting uses the selected scroll level plus the scroll author's ability modifier and proficiency, consumes no character spell slot, and is editable by the GM.
+- In every Homebrew casting dialog, Normal Casting disables the Scroll level and Scroll author fields. Scroll Casting enables those fields and disables the normal spell-slot selector. Counterspell also disables fixed Scroll/Glyph creator fields for a selected actor using a normal spell; Official 2014 dialogs remain unchanged.
 - Counterspell target selection supports actor/token, Unknown and Glyph targets; Dispel Magic additionally supports Object. Selecting Glyph as the target forces Glyph as the spell source in both workflows.
 - Counterspell and Dispel Magic target selectors provide a live-filtered search list instead of requiring scrolling through long actor lists.
 - Target searches combine tokens on the active scene with Actors that do not have a token on that scene, and label every result as Token, Actor or Special.
