@@ -113,6 +113,14 @@
         "Name": "Restoration: cursed-item attunement defense base",
         "Hint": "Homebrew base for removing Attunement to a Cursed Item with 5th-level Restoration. Default: 7."
       },
+      "CurseRequirementsEnabled": {
+        "Name": "Homebrew: włącz wymogi zdjęcia klątwy",
+        "Hint": "Pozwala GM-owi określić, czy spełniono wymogi zdjęcia klątwy w Homebrew Remove Curse oraz Restoration: One Curse. Zasady oficjalne i zerwanie związania z przeklętym przedmiotem pozostają bez zmian. Domyślnie wyłączone."
+      },
+      "CurseRequirementsDcPenalty": {
+        "Name": "Homebrew: wzrost DC za niespełnione wymogi klątwy",
+        "Hint": "Wartość dodawana do DC obrony klątwy, gdy nie spełniono wymogów jej zdjęcia. Działa tylko po włączeniu wymogów zdjęcia klątwy. Domyślnie: +5."
+      },
       "LesserRestorationNames": {
         "Name": "Recognized Lesser Restoration names",
         "Hint": "Comma-separated spell names used in Official 2014 mode. Parenthetical suffixes are recognized automatically."
@@ -137,6 +145,28 @@
     "Rules": {
       "Homebrew": "Homebrew — rzut przeciwstawny",
       "Official2014": "Oficjalne D&D 2014"
+    },
+    "Requirements": {
+      "Dialog": {
+        "Title": "Wymogi zdjęcia klątwy",
+        "Met": "Postać spełnia wymogi zdjęcia tej klątwy",
+        "MetHint": "Decyzję podejmuje GM. Jeśli pole pozostanie niezaznaczone, DC tej klątwy wzrośnie o +{penalty}.",
+        "Note": "Opis wymogu",
+        "NotePlaceholder": "np. posiada wymagany składnik lub zabiła źródło klątwy",
+        "NoteHint": "Opcjonalnie. Opis pojawi się w komunikacie o wymogach.",
+        "ChatVisibility": "Widoczność komunikatu o wymogach",
+        "ChatPublic": "Publiczny",
+        "ChatGMOnly": "Tylko dla GM",
+        "ChatVisibilityHint": "Wybierz, czy status wymogów ma być publiczny, czy widoczny tylko dla GM-ów."
+      },
+      "Chat": {
+        "Title": "Wymogi zdjęcia klątwy",
+        "Met": "WYMOGI SPEŁNIONE",
+        "NotMet": "WYMOGI NIESPEŁNIONE",
+        "Penalty": "DC klątwy zwiększone o +{penalty}.",
+        "NoPenalty": "Do DC klątwy nie dodano kary za wymogi.",
+        "Note": "Wymóg: {note}"
+      }
     },
     "Dialog": {
       "Confirm": "Potwierdź",
