@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 2;
+const CONTENT_VERSION = 3;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -28,6 +28,8 @@ function configuration() {
     removeCurseBase: configuredNumber("removeCurseDefenseBase", 10),
     restorationCurseBase: configuredNumber("restorationCurseDefenseBase", 8),
     restorationAttunementBase: configuredNumber("restorationAttunementDefenseBase", 7),
+    curseRequirementsEnabled: Boolean(game.settings.get(MODULE_ID, "curseRequirementsEnabled")),
+    curseRequirementsPenalty: Math.max(0, Math.trunc(configuredNumber("curseRequirementsDcPenalty", 5))),
     dramaticFailureMin,
     barelySuccessMax,
     counterspellMinimum: getSpecialMinimum("counterspellSpecialMinimum"),
@@ -126,6 +128,7 @@ function homebrewRules(config) {
   const proficiencyState = config.includeProficiency ? "included" : "not included";
   const abjurerState = config.abjurerEnabled ? "available" : "disabled";
   const wildMagicState = config.wildMagic ? "enabled" : "disabled";
+  const requirementsState = config.curseRequirementsEnabled ? "enabled" : "disabled";
   const ordinaryMultiplier = config.includeProficiency ? 1 : 0;
   const abjurerMultiplier = ordinaryMultiplier + 1;
   return `
@@ -141,6 +144,7 @@ function homebrewRules(config) {
             <tr><td>Proficiency in homebrew calculations</td><td><strong>${proficiencyState}</strong></td></tr>
             <tr><td>Abjurer declaration</td><td><strong>${abjurerState}</strong></td></tr>
             <tr><td>Counterspell against Counterspell — Wild Magic reminder</td><td><strong>${wildMagicState}</strong></td></tr>
+            <tr><td>Curse-removal requirements</td><td><strong>${requirementsState}</strong>${config.curseRequirementsEnabled ? `; unmet requirement: +${config.curseRequirementsPenalty} DC` : ""}</td></tr>
           </tbody>
         </table>
         <ul>
@@ -200,11 +204,12 @@ function homebrewRules(config) {
       <section>
         <h2>Remove Curse</h2>
         <p>Remove Curse follows the Dispel Magic homebrew structure. The caster rolls once and compares that total with every curse. The target merely identifies the cursed creature or object; each curse has separate creator/caster values entered and confirmed by the GM.</p>
-        <div class="csp-rules-formula"><strong>Remove Curse roll:</strong> 1d20 + Remove Curse level + ability modifier + caster proficiency + optional dice<br><strong>Each curse DC:</strong> ${config.removeCurseBase} + curse level + curse caster/creator modifier + normal curse proficiency + multiple-curse bonus − knowledge reduction</div>
+        <div class="csp-rules-formula"><strong>Remove Curse roll:</strong> 1d20 + Remove Curse level + ability modifier + caster proficiency + optional dice<br><strong>Each curse DC:</strong> ${config.removeCurseBase} + curse level + curse caster/creator modifier + normal curse proficiency + multiple-curse bonus${config.curseRequirementsEnabled ? ` + ${config.curseRequirementsPenalty} if removal requirements are unmet` : ""} − knowledge reduction</div>
         <ul>
           <li>Remove Curse offers only the <strong>Curse</strong> affected-source type. A scroll may still be used to cast Remove Curse itself.</li>
           <li>With one curse, the multiple-curse bonus is 0. With two or more curses, add the total number of curses to every DC.</li>
           <li>Knowing an individual curse reduces only that curse's DC by 5.</li>
+          ${config.curseRequirementsEnabled ? `<li>The GM decides separately for every curse whether its removal requirements are fulfilled. An unmet requirement adds <strong>+${config.curseRequirementsPenalty}</strong> to that curse's DC. The GM also chooses whether the status message is public or GM-only.</li>` : ""}
           <li>The result must be strictly higher than the curse DC. A tie is a failure.</li>
           <li>Special Cursecaster uses a minimum kept d20 result of <strong>${config.removeCurseMinimum}</strong>.</li>
         </ul>
@@ -239,11 +244,12 @@ function homebrewRules(config) {
         <p>Every listed option is automatic except <strong>One Curse</strong> and <strong>Attunement to a Cursed Item</strong>. Petrified requires no roll.</p>
 
         <h3>One Curse</h3>
-        <div class="csp-rules-formula"><strong>Restoration roll:</strong> 1d20 + Restoration level + ability modifier + caster proficiency + optional dice<br><strong>Curse DC:</strong> ${config.restorationCurseBase} + curse level + curse ability modifier + normal curse proficiency − 5 if known</div>
+        <div class="csp-rules-formula"><strong>Restoration roll:</strong> 1d20 + Restoration level + ability modifier + caster proficiency + optional dice<br><strong>Curse DC:</strong> ${config.restorationCurseBase} + curse level + curse ability modifier + normal curse proficiency${config.curseRequirementsEnabled ? ` + ${config.curseRequirementsPenalty} if removal requirements are unmet` : ""} − 5 if known</div>
         <ul>
           <li>The result must be strictly higher than the DC; a tie is a failure.</li>
           <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.restorationMinimum}</strong>.</li>
           <li>The shared proficiency, Abjurer, scroll-author, disadvantage, bonus-dice and roll-mode rules all apply.</li>
+          ${config.curseRequirementsEnabled ? `<li>The GM confirms whether the One Curse removal requirements are fulfilled. An unmet requirement adds <strong>+${config.curseRequirementsPenalty}</strong> DC; its status message may be public or GM-only.</li>` : ""}
           <li>One Curse uses the same four complication bands as Remove Curse: dramatic failure at ${config.dramaticFailureMin} or more below DC; ordinary failure through a tie; barely successful at 1–${config.barelySuccessMax} above DC; full success at ${config.barelySuccessMax + 1} or more above DC.</li>
         </ul>
 

@@ -172,6 +172,27 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "curseRequirementsEnabled", {
+    name: "COUNTERSPELL_PLUS.Settings.CurseRequirementsEnabled.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.CurseRequirementsEnabled.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    restricted: true
+  });
+
+  game.settings.register(MODULE_ID, "curseRequirementsDcPenalty", {
+    name: "COUNTERSPELL_PLUS.Settings.CurseRequirementsDcPenalty.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.CurseRequirementsDcPenalty.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 0, max: 50, step: 1 },
+    default: 5,
+    restricted: true
+  });
+
   game.settings.register(MODULE_ID, "removeCurseDramaticFailureMin", {
     name: "COUNTERSPELL_PLUS.Settings.RemoveCurseDramaticFailureMin.Name",
     hint: "COUNTERSPELL_PLUS.Settings.RemoveCurseDramaticFailureMin.Hint",

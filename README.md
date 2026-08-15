@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration** and homebrew **Restoration** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.4.2
+## Version 0.4.7
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse and the Restoration family: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -21,6 +21,7 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - A Blind GM defense hides affected spell levels from players; Counterspell keeps the target data with the GM, while Dispel Magic masks levels in the caster's effect list.
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
 - The GM can mark a Counterspell, Dispel Magic, Remove Curse or Restoration caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
+- Homebrew Remove Curse and Restoration: One Curse can optionally require special curse-removal conditions. The GM confirms each requirement, may describe it, chooses whether its status message is public or GM-only, and an unmet requirement increases the curse DC by a configurable amount (default +5). Official 2014 rules and cursed-item attunement are unchanged.
 - English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
 - The primary active GM automatically receives a player-visible `Counterspell PLUS — Rules Reference` Journal Entry with two pages: Official 2014 Rules and the complete Homebrew Rules. The module updates its managed pages when relevant world settings change.
 
@@ -105,6 +106,8 @@ The player can enter different optional dice for every required check, and the G
 
 Remove Curse uses the same target selection, multiple-effect handling, roll modes, bonus dice, knowledge reduction, Special Cursecaster option and GM review flow as Dispel Magic. Its only casting source is `Curse`; Scroll and Glyph are not offered. The selected target only identifies who or what is cursed, while every curse has separate ability-modifier and proficiency fields entered by the GM.
 
+An optional Homebrew world setting enables curse-removal requirements. During the final review, the GM marks each curse separately as meeting or not meeting its requirements and may add a short note such as a required component or killing the source of the curse. An unmet requirement adds a configurable penalty to that curse's DC (default `+5`). The GM chooses per attempt whether the requirements message is public or visible only to GMs. Official 2014 Remove Curse is unchanged.
+
 Under the Homebrew rule, every curse also posts a public outcome card. The default result bands are:
 
 - failure by 5 or more: Dramatic Curse Removal Failure;
@@ -133,7 +136,7 @@ All options are automatic except One Curse and Attunement to a Cursed Item. One 
 
 ```text
 configured base (default 8) + curse level + curse ability modifier
-+ curse proficiency - 5 if known
++ curse proficiency + unmet-requirement penalty (default +5) - 5 if known
 ```
 
 Attunement uses the same caster procedure against:
@@ -142,6 +145,8 @@ Attunement uses the same caster procedure against:
 configured base (default 7) + curse level + item rarity modifier
 + curse proficiency - 5 if known
 ```
+
+The unmet-requirement penalty is included only when the optional Homebrew requirements setting is enabled and the GM leaves the One Curse requirement unchecked. It never applies to Attunement to a Cursed Item or to Official Restoration spells.
 
 Rarity modifiers are Common 1, Uncommon 2, Rare 3, Very Rare 5, Legendary 6 and Artifact 8. One Curse posts the four configured Remove Curse complication bands. Attunement posts only Success or Failure and never posts a complication card.
 
@@ -152,6 +157,7 @@ Open **Configure Settings → Module Settings → Counterspell PLUS** to configu
 - Counterspell enabled state, ruleset, recognized names, Scroll base, Glyph base and Wild Magic reminder.
 - Dispel Magic enabled state, ruleset, recognized names, Normal Spell base, Scroll base and Glyph base.
 - Remove Curse enabled state, ruleset, recognized names, Curse defense base and two outcome sliders.
+- Optional Homebrew curse-removal requirements and their editable unmet-requirement DC penalty (default `+5`).
 - Restoration enabled state, ruleset, recognized Lesser/Greater/Homebrew names, One Curse base and cursed-attunement base.
 - One shared Homebrew proficiency checkbox for Counterspell, Dispel Magic, Remove Curse and Restoration.
 - Optional Homebrew Abjurer declarations for all four caster rolls.

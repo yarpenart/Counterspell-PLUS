@@ -179,19 +179,37 @@ function getHomebrewBase() {
   return configuredNumber("removeCurseDefenseBase", 10);
 }
 
-function calculateHomebrewDefenses(setup) {
+function getRequirementsPenalty() {
+  return Math.max(0, Math.trunc(configuredNumber("curseRequirementsDcPenalty", 5)));
+}
+
+export function calculateHomebrewDefenses(setup) {
   const countBonus = setup.effects.length > 1 ? setup.effects.length : 0;
   const proficiencyIncluded = usesHomebrewProficiency();
+  const requirementsEnabled = Boolean(game.settings.get(MODULE_ID, "curseRequirementsEnabled"));
   return setup.effects.map(effect => {
     const base = getHomebrewBase();
     const knownReduction = effect.known ? 5 : 0;
+    const requirementsPenalty = requirementsEnabled && !effect.requirementsMet
+      ? getRequirementsPenalty()
+      : 0;
     const dc = base
       + Number(effect.spellLevel)
       + Number(effect.casterMod)
       + (proficiencyIncluded ? Number(effect.casterProf) : 0)
       + countBonus
+      + requirementsPenalty
       - knownReduction;
-    return { ...effect, base, countBonus, knownReduction, proficiencyIncluded, dc };
+    return {
+      ...effect,
+      base,
+      countBonus,
+      knownReduction,
+      proficiencyIncluded,
+      requirementsEnabled,
+      requirementsPenalty,
+      dc
+    };
   });
 }
 
@@ -212,8 +230,11 @@ function sourceLabel() {
 async function postDefenseSummary(remover, setup, defenses) {
   const homebrew = remover.ruleset === RULESETS.HOMEBREW;
   const rows = defenses.map(effect => {
+    const requirementsPart = homebrew && effect.requirementsPenalty
+      ? ` + ${effect.requirementsPenalty}`
+      : "";
     const formula = homebrew
-      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod}${effect.proficiencyIncluded ? ` + ${effect.casterProf}` : ""}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
+      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod}${effect.proficiencyIncluded ? ` + ${effect.casterProf}` : ""}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${requirementsPart}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
       : `10 + ${effect.spellLevel}`;
     return `
       <tr>
@@ -231,6 +252,38 @@ async function postDefenseSummary(remover, setup, defenses) {
       </div>`
   }, setup.defenseRollMode);
   await ChatMessage.create(data);
+  if (homebrew) await postRequirementsSummary(setup, defenses);
+}
+
+async function postRequirementsSummary(setup, defenses) {
+  if (!defenses.some(effect => effect.requirementsEnabled)) return;
+  const rows = defenses.map(effect => {
+    const met = Boolean(effect.requirementsMet);
+    const status = met ? t("Requirements.Chat.Met") : t("Requirements.Chat.NotMet");
+    const penalty = met
+      ? t("Requirements.Chat.NoPenalty")
+      : tf("Requirements.Chat.Penalty", { penalty: effect.requirementsPenalty });
+    const note = String(effect.requirementsNote ?? "").trim();
+    return `
+      <li class="csp-requirements-entry ${met ? "success" : "failure"}">
+        <strong>${escapeHTML(effect.spellName)}</strong>
+        <span>${escapeHTML(status)}</span>
+        <small>${escapeHTML(penalty)}</small>
+        ${note ? `<small>${tf("Requirements.Chat.Note", { note: escapeHTML(note) })}</small>` : ""}
+      </li>`;
+  }).join("");
+  const rollMode = ["publicroll", "gmroll"].includes(setup.requirementsRollMode)
+    ? setup.requirementsRollMode
+    : "gmroll";
+  await ChatMessage.create(applyRollMode({
+    speaker: speakerFor(null, setup.targetName),
+    content: `
+      <div class="counterspell-plus-chat csp-requirements-status">
+        <h3>${t("Requirements.Chat.Title")}</h3>
+        <p>${tf("RemoveCurse.Chat.TargetSummary", { target: escapeHTML(setup.targetName) })}</p>
+        <ul>${rows}</ul>
+      </div>`
+  }, rollMode));
 }
 
 async function postFinalResults(remover, setup, results) {
@@ -495,6 +548,6 @@ export function initializeRemoveCurseWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRemoveCurseFromActivity = startRemoveCurse;
-  game.counterspellPlus.version = "0.4.2";
+  game.counterspellPlus.version = "0.4.7";
   debug("Ready");
 }

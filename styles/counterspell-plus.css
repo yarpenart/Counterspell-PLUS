@@ -77,6 +77,18 @@
   margin: 0;
 }
 
+.counterspell-plus-dialog .csp-requirements-fields {
+  border-left: 4px solid #8a4ebf;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-left: 0.7rem;
+}
+
+.counterspell-plus-dialog .csp-requirements-fields h4 {
+  margin: 0;
+}
+
 .counterspell-plus-dialog .hint {
   margin: 0;
 }
@@ -175,6 +187,38 @@
   font-size: 0.85em;
   font-style: italic;
   opacity: 0.8;
+}
+
+.counterspell-plus-chat.csp-requirements-status ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.counterspell-plus-chat .csp-requirements-entry {
+  border-left: 4px solid;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.counterspell-plus-chat .csp-requirements-entry.success {
+  background: color-mix(in srgb, #2f7d32 12%, transparent);
+  border-color: #2f7d32;
+}
+
+.counterspell-plus-chat .csp-requirements-entry.failure {
+  background: color-mix(in srgb, #8b2d2d 12%, transparent);
+  border-color: #8b2d2d;
+}
+
+.counterspell-plus-chat .csp-requirements-entry small {
+  opacity: 0.85;
 }
 
 .counterspell-plus-chat.csp-wild-magic {

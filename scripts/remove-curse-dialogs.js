@@ -1,4 +1,4 @@
-import { RULESETS } from "./config.js";
+import { MODULE_ID, RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
   activateTargetSearch,
@@ -59,6 +59,23 @@ function rollModeLabel(mode) {
 
 function sourceLabel() {
   return t("RemoveCurse.Dialog.CurseSource");
+}
+
+function requirementsEnabled(remover) {
+  return remover.ruleset === RULESETS.HOMEBREW
+    && Boolean(game.settings.get(MODULE_ID, "curseRequirementsEnabled"));
+}
+
+function requirementsPenalty() {
+  const value = Number(game.settings.get(MODULE_ID, "curseRequirementsDcPenalty"));
+  return Math.max(0, Number.isFinite(value) ? Math.trunc(value) : 5);
+}
+
+function requirementsRollModeOptions(selected = "gmroll") {
+  return selectOptions([
+    { key: "publicroll", label: t("Requirements.Dialog.ChatPublic"), selected: selected === "publicroll" },
+    { key: "gmroll", label: t("Requirements.Dialog.ChatGMOnly"), selected: selected !== "publicroll" }
+  ]);
 }
 
 async function waitForm({ title, content, confirmLabel = t("Dialog.Confirm"), width = 620, onRender }) {
@@ -413,6 +430,8 @@ export async function promptCurseRemoverEffects(remover, setup) {
 
 export async function promptGMRemoveCurseReview(remover, setup) {
   const homebrew = remover.ruleset === RULESETS.HOMEBREW;
+  const showRequirements = requirementsEnabled(remover);
+  const unmetPenalty = requirementsPenalty();
   const specialMinimum = getSpecialMinimum("removeCurseSpecialMinimum");
   const removerUsesScroll = remover.castingSource === "scroll";
   const proficiencyIncluded = usesHomebrewProficiency();
@@ -454,7 +473,20 @@ export async function promptGMRemoveCurseReview(remover, setup) {
         <label class="checkbox">
           <input type="checkbox" name="known${index}"${effect.known ? " checked" : ""}>
           ${t("RemoveCurse.Dialog.GMConfirmKnown")}
-        </label>` : `
+        </label>
+        ${showRequirements ? `
+          <div class="csp-requirements-fields">
+            <label class="checkbox">
+              <input type="checkbox" name="requirementsMet${index}"${effect.requirementsMet ? " checked" : ""}>
+              ${t("Requirements.Dialog.Met")}
+            </label>
+            <p class="hint">${tf("Requirements.Dialog.MetHint", { penalty: unmetPenalty })}</p>
+            <div class="form-group stacked">
+              <label>${t("Requirements.Dialog.Note")}</label>
+              <div class="form-fields"><input type="text" name="requirementsNote${index}" value="${escapeHTML(effect.requirementsNote ?? "")}" placeholder="${escapeHTML(t("Requirements.Dialog.NotePlaceholder"))}"></div>
+              <p class="hint">${t("Requirements.Dialog.NoteHint")}</p>
+            </div>
+          </div>` : ""}` : `
         <div class="form-group stacked">
           <label>${t("RemoveCurse.Dialog.CheckBonusDice")}</label>
           <div class="form-fields"><input type="text" name="effectBonus${index}" value="${escapeHTML(effect.bonusFormula)}" placeholder="1d4 + 1d8"></div>
@@ -469,6 +501,18 @@ export async function promptGMRemoveCurseReview(remover, setup) {
         <div class="form-fields"><input type="text" name="bonusFormula" value="${escapeHTML(remover.bonusFormula)}" placeholder="1d4 + 1d8"></div>
         <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
       </div>`
+    : "";
+
+  const requirementsControls = showRequirements
+    ? `
+      <fieldset class="csp-effect-card csp-requirements-fields">
+        <legend>${t("Requirements.Dialog.Title")}</legend>
+        <div class="form-group">
+          <label>${t("Requirements.Dialog.ChatVisibility")}</label>
+          <div class="form-fields"><select name="requirementsRollMode">${requirementsRollModeOptions(setup.requirementsRollMode ?? "gmroll")}</select></div>
+        </div>
+        <p class="hint">${t("Requirements.Dialog.ChatVisibilityHint")}</p>
+      </fieldset>`
     : "";
 
   const content = `
@@ -526,6 +570,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
       </div>
       <h3>${t("RemoveCurse.Dialog.EffectsToResolve")}</h3>
       ${effectRows}
+      ${requirementsControls}
       <p class="hint">${t("RemoveCurse.Dialog.GMReviewHint")}</p>
     </div>`;
 
@@ -546,9 +591,14 @@ export async function promptGMRemoveCurseReview(remover, setup) {
     casterMod: parseNumber(result[`mod${index}`], effect.casterMod),
     casterProf: parseNumber(result[`prof${index}`], effect.casterProf),
     known: homebrew && Boolean(result[`known${index}`]),
+    requirementsMet: showRequirements ? Boolean(result[`requirementsMet${index}`]) : true,
+    requirementsNote: showRequirements ? String(result[`requirementsNote${index}`] ?? "").trim() : "",
     bonusFormula: !homebrew ? normalizeBonusFormula(result[`effectBonus${index}`]) : ""
   }));
   const reviewedScrollLevel = Math.min(9, Math.max(3, Math.trunc(parseNumber(result.removerScrollLevel, remover.slotLevel))));
+  const requirementsRollMode = ["publicroll", "gmroll"].includes(String(result.requirementsRollMode))
+    ? String(result.requirementsRollMode)
+    : "gmroll";
 
   return {
     remover: {
@@ -564,6 +614,10 @@ export async function promptGMRemoveCurseReview(remover, setup) {
       abjurer: showAbjurer && Boolean(result.removerAbjurer),
       disadvantage: Boolean(result.disadvantage)
     },
-    setup: { ...setup, effects: reviewedEffects }
+    setup: {
+      ...setup,
+      effects: reviewedEffects,
+      requirementsRollMode: showRequirements ? requirementsRollMode : "gmroll"
+    }
   };
 }
