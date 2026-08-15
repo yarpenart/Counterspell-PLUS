@@ -1,8 +1,6 @@
 import { MODULE_ID, RULESETS } from "./config.js";
 import {
   escapeHTML,
-  getAbilityEntries,
-  getDefaultAbility,
   getRollModeEntries,
   getSlotChoices,
   normalizeName,
@@ -214,18 +212,12 @@ export async function promptIdentifier(actor, item, ruleset) {
     ? selectOptions(slots)
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
   const defaultSource = slots.length ? "spell" : "ritual";
-  const defaultAbility = getDefaultAbility(actor);
-  const abilities = getAbilityEntries(actor, defaultAbility);
   const minimumLevel = Math.max(1, Number(item.system?.level ?? 1));
   const initialInventory = [
     `<option value="">${t("Identify.Dialog.ManualItem")}</option>`,
     ...entries.map(entry => `<option value="${escapeHTML(entry.uuid)}">${escapeHTML(entry.name)} (${escapeHTML(entry.type)})</option>`)
   ].join("");
   const homebrewFields = homebrew ? `
-    <div class="form-group">
-      <label>${t("Dialog.Ability")}</label>
-      <div class="form-fields"><select name="ability">${selectOptions(abilities)}</select></div>
-    </div>
     <div class="form-group">
       <label>${t("Dialog.RollMode")}</label>
       <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
@@ -322,7 +314,6 @@ export async function promptIdentifier(actor, item, ruleset) {
     castLevel,
     subjectItemUuid: String(result.subjectItemUuid ?? ""),
     subjectName,
-    ability: homebrew ? String(result.ability || defaultAbility) : defaultAbility,
     rollMode: homebrew ? String(result.rollMode || defaultRollMode()) : "gmroll"
   };
 }

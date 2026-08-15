@@ -178,7 +178,6 @@ async function openRiskSave(identifier) {
       title: tf("Identify.StatShift.Title", { item: identifier.finalItemName }),
       effectName: tf("Identify.StatShift.EffectName", { item: identifier.finalItemName }),
       description: tf("Identify.StatShift.Description", { level: identifier.castLevel }),
-      saveAbility: identifier.ability,
       dc: 15,
       rollBonus: identifier.castLevel,
       rollMode: identifier.rollMode,
@@ -243,6 +242,6 @@ export function initializeIdentifyWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startIdentifyFromActivity = startIdentify;
-  game.counterspellPlus.version = "0.5.0";
+  game.counterspellPlus.version = "0.5.1";
   debug("Ready");
 }
