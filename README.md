@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.5.3
+## Version 0.5.4
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse, the Restoration family and Identify: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -28,6 +28,7 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - Homebrew Identify can optionally carry risk. Only a risky identification opens Stat Shift's editable Homebrew Save window with the caster locked as the target and the Identify cast level automatically added to the saving throw. Identify consequences use Foundry's `scroll-bound-blue-red.webp` icon by default. No risk means no saving throw. Official 2014 Identify never adds this homebrew risk roll.
 - English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
 - The primary active GM automatically receives a player-visible `Counterspell PLUS — Rules Reference` Journal Entry with two pages: Official 2014 Rules and the complete Homebrew Rules. The module updates its managed pages when relevant world settings change.
+- Every module dialog now uses theme-aware contrast: light text in dark windows and dark text in light windows, including hints, form controls and placeholders.
 
 ## Counterspell
 
