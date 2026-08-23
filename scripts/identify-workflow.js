@@ -162,7 +162,9 @@ async function postIdentificationResult(identifier) {
 
 async function openRiskSave(identifier) {
   if (!identifier.risk || identifier.ruleset !== RULESETS.HOMEBREW) return;
-  const api = game.statShift?.openHomebrewSave;
+  const api = typeof game.statShift?.openHomebrew === "function"
+    ? game.statShift.openHomebrew
+    : game.statShift?.openHomebrewSave;
   if (typeof api !== "function") {
     ui.notifications.warn(t("Identify.Notifications.StatShiftMissing"));
     await ChatMessage.create({
@@ -173,9 +175,11 @@ async function openRiskSave(identifier) {
     return;
   }
 
-  api({
+  await api.call(game.statShift, {
     actorUuid: identifier.actorUuid,
     sourceLabel: tf("Identify.StatShift.Source", { item: identifier.finalItemName }),
+    requireSave: true,
+    lockSaveRequirement: true,
     defaults: {
       title: tf("Identify.StatShift.Title", { item: identifier.finalItemName }),
       effectName: tf("Identify.StatShift.EffectName", { item: identifier.finalItemName }),
