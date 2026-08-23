@@ -450,7 +450,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.4.2"
+    version: "0.5.2"
   };
 
   debug("Ready");

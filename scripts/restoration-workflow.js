@@ -454,6 +454,6 @@ export function initializeRestorationWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startRestorationFromActivity = startRestoration;
-  game.counterspellPlus.version = "0.5.1";
+  game.counterspellPlus.version = "0.5.2";
   debug("Ready");
 }
