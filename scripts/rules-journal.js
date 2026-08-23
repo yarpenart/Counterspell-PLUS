@@ -299,7 +299,9 @@ function homebrewRules(config) {
         </ol>
         <div class="csp-rules-note"><strong>Optional identification risk.</strong> The GM may mark a Homebrew identification as risky. Only then does Counterspell PLUS open Stat Shift's editable <strong>Homebrew Save</strong> window. The identifying caster is locked as the target, and the level at which Identify was cast is automatically added to the saving throw. If the GM does not mark a risk, <strong>no saving throw is made</strong>.</div>
         <ul>
-          <li>The GM can edit the saving ability, DC, automatic spell-level bonus, roll mode, outcome modifiers, duration, icons and description before sending the Stat Shift request.</li>
+          <li>The GM can edit the saving ability, DC, automatic spell-level bonus, roll mode, duration, icons and separate success/failure descriptions before sending the Stat Shift request.</li>
+          <li>With Stat Shift 0.2.0 or newer, either outcome may also change skills, tools, saves, attacks, advantage or disadvantage, senses, speed, AC, maximum HP and spell slots. Each modifier may include an optional situational note.</li>
+          <li>Identify risk effects use Foundry's <code>scroll-bound-blue-red.webp</code> icon by default.</li>
           <li>The risk saving throw determines the consequence configured in Stat Shift; GM approval determines whether the item was successfully identified.</li>
           <li>Normal casting consumes its spell slot after GM approval. Scroll and ritual casting consume no character spell slot.</li>
           <li>The final description is whispered only to the identifying user and GMs. A manual item with no document receives a success notice and a promise of details from the GM.</li>

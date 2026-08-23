@@ -186,6 +186,8 @@ async function openRiskSave(identifier) {
       mode: "add",
       durationValue: 1,
       durationUnit: "hours",
+      successIcon: "icons/sundries/scrolls/scroll-bound-blue-red.webp",
+      failureIcon: "icons/sundries/scrolls/scroll-bound-blue-red.webp",
       applySuccess: false,
       applyFailure: true
     }
