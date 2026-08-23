@@ -514,7 +514,7 @@
         "RevealCurseHint": "Disabled by default in both rulesets. Enable it only when Identify should reveal the curse, then enter the details below.",
         "CurseDetails": "Curse details revealed to the caster",
         "Risk": "This identification carries a homebrew risk",
-        "RiskHint": "After approval, Stat Shift opens a locked Homebrew Save for the identifying caster. Identify level {level} is automatically added to that saving throw. If this is unchecked, no saving throw occurs.",
+        "RiskHint": "After approval, Stat Shift opens its shared Homebrew editor in locked saving-throw mode for the identifying caster. Identify level {level} is automatically added to that saving throw. If this is unchecked, no saving throw occurs.",
         "OfficialNoRisk": "Official 2014 mode does not add a risk saving throw. Curse details remain a separate GM choice and are hidden by default.",
         "PrivateResultHint": "The approved result and revealed description are whispered only to GMs and the user who cast Identify.",
         "CastLevelSummary": "Identify cast at level {level}",
