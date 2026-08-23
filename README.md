@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.5.1
+## Version 0.5.2
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse, the Restoration family and Identify: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -23,7 +23,7 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
 - The GM can mark a Counterspell, Dispel Magic, Remove Curse or Restoration caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
 - Homebrew Remove Curse and Restoration: One Curse can optionally require special curse-removal conditions. The GM confirms each requirement, may describe it, chooses whether its status message is public or GM-only, and an unmet requirement increases the curse DC by a configurable amount (default +5). Official 2014 rules and cursed-item attunement are unchanged.
-- Identify lets the caster select or drop an inventory item, or type any item name. The GM can search every World Item and actor inventory, correct the name, select or drop the actual Item document, and write exactly what is revealed.
+- Identify lets the caster select or drop an inventory item, or type any item name. The GM can search every World Item and actor inventory, correct the name, select or drop the actual Item document, and write exactly what is revealed. Editing the supplied/revealed name detaches the selected Item document while preserving the manual name; the selected-item card also has a dedicated remove button. If the selected Item has no stored description, the GM may instead confirm that it is a mundane item with no additional effects.
 - Identify supports Normal Casting, Scroll Casting and Ritual Casting. Curse information is hidden by default in both rulesets and is revealed only through a separate GM-controlled field.
 - Homebrew Identify can optionally carry risk. Only a risky identification opens Stat Shift's editable Homebrew Save window with the caster locked as the target and the Identify cast level automatically added to the saving throw. No risk means no saving throw. Official 2014 Identify never adds this homebrew risk roll.
 - English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
@@ -131,7 +131,7 @@ The caster first chooses a casting method:
 
 The caster may then select an item from their own inventory, drop an Item document into the field, or type any name such as `strange ring`. Typed names also work for homebrew objects that do not yet exist in Foundry.
 
-The GM receives a searchable list combining World Items with every actor's embedded items. The GM may confirm the player's text, choose the actual item, drop an Item document, and edit the final displayed name. The item's stored description is visible in a GM-only preview but is never copied into the revealed text automatically.
+The GM receives a searchable list combining World Items with every actor's embedded items. The GM may confirm the player's text, choose the actual item, drop an Item document, and edit the final displayed name. The item's stored description is visible in a GM-only preview but is never copied into the revealed text automatically. For a selected Item without a stored description, the GM may choose **This is a mundane item with no additional effects** instead of writing a description; this also disables the mutually incompatible curse and risk options.
 
 After approval, the module whispers the selected description only to all GMs and the user who cast Identify. If no actual Item document exists, the private message confirms successful identification and states that the GM will provide details shortly.
 

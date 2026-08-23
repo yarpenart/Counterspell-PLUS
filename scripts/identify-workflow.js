@@ -123,7 +123,9 @@ async function enrichRevealedText(value) {
 
 async function postIdentificationResult(identifier) {
   const hasDocument = Boolean(identifier.actualItemUuid);
-  const description = hasDocument && identifier.revealDescription
+  const description = hasDocument && identifier.mundaneItem
+    ? t("Identify.Chat.MundaneItem")
+    : hasDocument && identifier.revealDescription
     ? await enrichRevealedText(identifier.revealDescription)
     : hasDocument
       ? t("Identify.Chat.DetailsSoon")
@@ -242,6 +244,6 @@ export function initializeIdentifyWorkflow() {
 
   game.counterspellPlus = game.counterspellPlus ?? {};
   game.counterspellPlus.startIdentifyFromActivity = startIdentify;
-  game.counterspellPlus.version = "0.5.1";
+  game.counterspellPlus.version = "0.5.2";
   debug("Ready");
 }

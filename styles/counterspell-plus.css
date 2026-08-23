@@ -421,6 +421,27 @@
   transition: background-color 120ms ease, border-color 120ms ease;
 }
 
+.identify-plus-dialog .csp-identify-drop.has-selection {
+  border-style: solid;
+}
+
+.identify-plus-dialog .csp-identify-drop > span {
+  flex: 1;
+}
+
+.identify-plus-dialog .csp-identify-clear-item {
+  flex: 0 0 auto;
+  height: 2rem;
+  line-height: 1;
+  margin: 0 0 0 auto;
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+}
+
+.identify-plus-dialog .csp-identify-clear-item[hidden] {
+  display: none;
+}
+
 .identify-plus-dialog .csp-identify-drop.dragover {
   background: color-mix(in srgb, #7b2cbf 15%, transparent);
   border-color: #8a4ebf;

@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 5;
+const CONTENT_VERSION = 6;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -117,6 +117,7 @@ function officialRules(config) {
           <li>Identify may be cast normally, from a scroll, or as a ritual. Normal casting consumes the approved spell slot; scroll inventory and material components remain manual.</li>
           <li>The informational material component is a pearl worth at least 100 gp and an owl feather.</li>
           <li>Official 2014 Identify requires no saving throw. The GM approves the identification and chooses the exact description revealed to the caster.</li>
+          <li>If the linked Item has no stored description, the GM may instead confirm that it is a mundane item with no additional effects. That confirmation is sent as the identification result.</li>
           <li>A curse is <strong>never revealed automatically</strong>. The GM has a separate, disabled-by-default option for revealing curse information.</li>
           <li>The result is whispered only to the identifying user and GMs. If no real Item document exists, the message confirms success and says that the GM will provide details shortly.</li>
         </ul>
@@ -293,7 +294,7 @@ function homebrewRules(config) {
         <ol>
           <li>The caster chooses Normal Casting, Scroll Casting or Ritual Casting, then selects an inventory item, drops it into the field, or types any item name.</li>
           <li>The GM may confirm the player's text, search all World Items and actor inventories, or drop the actual Item document into the GM field.</li>
-          <li>The GM writes the description that will be revealed. Stored Item text is shown only in the GM preview and is never copied automatically.</li>
+          <li>The GM writes the description that will be revealed. Stored Item text is shown only in the GM preview and is never copied automatically. If the linked Item has no stored description, the GM may instead mark it as a mundane item with no additional effects.</li>
           <li>Curse information is hidden by default. It is included only when the GM explicitly enables the separate reveal option and supplies curse details.</li>
         </ol>
         <div class="csp-rules-note"><strong>Optional identification risk.</strong> The GM may mark a Homebrew identification as risky. Only then does Counterspell PLUS open Stat Shift's editable <strong>Homebrew Save</strong> window. The identifying caster is locked as the target, and the level at which Identify was cast is automatically added to the saving throw. If the GM does not mark a risk, <strong>no saving throw is made</strong>.</div>

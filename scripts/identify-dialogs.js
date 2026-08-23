@@ -65,6 +65,13 @@ function getItemDescription(item) {
   return String(description?.value ?? "");
 }
 
+function hasMeaningfulDescription(value) {
+  return String(value ?? "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .trim().length > 0;
+}
+
 function dragData(event) {
   try {
     const legacy = globalThis.TextEditor?.getDragEventData?.(event);
@@ -132,6 +139,7 @@ function activateCasterForm(entries) {
     const manualName = root?.querySelector('input[name="subjectName"]');
     const count = root?.querySelector("[data-csp-identify-inventory-count]");
     const dropZone = root?.querySelector("[data-csp-identify-drop]");
+    const clearChoiceButton = root?.querySelector("[data-csp-identify-clear-inventory]");
     const itemByUuid = new Map(entries.map(entry => [entry.uuid, entry]));
 
     const updateSources = () => {
@@ -147,7 +155,20 @@ function activateCasterForm(entries) {
     const updateChoice = (uuid, name) => {
       if (chosenUuid) chosenUuid.value = uuid ?? "";
       if (manualName && name) manualName.value = name;
-      if (dropZone) dropZone.querySelector("span").textContent = name || t("Identify.Dialog.DropInventoryHint");
+      if (dropZone) {
+        const hasSelection = Boolean(uuid);
+        dropZone.dataset.selectedName = hasSelection ? String(name ?? "") : "";
+        dropZone.classList.toggle("has-selection", hasSelection);
+        dropZone.querySelector("span").textContent = hasSelection
+          ? name
+          : t("Identify.Dialog.DropInventoryHint");
+      }
+      if (clearChoiceButton) clearChoiceButton.hidden = !uuid;
+    };
+
+    const clearChoice = () => {
+      updateChoice("", "");
+      if (select) select.value = "";
     };
 
     const rebuild = () => {
@@ -178,12 +199,12 @@ function activateCasterForm(entries) {
       updateChoice(entry?.uuid ?? "", entry?.name ?? "");
     });
     manualName?.addEventListener("input", () => {
-      const entry = itemByUuid.get(chosenUuid?.value);
-      if (entry && normalizeName(entry.name) !== normalizeName(manualName.value)) {
-        if (chosenUuid) chosenUuid.value = "";
-        if (select) select.value = "";
+      const linkedName = String(dropZone?.dataset.selectedName ?? "");
+      if (chosenUuid?.value && linkedName !== manualName.value) {
+        clearChoice();
       }
     });
+    clearChoiceButton?.addEventListener("click", clearChoice);
     dropZone?.addEventListener("dragover", event => {
       event.preventDefault();
       dropZone.classList.add("dragover");
@@ -265,7 +286,12 @@ export async function promptIdentifier(actor, item, ruleset) {
         <p class="hint">${t("Identify.Dialog.TypedNameHint")}</p>
       </div>
       <div class="csp-identify-drop" data-csp-identify-drop>
-        <i class="fa-solid fa-hand-sparkles"></i><span>${t("Identify.Dialog.DropInventoryHint")}</span>
+        <i class="fa-solid fa-hand-sparkles"></i>
+        <span>${t("Identify.Dialog.DropInventoryHint")}</span>
+        <button type="button" class="csp-identify-clear-item" data-csp-identify-clear-inventory
+          aria-label="${t("Identify.Dialog.ClearSelectedItem")}" title="${t("Identify.Dialog.ClearSelectedItem")}" hidden>
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       <div class="csp-material-note">
         <strong>${t("Identify.Dialog.MaterialTitle")}</strong>
@@ -327,16 +353,48 @@ function activateGMItemPicker(entries, initialUuid) {
     const finalName = root?.querySelector('input[name="finalItemName"]');
     const count = root?.querySelector("[data-csp-identify-world-count]");
     const dropZone = root?.querySelector("[data-csp-identify-world-drop]");
+    const clearChoiceButton = root?.querySelector("[data-csp-identify-clear-world]");
     const preview = root?.querySelector("[data-csp-identify-preview]");
     const loadDescription = root?.querySelector("[data-csp-identify-load-description]");
     const revealDescription = root?.querySelector('textarea[name="revealDescription"]');
+    const descriptionGroup = revealDescription?.closest(".form-group");
+    const mundaneItem = root?.querySelector('input[name="mundaneItem"]');
+    const mundaneGroup = root?.querySelector("[data-csp-identify-mundane-group]");
     const revealCurse = root?.querySelector('input[name="revealCurse"]');
+    const curseControl = revealCurse?.closest(".form-group");
     const curseGroup = root?.querySelector("[data-csp-identify-curse-group]");
+    const risk = root?.querySelector('input[name="risk"]');
+    const riskGroup = risk?.closest(".form-group");
     const itemByUuid = new Map(entries.map(entry => [entry.uuid, entry]));
 
     const selectedEntry = () => itemByUuid.get(hiddenUuid?.value);
+    const updateCurse = () => {
+      if (curseGroup) curseGroup.hidden = !revealCurse?.checked;
+    };
+    const setControlDisabled = (control, group, disabled) => {
+      if (control) control.disabled = disabled;
+      group?.classList.toggle("csp-field-disabled", disabled);
+      group?.setAttribute("aria-disabled", String(disabled));
+    };
+    const updateDescriptionState = entry => {
+      const hasStoredDescription = Boolean(entry) && hasMeaningfulDescription(entry.description);
+      const mundaneAvailable = Boolean(entry) && !hasStoredDescription;
+      if (mundaneGroup) mundaneGroup.hidden = !mundaneAvailable;
+      if (mundaneItem) {
+        mundaneItem.disabled = !mundaneAvailable;
+        if (!mundaneAvailable) mundaneItem.checked = false;
+      }
+      const isMundane = mundaneAvailable && Boolean(mundaneItem?.checked);
+      if (revealDescription) revealDescription.required = Boolean(entry) && !isMundane;
+      setControlDisabled(revealDescription, descriptionGroup, isMundane);
+      if (loadDescription) loadDescription.disabled = !hasStoredDescription || isMundane;
+      if (isMundane && revealCurse) revealCurse.checked = false;
+      if (isMundane && risk) risk.checked = false;
+      setControlDisabled(revealCurse, curseControl, isMundane);
+      setControlDisabled(risk, riskGroup, isMundane);
+      updateCurse();
+    };
     const updatePreview = entry => {
-      if (revealDescription) revealDescription.required = Boolean(entry);
       if (!preview) return;
       if (!entry) {
         preview.innerHTML = `<p>${escapeHTML(t("Identify.Dialog.NoActualItem"))}</p>`;
@@ -344,14 +402,20 @@ function activateGMItemPicker(entries, initialUuid) {
       }
       preview.innerHTML = `
         <header><img src="${escapeHTML(entry.img)}" alt=""><div><strong>${escapeHTML(entry.name)}</strong><small>${escapeHTML(entry.source)}</small></div></header>
-        <div class="csp-identify-preview-description">${entry.description || `<p>${escapeHTML(t("Identify.Dialog.NoStoredDescription"))}</p>`}</div>`;
+        <div class="csp-identify-preview-description">${hasMeaningfulDescription(entry.description) ? entry.description : `<p>${escapeHTML(t("Identify.Dialog.NoStoredDescription"))}</p>`}</div>`;
     };
     const choose = entry => {
       if (hiddenUuid) hiddenUuid.value = entry?.uuid ?? "";
       if (entry && finalName) finalName.value = entry.name;
-      if (dropZone) dropZone.querySelector("span").textContent = entry?.name ?? t("Identify.Dialog.DropWorldHint");
+      if (mundaneItem) mundaneItem.checked = false;
+      if (dropZone) {
+        dropZone.classList.toggle("has-selection", Boolean(entry));
+        dropZone.querySelector("span").textContent = entry?.name ?? t("Identify.Dialog.DropWorldHint");
+      }
+      if (clearChoiceButton) clearChoiceButton.hidden = !entry;
       if (select) select.value = entry?.uuid ?? "";
       updatePreview(entry);
+      updateDescriptionState(entry);
     };
     const rebuild = () => {
       if (!select) return;
@@ -373,18 +437,20 @@ function activateGMItemPicker(entries, initialUuid) {
       if ([...select.options].some(option => option.value === previous)) select.value = previous;
       if (count) count.textContent = tf("Identify.Dialog.ItemsFound", { count: matches.length });
     };
-    const updateCurse = () => {
-      if (curseGroup) curseGroup.hidden = !revealCurse?.checked;
-    };
-
     filter?.addEventListener("input", rebuild);
     select?.addEventListener("change", () => choose(itemByUuid.get(select.value)));
+    finalName?.addEventListener("input", () => {
+      const entry = selectedEntry();
+      if (entry && entry.name !== finalName.value) choose(null);
+    });
+    clearChoiceButton?.addEventListener("click", () => choose(null));
     loadDescription?.addEventListener("click", () => {
       const entry = selectedEntry();
-      if (!entry || !revealDescription) return;
+      if (!entry || !hasMeaningfulDescription(entry.description) || !revealDescription) return;
       revealDescription.value = entry.description;
       ui.notifications.info(t("Identify.Notifications.DescriptionLoaded"));
     });
+    mundaneItem?.addEventListener("change", () => updateDescriptionState(selectedEntry()));
     revealCurse?.addEventListener("change", updateCurse);
     dropZone?.addEventListener("dragover", event => {
       event.preventDefault();
@@ -453,7 +519,12 @@ export async function promptGMIdentifyReview(identifier) {
       </div>
       <input type="hidden" name="actualItemUuid" value="${escapeHTML(initialUuid)}">
       <div class="csp-identify-drop" data-csp-identify-world-drop>
-        <i class="fa-solid fa-hand-sparkles"></i><span>${escapeHTML(initialUuid ? identifier.subjectName : t("Identify.Dialog.DropWorldHint"))}</span>
+        <i class="fa-solid fa-hand-sparkles"></i>
+        <span>${escapeHTML(initialUuid ? identifier.subjectName : t("Identify.Dialog.DropWorldHint"))}</span>
+        <button type="button" class="csp-identify-clear-item" data-csp-identify-clear-world
+          aria-label="${t("Identify.Dialog.ClearSelectedItem")}" title="${t("Identify.Dialog.ClearSelectedItem")}"${initialUuid ? "" : " hidden"}>
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       <div class="form-group stacked">
         <label>${t("Identify.Dialog.FinalName")}</label>
@@ -464,6 +535,10 @@ export async function promptGMIdentifyReview(identifier) {
       <button type="button" data-csp-identify-load-description>
         <i class="fa-solid fa-file-import"></i> ${t("Identify.Dialog.LoadStoredDescription")}
       </button>
+      <div class="form-group stacked csp-identify-mundane" data-csp-identify-mundane-group hidden>
+        <label class="checkbox"><input type="checkbox" name="mundaneItem"> ${t("Identify.Dialog.MundaneItem")}</label>
+        <p class="hint">${t("Identify.Dialog.MundaneItemHint")}</p>
+      </div>
       <div class="form-group stacked">
         <label>${t("Identify.Dialog.RevealedDescription")}</label>
         <textarea name="revealDescription" rows="6"></textarea>
@@ -498,7 +573,10 @@ export async function promptGMIdentifyReview(identifier) {
     return null;
   }
   const revealDescription = String(result.revealDescription ?? "").trim();
-  if (actualItem?.documentName === "Item" && !revealDescription) {
+  const mundaneItem = actualItem?.documentName === "Item"
+    && !hasMeaningfulDescription(getItemDescription(actualItem))
+    && Boolean(result.mundaneItem);
+  if (actualItem?.documentName === "Item" && !revealDescription && !mundaneItem) {
     ui.notifications.warn(t("Identify.Notifications.DescriptionRequired"));
     return null;
   }
@@ -507,9 +585,10 @@ export async function promptGMIdentifyReview(identifier) {
     actualItemUuid: actualItem?.documentName === "Item" ? actualItem.uuid : "",
     finalItemName,
     itemImg: actualItem?.img ?? "icons/svg/item-bag.svg",
-    revealDescription,
-    revealCurse: Boolean(result.revealCurse),
-    curseDetails: Boolean(result.revealCurse) ? String(result.curseDetails ?? "").trim() : "",
-    risk: homebrew && Boolean(result.risk)
+    revealDescription: mundaneItem ? "" : revealDescription,
+    mundaneItem,
+    revealCurse: !mundaneItem && Boolean(result.revealCurse),
+    curseDetails: !mundaneItem && Boolean(result.revealCurse) ? String(result.curseDetails ?? "").trim() : "",
+    risk: homebrew && !mundaneItem && Boolean(result.risk)
   };
 }
