@@ -1,5 +1,48 @@
+.counterspell-plus-dialog {
+  --csp-window-text: #f3f1f6;
+  --csp-window-muted: #c7c2cd;
+  --csp-panel-surface: rgb(255 255 255 / 6%);
+  --csp-option-surface: #171922;
+  color: var(--csp-window-text);
+  color-scheme: dark;
+}
+
+body:has(#interface.theme-light) .counterspell-plus-dialog,
+.counterspell-plus-dialog.theme-light {
+  --csp-window-text: #29252e;
+  --csp-window-muted: #625c68;
+  --csp-panel-surface: rgb(0 0 0 / 5%);
+  --csp-option-surface: #f4f1ec;
+  color-scheme: light;
+}
+
+body:has(#interface.theme-dark) .counterspell-plus-dialog,
+.counterspell-plus-dialog.theme-dark {
+  --csp-window-text: #f3f1f6;
+  --csp-window-muted: #c7c2cd;
+  --csp-panel-surface: rgb(255 255 255 / 6%);
+  --csp-option-surface: #171922;
+  color-scheme: dark;
+}
+
 .counterspell-plus-dialog .window-content {
   padding: 1rem;
+  color: var(--csp-window-text);
+}
+
+.counterspell-plus-dialog :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea, button) {
+  color: var(--csp-window-text);
+}
+
+.counterspell-plus-dialog :where(input, textarea)::placeholder,
+.counterspell-plus-dialog :where(.hint, .notes) {
+  color: var(--csp-window-muted);
+  opacity: 1;
+}
+
+.counterspell-plus-dialog select option {
+  background: var(--csp-option-surface);
+  color: var(--csp-window-text);
 }
 
 .counterspell-plus-dialog form {
@@ -25,7 +68,7 @@
   border: 1px solid var(--color-border-light-primary);
   border-radius: 6px;
   padding: 0.75rem;
-  background: color-mix(in srgb, var(--color-bg-option) 70%, transparent);
+  background: var(--csp-panel-surface);
 }
 
 .counterspell-plus-dialog .csp-summary {
@@ -116,7 +159,8 @@
 }
 
 .counterspell-plus-dialog .csp-target-search small {
-  opacity: 0.75;
+  color: var(--csp-window-muted);
+  opacity: 1;
 }
 
 .counterspell-plus-dialog .csp-restoration-options {
