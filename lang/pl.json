@@ -514,6 +514,656 @@
         "RevealCurseHint": "Domyślnie wyłączone w obu zestawach zasad. Włącz tylko wtedy, gdy Identify ma ujawnić klątwę, a następnie wpisz jej szczegóły poniżej.",
         "CurseDetails": "Szczegóły klątwy ujawniane rzucającemu",
         "Risk": "Ta identyfikacja niesie ryzyko homebrew",
+        "RiskHint": "Po zatwierdzeniu Stat Shift otworzy wspólny edytor Homebrew w zablokowanym trybie rzutu obronnego, z rzucającym Identify jako celem. Poziom Identify ({level}) zostanie automatycznie dodany do rzutu obronnego. Gdy pole jest wyłączone, nie wykonuje się rzutu.",
+        "OfficialNoRisk": "Tryb Official 2014 nie dodaje rzutu obronnego za ryzyko. Szczegóły klątwy pozostają osobną decyzją GM-a i są domyślnie ukryte.",
+        "PrivateResultHint": "Zatwierdzony wynik i ujawniony opis otrzymają szeptem wyłącznie GM-owie i użytkownik, który rzucił Identify.",
+        "CastLevelSummary": "Identify rzucone na poziomie {level}",
+        "Source": {
+          "spell": "Rzucanie normalne",
+          "scroll": "Rzucanie ze zwoju",
+          "ritual": "Rzucanie rytualne"
+        }
+      },
+      "Chat": {
+        "Success": "Identyfikacja udana",
+        "CastSummary": "{caster} używa Identify na poziomie {level} ({source}).",
+        "DetailsSoon": "GM nie podał jeszcze ujawnianego opisu i przekaże szczegóły wkrótce.",
+        "MissingItemDetailsSoon": "Identyfikacja zakończyła się sukcesem. Ten przedmiot nie istnieje jeszcze jako dokument Item; GM poda szczegóły wkrótce.",
+        "MundaneItem": "To zwykły przedmiot pozbawiony dodatkowych efektów.",
+        "CurseTitle": "Ujawnione informacje o klątwie",
+        "PrivateRecipients": "Wynik prywatny: widoczny wyłącznie dla identyfikującego użytkownika i GM-ów.",
+        "GMNotice": "Identify — komunikat dla GM-a"
+      },
+      "StatShift": {
+        "Source": "Counterspell PLUS — Identify: {item}",
+        "Title": "Ryzyko Identify — {item}",
+        "EffectName": "Konsekwencja identyfikacji — {item}",
+        "Description": "Ryzyko homebrew podczas Identify. Rzucający jest zablokowany jako cel. Poziom Identify ({level}) jest automatycznie dodawany do rzutu obronnego. GM może edytować wszystkie pola rzutu i skutków."
+      },
+      "Notifications": {
+        "InvalidDrop": "Upuść dokument przedmiotu, a nie dokument innego typu.",
+        "DescriptionLoaded": "Skopiowano zapisany opis. Sprawdź go uważnie przed zatwierdzeniem, szczególnie pod kątem ukrytych informacji o klątwie.",
+        "DescriptionRequired": "Wpisz bezpieczny opis ujawniany albo — dla Itemu bez zapisanego opisu — zaznacz, że to zwykły przedmiot pozbawiony dodatkowych efektów. Komórka zaklęcia nie została zużyta.",
+        "NoSlots": "Nie wybrano dostępnej komórki Identify. Wybierz komórkę, rzut ze zwoju albo rytuał.",
+        "ItemRequired": "Wybierz przedmiot albo wpisz nazwę przedmiotu poddawanego identyfikacji.",
+        "ActorNotFound": "Nie znaleziono postaci rzucającej Identify.",
+        "SlotUnavailable": "Wybrana komórka Identify nie jest już dostępna.",
+        "NoGM": "Do rozstrzygnięcia Identify potrzebny jest aktywny GM.",
+        "AlreadyPending": "Ta postać ma już oczekującą procedurę Identify.",
+        "RequestTimeout": "Żądanie Identify wygasło po trzech minutach.",
+        "CancelledByGM": "GM anulował procedurę Identify.",
+        "Approved": "GM zatwierdził identyfikację.",
+        "StatShiftMissing": "Przedmiot jest ryzykowny, ale Stat Shift nie jest aktywny albo nie udostępnia API integracji Identify. Wynik identyfikacji został mimo to opublikowany.",
+        "GenericError": "W procedurze Identify wystąpił błąd."
+      }
+    },
+    "RemoveCurse": {
+      "Dialog": {
+        "DispelSlot": "Remove Curse slot",
+        "DispellerTitle": "Counterspell PLUS — your Remove Curse",
+        "OfficialBonusLater": "Official 2014: you will choose optional additional dice separately for each required ability check after the GM enters the curses.",
+        "DispelData": "Remove Curse",
+        "Target": "Cursed target",
+        "EffectCount": "Number of curses on the target",
+        "DefenseRollMode": "Passive defense roll mode",
+        "SetupHint": "Enter the total number of curses. With more than one curse, the homebrew rule adds that total to every curse's DC.",
+        "SpecialTargetHint": "Choose an actor/token or a special target: Unknown or Object. The target identifies who or what is cursed; curse DC modifiers are entered separately.",
+        "GMSetupTitle": "Counterspell PLUS — Remove Curse target",
+        "EffectNumber": "Curse {index} of {count}",
+        "EffectName": "Curse name",
+        "EffectLevel": "Curse level",
+        "CasterCreatorModifier": "Curse ability modifier",
+        "CasterCreatorProficiency": "Curse proficiency bonus",
+        "SourceBaseHint": "Every curse uses the independently configurable Remove Curse homebrew defense base. Curse ability and proficiency are entered separately from the target; the shared Homebrew proficiency setting decides whether proficiency is added.",
+        "GMEffectTitle": "Remove Curse — curse {index} of {count}",
+        "KnowsEffect": "I know this curse",
+        "KnowsEffectHint": "Homebrew: subtract 5 from this individual curse's DC. The GM will confirm this declaration.",
+        "CheckBonusDice": "Additional dice for this check",
+        "CheckBonusDiceHint": "Official 2014: this formula applies only to the separate ability check for this curse.",
+        "AutomaticBonusIgnored": "This curse is currently automatic because its level does not exceed the Remove Curse slot; the formula is ignored unless the GM changes its level.",
+        "HiddenLevel": "curse level hidden by GM",
+        "HiddenLevelBonusHint": "The curse level is hidden. Enter optional dice for this curse; the GM will apply them only if an ability check is required.",
+        "LevelValue": "level {level}",
+        "EffectsSummary": "{count} curse(s)",
+        "PlayerEffectsTitle": "Counterspell PLUS — curses affected by your Remove Curse",
+        "GMConfirmKnown": "The Remove Curse caster knows this curse",
+        "SpecialSpellcaster": "Remove Curse caster is a Special Cursecaster",
+        "GMConfirmDisadvantage": "The Remove Curse caster has disadvantage",
+        "TargetData": "Target and passive defenses",
+        "EffectsToResolve": "Curses",
+        "GMReviewHint": "Confirm or correct every curse and player declaration. The Remove Curse slot is consumed only after you press Roll.",
+        "GMReviewTitle": "Counterspell PLUS — final Remove Curse review",
+        "Ability": "Cursecasting ability",
+        "SlotStandard": "Level {level} curse slot ({value} available)",
+        "SlotPact": "Level {level} Pact Curse slot ({value} available)",
+        "CurseSource": "Curse",
+        "SpecialCursecasterHint": "Uses a minimum kept d20 result of {minimum}, read from the module's world settings."
+      },
+      "Chat": {
+        "DefenseTitle": "Remove Curse — curse defenses",
+        "HomebrewRoll": "Remove Curse: {actor}",
+        "OfficialRoll": "Remove Curse check against {curse} — DC {dc}",
+        "Dispelled": "CURSE REMOVED",
+        "Remains": "CURSE REMAINS",
+        "Automatic": "Automatic under the official 2014 rule.",
+        "NumericResult": "Result: {total}; DC: {dc}.",
+        "HiddenResult": "At least one relevant value used a hidden roll mode.",
+        "TieRule": "Under the homebrew rule, the Remove Curse result must be strictly higher than the curse DC; a tie is a failure.",
+        "TargetSummary": "Target: {target}",
+        "ManualRemoval": "The module only identifies which curses should be removed; the GM removes them manually.",
+        "UnknownCurse": "Unknown curse"
+      },
+      "Outcome": {
+        "DramaticFailure": {
+          "Title": "Dramatic Curse Removal Failure",
+          "Body": "Remove Curse failed by {minimum} or more. This carries significant complications. The GM determines the effect."
+        },
+        "Failure": {
+          "Title": "Failed Curse Removal",
+          "Body": "Remove Curse failed by {minimum}–{maximum}. This carries minor complications. The GM determines the effect."
+        },
+        "BarelySuccess": {
+          "Title": "Barely Successful Curse Removal",
+          "Body": "Remove Curse succeeded by {minimum}–{maximum}. The curse is removed, but this carries minor complications. The GM determines the effect."
+        },
+        "Success": {
+          "Title": "Successful Curse Removal",
+          "Body": "Remove Curse succeeded by {minimum} or more. The curse is removed without negative effects."
+        }
+      },
+      "Notifications": {
+        "NoSlots": "This actor has no available curse slot capable of using Remove Curse.",
+        "NoTargets": "No actors or tokens are available for the GM to select.",
+        "TargetNotFound": "The selected Remove Curse target could not be found.",
+        "ActorNotFound": "The Remove Curse actor could not be found.",
+        "SlotUnavailable": "The selected Remove Curse slot is no longer available.",
+        "NoGM": "An active GM is required to resolve Remove Curse.",
+        "AlreadyPending": "This actor already has a pending Remove Curse workflow.",
+        "RequestTimeout": "The Remove Curse request expired after three minutes.",
+        "DefensePostFailed": "The GM could not publish the Remove Curse passive defenses.",
+        "CancelledByGM": "The GM cancelled the Remove Curse workflow.",
+        "CancelledByPlayer": "The Remove Curse caster cancelled the workflow.",
+        "GenericError": "The Remove Curse workflow encountered an error."
+      }
+    }
+  }
+}
+{
+  "COUNTERSPELL_PLUS": {
+    "Settings": {
+      "Enabled": {
+        "Name": "Włącz obsługę Counterspella",
+        "Hint": "Przechwytuje rozpoznane zaklęcia Counterspell i uruchamia procedurę Counterspell PLUS."
+      },
+      "Ruleset": {
+        "Name": "Zasady Counterspella",
+        "Hint": "Wybierz zasadę używaną do rozstrzygania Counterspella.",
+        "Homebrew": "Homebrew: rzuty przeciwstawne",
+        "Official2014": "Oficjalne D&D 2014"
+      },
+      "CounterspellSpecialMinimum": {
+        "Name": "Counterspell: minimalny wynik d20 Special Spellcastera",
+        "Hint": "Minimalny zachowany wynik d20, gdy GM oznaczy rzucającego Counterspell jako Special Spellcaster. Zakres: 1–20. Domyślnie: 15."
+      },
+      "DispelEnabled": {
+        "Name": "Włącz obsługę Dispel Magic",
+        "Hint": "Przechwytuje rozpoznane zaklęcia Dispel Magic i uruchamia procedurę Counterspell PLUS."
+      },
+      "DispelRuleset": {
+        "Name": "Zasady Dispel Magic",
+        "Hint": "Wybierz zasadę Dispel Magic niezależnie od zasad Counterspella.",
+        "Homebrew": "Homebrew: rzut przeciw pasywnemu spellcastingowi",
+        "Official2014": "Oficjalne D&D 2014"
+      },
+      "DispelSpecialMinimum": {
+        "Name": "Dispel Magic: minimalny wynik d20 Special Spellcastera",
+        "Hint": "Minimalny zachowany wynik d20, gdy GM oznaczy rzucającego Dispel Magic jako Special Spellcaster. Zakres: 1–20. Domyślnie: 15."
+      },
+      "DispelDefenseBase": {
+        "Name": "Dispel Magic: baza zwykłego zaklęcia",
+        "Hint": "Baza homebrew dla efektu zwykłego zaklęcia. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "DispelScrollDefenseBase": {
+        "Name": "Dispel Magic: baza zwoju zaklęcia",
+        "Hint": "Niezależna baza homebrew dla efektu rzuconego ze zwoju. Domyślnie: 7. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "DispelGlyphDefenseBase": {
+        "Name": "Dispel Magic: baza Spell Glyph",
+        "Hint": "Niezależna baza homebrew dla efektu rzuconego z glifu. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "ScrollDefenseBase": {
+        "Name": "Counterspell: baza obrony zwoju zaklęcia",
+        "Hint": "Baza homebrew Counterspella dodawana do poziomu zaklęcia i danych twórcy zwoju. Domyślnie: 7. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "GlyphDefenseBase": {
+        "Name": "Counterspell: baza obrony Spell Glyph",
+        "Hint": "Baza homebrew Counterspella dodawana do poziomu zaklęcia i danych twórcy glifu. Domyślnie: 10. Dozwolona jest dowolna wartość liczbowa."
+      },
+      "Names": {
+        "Name": "Rozpoznawane nazwy Counterspella",
+        "Hint": "Nazwy oddzielone przecinkami. Dopiski w nawiasach, np. Counterspell (Alternate), są rozpoznawane automatycznie."
+      },
+      "DispelNames": {
+        "Name": "Rozpoznawane nazwy Dispel Magic",
+        "Hint": "Nazwy zaklęcia oddzielone przecinkami. Dopiski w nawiasach są rozpoznawane automatycznie."
+      },
+      "WildMagic": {
+        "Name": "Komunikat Dzikiej Magii",
+        "Hint": "Publikuje komunikat Dzikiej Magii, gdy Counterspell jest używany przeciwko innemu Counterspellowi."
+      },
+      "RemoveCurseEnabled": {
+        "Name": "Enable Remove Curse workflow",
+        "Hint": "Intercept recognized Remove Curse activities and use the Counterspell PLUS workflow."
+      },
+      "RemoveCurseRuleset": {
+        "Name": "Remove Curse rules",
+        "Hint": "Choose the rule used to resolve Remove Curse independently from Counterspell and Dispel Magic.",
+        "Homebrew": "Homebrew: roll against passive curse defense",
+        "Official2014": "Official D&D 2014"
+      },
+      "RemoveCurseSpecialMinimum": {
+        "Name": "Remove Curse: Special Cursecaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Remove Curse caster as a Special Cursecaster. Range: 1–20. Default: 15."
+      },
+      "RemoveCurseDefenseBase": {
+        "Name": "Remove Curse: curse defense base",
+        "Hint": "Homebrew defense base used by every curse. Default: 10. Any numeric value is allowed."
+      },
+      "RemoveCurseDramaticFailureMin": {
+        "Name": "Remove Curse: Dramatic Failure threshold",
+        "Hint": "Failure by this amount or more is a Dramatic Curse Removal Failure. Smaller failures through a tie (0) are Failed Curse Removal. Default: 5."
+      },
+      "RemoveCurseBarelySuccessMax": {
+        "Name": "Remove Curse: Barely Successful upper limit",
+        "Hint": "Success margins from 1 through this value are Barely Successful Curse Removal. The next value or more is Successful Curse Removal. Default: 5."
+      },
+      "RemoveCurseNames": {
+        "Name": "Recognized Remove Curse names",
+        "Hint": "Comma-separated curse names. Parenthetical suffixes are recognized automatically."
+      },
+      "RestorationEnabled": {
+        "Name": "Enable Restoration automation",
+        "Hint": "Enables Lesser Restoration and Greater Restoration in Official 2014 mode, or Restoration in Homebrew mode."
+      },
+      "RestorationRuleset": {
+        "Name": "Restoration rules",
+        "Hint": "Choose which restoration spells Counterspell PLUS recognizes and automates.",
+        "Homebrew": "Homebrew: Restoration",
+        "Official2014": "Official 2014: Lesser & Greater Restoration"
+      },
+      "RestorationSpecialMinimum": {
+        "Name": "Restoration: Special Spellcaster minimum d20",
+        "Hint": "Minimum kept d20 result when the GM marks the Restoration caster as a Special Spellcaster. Range: 1–20. Default: 15."
+      },
+      "RestorationCurseDefenseBase": {
+        "Name": "Restoration: One Curse defense base",
+        "Hint": "Homebrew base for removing One Curse with 5th-level Restoration. Default: 8."
+      },
+      "RestorationAttunementDefenseBase": {
+        "Name": "Restoration: cursed-item attunement defense base",
+        "Hint": "Homebrew base for removing Attunement to a Cursed Item with 5th-level Restoration. Default: 7."
+      },
+      "CurseRequirementsEnabled": {
+        "Name": "Homebrew: włącz wymogi zdjęcia klątwy",
+        "Hint": "Pozwala GM-owi określić, czy spełniono wymogi zdjęcia klątwy w Homebrew Remove Curse oraz Restoration: One Curse. Zasady oficjalne i zerwanie związania z przeklętym przedmiotem pozostają bez zmian. Domyślnie wyłączone."
+      },
+      "CurseRequirementsDcPenalty": {
+        "Name": "Homebrew: wzrost DC za niespełnione wymogi klątwy",
+        "Hint": "Wartość dodawana do DC obrony klątwy, gdy nie spełniono wymogów jej zdjęcia. Działa tylko po włączeniu wymogów zdjęcia klątwy. Domyślnie: +5."
+      },
+      "LesserRestorationNames": {
+        "Name": "Recognized Lesser Restoration names",
+        "Hint": "Comma-separated spell names used in Official 2014 mode. Parenthetical suffixes are recognized automatically."
+      },
+      "GreaterRestorationNames": {
+        "Name": "Recognized Greater Restoration names",
+        "Hint": "Comma-separated spell names used in Official 2014 mode. Parenthetical suffixes are recognized automatically."
+      },
+      "RestorationNames": {
+        "Name": "Recognized Restoration names",
+        "Hint": "Comma-separated spell names used in Homebrew mode. Parenthetical suffixes are recognized automatically."
+      },
+      "IdentifyEnabled": {
+        "Name": "Włącz obsługę Identify",
+        "Hint": "Przechwytuje rozpoznane użycia Identify i pozwala rzucającemu wybrać przedmiot do identyfikacji zatwierdzanej przez GM-a."
+      },
+      "IdentifyRuleset": {
+        "Name": "Zasady Identify",
+        "Hint": "Wybierz procedurę Identify niezależnie od pozostałych zaklęć obsługiwanych przez moduł.",
+        "Homebrew": "Homebrew: opcjonalne ryzyko identyfikacji",
+        "Official2014": "Oficjalne D&D 2014"
+      },
+      "IdentifyNames": {
+        "Name": "Rozpoznawane nazwy Identify",
+        "Hint": "Nazwy zaklęcia Identify oddzielone przecinkami. Dopiski w nawiasach są rozpoznawane automatycznie."
+      },
+      "IncludeProficiency": {
+        "Name": "Homebrew: dodawaj premię z biegłości",
+        "Hint": "Po włączeniu premia z biegłości jest dodawana do wszystkich homebrewowych rzutów oraz pasywnych i stałych obron Counterspell, Dispel Magic, Remove Curse i Restoration. Tryb Official 2014 pozostaje bez zmian."
+      },
+      "AbjurerEnabled": {
+        "Name": "Homebrew: włącz opcję Abjurera",
+        "Hint": "Pokazuje deklarację Abjurer przy Counterspell, Dispel Magic, Remove Curse i Restoration. Abjurer dodaje do swojego rzutu jeden dodatkowy poziom biegłości: podwójną biegłość, gdy biegłość jest normalnie dodawana, albo pojedynczą, gdy jest wyłączona. GM zatwierdza deklarację."
+      }
+    },
+    "Rules": {
+      "Homebrew": "Homebrew — rzut przeciwstawny",
+      "Official2014": "Oficjalne D&D 2014"
+    },
+    "Requirements": {
+      "Dialog": {
+        "Title": "Wymogi zdjęcia klątwy",
+        "Met": "Postać spełnia wymogi zdjęcia tej klątwy",
+        "MetHint": "Decyzję podejmuje GM. Jeśli pole pozostanie niezaznaczone, DC tej klątwy wzrośnie o +{penalty}.",
+        "Note": "Opis wymogu",
+        "NotePlaceholder": "np. posiada wymagany składnik lub zabiła źródło klątwy",
+        "NoteHint": "Opcjonalnie. Opis pojawi się w komunikacie o wymogach.",
+        "ChatVisibility": "Widoczność komunikatu o wymogach",
+        "ChatPublic": "Publiczny",
+        "ChatGMOnly": "Tylko dla GM",
+        "ChatVisibilityHint": "Wybierz, czy status wymogów ma być publiczny, czy widoczny tylko dla GM-ów."
+      },
+      "Chat": {
+        "Title": "Wymogi zdjęcia klątwy",
+        "Met": "WYMOGI SPEŁNIONE",
+        "NotMet": "WYMOGI NIESPEŁNIONE",
+        "Penalty": "DC klątwy zwiększone o +{penalty}.",
+        "NoPenalty": "Do DC klątwy nie dodano kary za wymogi.",
+        "Note": "Wymóg: {note}"
+      }
+    },
+    "Dialog": {
+      "Confirm": "Potwierdź",
+      "Cancel": "Anuluj",
+      "Continue": "Dalej",
+      "Roll": "Wykonaj rzuty",
+      "SendToGM": "Wyślij do GM",
+      "Ability": "Cecha rzucania czarów",
+      "AbilityModifier": "Modyfikator cechy",
+      "Proficiency": "Premia z biegłości",
+      "Abjurer": "Abjurer",
+      "AbjurerHint": "Tylko homebrew: dodaje do tego rzutu jeden dodatkowy poziom biegłości. Daje podwójną biegłość, gdy globalne dodawanie biegłości jest włączone, albo pojedynczą, gdy jest wyłączone. GM zatwierdzi tę deklarację.",
+      "GMConfirmAbjurer": "Rzucający jest Abjurerem",
+      "CounterspellSlot": "Komórka Counterspella",
+      "SpellSlotLevel": "Faktyczny poziom komórki zaklęcia",
+      "SlotLevel": "Poziom komórki",
+      "SlotStandard": "Komórka {level}. poziomu (dostępne: {value})",
+      "SlotPact": "Komórka Magii Paktu {level}. poziomu (dostępne: {value})",
+      "RollMode": "Tryb rzutu",
+      "TargetRollMode": "Tryb rzutu celu",
+      "RollModePublic": "Rzut publiczny",
+      "RollModePrivate": "Rzut prywatny dla GM",
+      "RollModeBlind": "Rzut ślepy dla GM",
+      "BonusDice": "Formuła dodatkowych kości",
+      "BonusDiceHint": "Opcjonalnie, np. 1d4 albo 1d4 + 1d8. GM zatwierdzi lub poprawi tę formułę.",
+      "TargetBonusDice": "Dodatkowe kości kontrowanego zaklęcia",
+      "TargetBonusDiceHint": "Opcjonalne kości dodawane do rzutu pierwotnego zaklęcia. Ignorowane dla stałej obrony zwoju lub glifu.",
+      "CounterBonusDice": "Dodatkowe kości Counterspella",
+      "BonusDiceGMHint": "Potwierdź lub popraw opcjonalną formułę kości. Pozostaw puste, aby nie dodawać kości.",
+      "KnowsTargetSpell": "Znam kontrowane zaklęcie",
+      "KnowsTargetSpellHint": "Tylko homebrew: znajomość zwykłego zaklęcia daje advantage (poza Counterspellem), a znajomość zaklęcia ze zwoju lub glifu obniża jego stałą obronę o 5. GM zatwierdzi deklarację.",
+      "GMConfirmKnowledge": "Postać rzucająca Counterspell zna kontrowane zaklęcie",
+      "GMConfirmKnowledgeHint": "Potwierdź lub popraw deklarację. Zwykłe znane zaklęcie daje advantage poza Counterspellem; znany czar ze zwoju lub glifu zamiast tego obniża jego obronę o 5.",
+      "SpecialSpellcasterCounterspell": "Rzucający Counterspell jest Special Spellcasterem",
+      "SpecialSpellcasterHint": "Używa minimalnego zachowanego wyniku d20 równego {minimum}, pobranego z ustawień świata modułu.",
+      "DeclareDisadvantage": "Mam disadvantage",
+      "DisadvantageHint": "Na przykład z poziomu wyczerpania lub innego efektu. GM zatwierdzi tę deklarację.",
+      "GMTargetDisadvantage": "Rzucający kontrowane zaklęcie ma disadvantage",
+      "GMTargetDisadvantageHint": "Na przykład z wyczerpania lub innego efektu. Ta opcja jest ignorowana w przypadku zwoju lub glifu.",
+      "GMConfirmCounterDisadvantage": "Postać rzucająca Counterspell ma disadvantage",
+      "GMConfirmTargetDisadvantage": "Postać rzucająca kontrowane zaklęcie ma disadvantage",
+      "GMDisadvantageHint": "Potwierdź lub popraw deklarację. Advantage i disadvantage wzajemnie się znoszą.",
+      "GMWillReview": "Aktywny GM otrzyma i sprawdzi wszystkie wybrane wartości przed wykonaniem rzutów.",
+      "CounterspellerTitle": "Counterspell PLUS — twój Counterspell",
+      "GMTargetTitle": "Counterspell PLUS — wybór celu",
+      "TargetPlayerTitle": "Counterspell PLUS — twoje zaklęcie jest kontrowane",
+      "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie GM",
+      "CounterspellData": "Counterspell",
+      "TargetData": "Kontrowane zaklęcie",
+      "Caster": "Rzucający",
+      "TargetCaster": "Kto jest counterspellowany?",
+      "SearchTargetPlaceholder": "Wpisz nazwę, aby wyszukać cel…",
+      "TargetsFound": "Pasujące cele: {count}",
+      "TargetTokenEntry": "Token — {name}",
+      "TargetActorEntry": "Actor — {name}",
+      "TargetSpecialEntry": "Specjalny — {name}",
+      "SpecialUnknown": "Unknown",
+      "SpecialGlyph": "Glyph",
+      "SpecialObject": "Object",
+      "SpecialTargetHint": "Wybierz aktora lub token albo użyj Unknown/Glyph, gdy celu nie reprezentuje karta postaci. Wybranie Glyph automatycznie ustawia źródło zaklęcia na Glyph.",
+      "TargetAbility": "Cecha rzucania czarów celu",
+      "SourceType": "Źródło zaklęcia",
+      "NormalSpell": "Zwykłe zaklęcie",
+      "Scroll": "Zwój zaklęcia",
+      "Glyph": "Glif",
+      "SpellName": "Nazwa kontrowanego zaklęcia",
+      "AskOwner": "Zapytaj aktywnego właściciela tej postaci",
+      "AskOwnerHint": "Jeżeli wybrana postać należy do aktywnego gracza, otrzyma on własne okno danych. Blind GM Roll pozostawia dane u GM i pomija okno tego gracza.",
+      "ScrollCreator": "Dane twórcy zwoju / glifu",
+      "ManualCasterCreator": "Ręczne dane rzucającego / twórcy",
+      "CreatorModifier": "Modyfikator cechy twórcy",
+      "CreatorProficiency": "Premia z biegłości twórcy",
+      "ScrollHint": "Dane twórcy są używane wyłącznie po wybraniu źródła „Zwój zaklęcia” lub „Glif”.",
+      "ManualDataHint": "Te wartości służą jako dane twórcy Scrolla lub Glyphu oraz ręczne dane rzucającego dla celu Unknown. Przy zwykłym zaklęciu wybranej postaci pierwszeństwo mają wartości z jej karty.",
+      "YouAreCountered": "Twoje zaklęcie jest counterspellowane",
+      "PlayerDataHint": "Modyfikator i biegłość zostaną pobrane z tej karty postaci. GM otrzyma je do zatwierdzenia.",
+      "GMReviewHint": "Potwierdź lub popraw dane celu. Komórka Counterspella zostanie zużyta dopiero po kliknięciu „Wykonaj rzuty”.",
+      "CastingMethod": "Sposób rzucania",
+      "CastNormally": "Zwykłe rzucenie",
+      "CastFromScroll": "Rzucenie ze zwoju zaklęcia",
+      "ScrollLevel": "Poziom zaklęcia w zwoju",
+      "ScrollAuthorModifier": "Modyfikator cechy autora zwoju",
+      "ScrollAuthorProficiency": "Premia z biegłości autora zwoju",
+      "ScrollAuthor": "Autor zwoju",
+      "ScrollCastingHint": "Przy zwykłym rzuceniu używane są wybrana komórka i statystyki postaci. Przy zwoju używane są poziom oraz statystyki autora zwoju, a komórka postaci nie jest zużywana. GM zatwierdzi te dane. Moduł nie usuwa automatycznie przedmiotu zwoju.",
+      "NoSlotsAvailable": "Brak dostępnych komórek — wybierz zwój",
+      "ScrollCastingLevel": "Zwój zaklęcia {level}. poziomu"
+    },
+    "Chat": {
+      "UnknownCaster": "Nieznany rzucający",
+      "UnknownSpell": "Nieznane zaklęcie",
+      "CounterspellRoll": "Counterspell: {actor}",
+      "CounterspellRollAdvantage": "Counterspell: {actor} — advantage za znajomość kontrowanego zaklęcia",
+      "TargetRoll": "{spell}: {actor}",
+      "OfficialRoll": "Test cechy Counterspella — ST {dc}",
+      "ScrollDefense": "Wynik obrony zwoju",
+      "GlyphDefense": "Wynik obrony Spell Glyph",
+      "Countered": "ZAKLĘCIE SKONTROWANE",
+      "NotCountered": "COUNTERSPELL NIEUDANY",
+      "AutomaticSuccess": "Komórka Counterspella ma co najmniej poziom kontrowanego zaklęcia. Zaklęcie zostaje skontrowane automatycznie.",
+      "OfficialResult": "Wynik Counterspella: {counterTotal}; ST: {dc}.",
+      "OpposedResult": "Wynik Counterspella: {counterTotal}; wynik kontrowanego zaklęcia: {targetTotal}.",
+      "HiddenResults": "Co najmniej jedna strona użyła ukrytego rzutu. Rozstrzygnięcie jest publiczne, ale ukryte wyniki liczbowe pozostają widoczne wyłącznie zgodnie z wybranymi trybami rzutów.",
+      "TieRule": "W zasadzie rzutów przeciwstawnych remis wygrywa pierwotne zaklęcie.",
+      "WildMagicTitle": "Dzika Magia",
+      "WildMagicBody": "Użycie Counterspella przeciwko innemu Counterspellowi wywołuje efekt Dzikiej Magii. Efekt określa GM.",
+      "SpecialMinimum": "Special Spellcaster: minimum d20 {minimum}"
+    },
+    "Notifications": {
+      "NoSlots": "Ta postać nie ma dostępnej komórki pozwalającej rzucić Counterspell.",
+      "NoCasters": "GM nie ma dostępnych aktorów ani tokenów do wybrania.",
+      "CasterNotFound": "Nie udało się odnaleźć wybranego rzucającego.",
+      "ActorNotFound": "Nie udało się odnaleźć postaci rzucającej Counterspell.",
+      "SlotUnavailable": "Wybrana komórka Counterspella nie jest już dostępna.",
+      "NoGM": "Do rozstrzygnięcia Counterspella potrzebny jest aktywny GM.",
+      "AlreadyPending": "Ta postać ma już oczekującą procedurę Counterspella.",
+      "RequestTimeout": "Prośba Counterspella wygasła po trzech minutach.",
+      "CancelledByGM": "GM anulował procedurę Counterspella.",
+      "CancelledByTarget": "Gracz będący celem anulował procedurę Counterspella.",
+      "TargetRollFailed": "Nie udało się wykonać rzutu kontrowanego zaklęcia.",
+      "InvalidBonusFormula": "Formuła dodatkowych kości jest nieprawidłowa. Popraw ją przed rzutem.",
+      "SelectTargetSuggestion": "Wybierz cel z podpowiedzi wyszukiwarki.",
+      "GenericError": "Podczas obsługi Counterspella wystąpił błąd."
+    },
+    "Dispel": {
+      "Dialog": {
+        "DispelSlot": "Komórka Dispel Magic",
+        "DispellerTitle": "Counterspell PLUS — twój Dispel Magic",
+        "OfficialBonusLater": "Zasady oficjalne 2014: opcjonalne dodatkowe kości wybierzesz oddzielnie dla każdego wymaganego testu cechy, gdy GM wpisze efekty.",
+        "DispelData": "Dispel Magic",
+        "Target": "Cel objęty efektami",
+        "EffectCount": "Liczba efektów zaklęć na celu",
+        "DefenseRollMode": "Tryb widoczności pasywnych obron",
+        "SetupHint": "Podaj łączną liczbę efektów. Gdy jest ich więcej niż jeden, zasada homebrew dodaje tę liczbę do ST każdego efektu.",
+        "SpecialTargetHint": "Wybierz aktora/token albo cel specjalny: Unknown, Glyph lub Object. Cel Glyph automatycznie wymusza źródło Glyph dla każdego efektu.",
+        "GMSetupTitle": "Counterspell PLUS — cel Dispel Magic",
+        "EffectNumber": "Efekt {index} z {count}",
+        "EffectName": "Nazwa efektu zaklęcia",
+        "EffectLevel": "Poziom zaklęcia",
+        "CasterCreatorModifier": "Modyfikator cechy pierwotnego rzucającego / twórcy",
+        "CasterCreatorProficiency": "Biegłość pierwotnego rzucającego / twórcy",
+        "SourceBaseHint": "Zwykłe zaklęcie, Scroll i Glyph mają osobne konfigurowalne bazy homebrew. Dla Scrolla i Glyphu używane są dane twórcy.",
+        "GMEffectTitle": "Dispel Magic — efekt {index} z {count}",
+        "KnowsEffect": "Znam to zaklęcie",
+        "KnowsEffectHint": "Homebrew: odejmuje 5 od ST tego konkretnego efektu. GM zatwierdzi deklarację.",
+        "CheckBonusDice": "Dodatkowe kości do tego testu",
+        "CheckBonusDiceHint": "Zasady oficjalne 2014: ta formuła dotyczy tylko oddzielnego testu cechy dla tego efektu.",
+        "AutomaticBonusIgnored": "Ten efekt jest obecnie automatycznie rozpraszany, bo jego poziom nie przekracza poziomu komórki Dispel Magic; formuła zostanie pominięta, chyba że GM zmieni poziom efektu.",
+        "HiddenLevel": "poziom zaklęcia ukryty przez GM",
+        "HiddenLevelBonusHint": "Poziom zaklęcia jest ukryty. Podaj opcjonalne kości dla tego efektu; GM zastosuje je tylko wtedy, gdy wymagany będzie test cechy.",
+        "LevelValue": "poziom {level}",
+        "EffectsSummary": "Efekty zaklęć: {count}",
+        "PlayerEffectsTitle": "Counterspell PLUS — zaklęcia objęte twoim Dispel Magic",
+        "GMConfirmKnown": "Postać rzucająca Dispel Magic zna to zaklęcie",
+        "SpecialSpellcaster": "Rzucający Dispel Magic jest Special Spellcasterem",
+        "GMConfirmDisadvantage": "Postać rzucająca Dispel Magic ma disadvantage",
+        "TargetData": "Cel i pasywne obrony",
+        "EffectsToResolve": "Efekty zaklęć",
+        "GMReviewHint": "Potwierdź lub popraw każdy efekt i deklarację gracza. Komórka Dispel Magic zostanie zużyta dopiero po kliknięciu „Wykonaj rzuty”.",
+        "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie Dispel Magic"
+      },
+      "Chat": {
+        "DefenseTitle": "Dispel Magic — obrony zaklęć",
+        "HomebrewRoll": "Dispel Magic: {actor}",
+        "OfficialRoll": "Test Dispel Magic przeciw {spell} — ST {dc}",
+        "Dispelled": "ROZPROSZONE",
+        "Remains": "POZOSTAJE",
+        "Automatic": "Automatyczny sukces według oficjalnych zasad 2014.",
+        "NumericResult": "Wynik: {total}; ST: {dc}.",
+        "HiddenResult": "Co najmniej jedna istotna wartość używa ukrytego trybu widoczności.",
+        "TieRule": "W zasadzie homebrew wynik Dispel Magic musi być wyższy od ST efektu; remis pozostawia efekt na celu.",
+        "TargetSummary": "Cel: {target}",
+        "ManualRemoval": "Moduł tylko wskazuje efekty do usunięcia; GM usuwa je ręcznie."
+      },
+      "Notifications": {
+        "NoSlots": "Ta postać nie ma dostępnej komórki pozwalającej rzucić Dispel Magic.",
+        "NoTargets": "GM nie ma dostępnych aktorów ani tokenów do wybrania.",
+        "TargetNotFound": "Nie udało się odnaleźć wybranego celu Dispel Magic.",
+        "ActorNotFound": "Nie udało się odnaleźć postaci rzucającej Dispel Magic.",
+        "SlotUnavailable": "Wybrana komórka Dispel Magic nie jest już dostępna.",
+        "NoGM": "Do rozstrzygnięcia Dispel Magic potrzebny jest aktywny GM.",
+        "AlreadyPending": "Ta postać ma już oczekującą procedurę Dispel Magic.",
+        "RequestTimeout": "Prośba Dispel Magic wygasła po trzech minutach.",
+        "DefensePostFailed": "GM nie mógł opublikować pasywnych obron Dispel Magic.",
+        "CancelledByGM": "GM anulował procedurę Dispel Magic.",
+        "CancelledByPlayer": "Postać rzucająca Dispel Magic anulowała procedurę.",
+        "GenericError": "Podczas obsługi Dispel Magic wystąpił błąd."
+      }
+    },
+    "Restoration": {
+      "Dialog": {
+        "CasterTitle": "Counterspell PLUS — your Restoration",
+        "EffectTitle": "Counterspell PLUS — choose a restorative effect",
+        "GMReviewTitle": "Counterspell PLUS — final Restoration review",
+        "Resolve": "Resolve",
+        "Slot": "Restoration slot",
+        "SlotStandard": "Level {level} spell slot ({value} available)",
+        "SlotPact": "Level {level} Pact Magic slot ({value} available)",
+        "CastLevel": "Cast at level {level}",
+        "ChooseEffect": "Choose one effect",
+        "Effect": "Restorative effect",
+        "ExclusiveTierHint": "The effect lists are separate by casting level; higher tiers do not include effects from lower tiers.",
+        "Target": "Creature receiving Restoration",
+        "MaterialComponent": "Material component",
+        "MaterialValue": "{material} worth {cost} gp, consumed by the spell.",
+        "MaterialInformational": "Informational only. Counterspell PLUS does not remove this component from inventory.",
+        "NoMaterial": "No priced material component is required.",
+        "KnowsCurse": "I know this curse",
+        "KnowsCurseHint": "Homebrew: subtract 5 from the selected curse or cursed item's defense DC. The GM confirms this declaration.",
+        "GMConfirmKnown": "The Restoration caster knows this curse",
+        "SpecialSpellcaster": "Restoration caster is a Special Spellcaster",
+        "GMConfirmDisadvantage": "The Restoration caster has disadvantage",
+        "DefenseRollMode": "Curse defense roll mode",
+        "CurseName": "Curse name",
+        "CurseLevel": "Curse level",
+        "CurseModifier": "Curse ability modifier",
+        "CurseProficiency": "Curse proficiency bonus",
+        "ItemName": "Cursed item name",
+        "ItemRarity": "Cursed item rarity",
+        "GMReviewHint": "Confirm or correct the target, chosen effect and every declaration. The spell slot is consumed only after you press Resolve. Materials are not removed automatically."
+      },
+      "Effects": {
+        "disease": "One disease",
+        "blinded": "Blinded",
+        "deafened": "Deafened",
+        "frightened": "Frightened",
+        "paralyzed": "Paralyzed",
+        "poisoned": "Poisoned",
+        "charmed": "Charmed",
+        "exhaustion": "Exhaustion (1 level)",
+        "abilityReduction": "Reduction to one Ability Score",
+        "hpMaxReduction": "Hit Point Maximum Reduction",
+        "petrified": "Petrified",
+        "curse": "One Curse",
+        "cursedAttunement": "Attunement to a Cursed Item"
+      },
+      "Rarity": {
+        "common": "Common — modifier {value}",
+        "uncommon": "Uncommon — modifier {value}",
+        "rare": "Rare — modifier {value}",
+        "veryRare": "Very Rare — modifier {value}",
+        "legendary": "Legendary — modifier {value}",
+        "artifact": "Artifact — modifier {value}"
+      },
+      "Chat": {
+        "Roll": "Restoration: {actor}",
+        "DefenseTitle": "Restoration — curse defense",
+        "RarityModifier": "The ability modifier is replaced by the cursed item's rarity modifier.",
+        "CurseModifier": "The curse's own ability modifier is used; these are not target statistics.",
+        "Success": "SUCCESS",
+        "Failure": "FAILURE",
+        "Automatic": "This selected restorative effect requires no roll.",
+        "NumericResult": "Result: {total}; DC: {dc}.",
+        "HiddenResult": "At least one relevant value used a hidden roll mode.",
+        "Target": "Target: {target}",
+        "Effect": "Chosen effect: {effect}",
+        "Material": "Material: {material}, {cost} gp, consumed by the spell.",
+        "MaterialInformational": "Informational only — Counterspell PLUS does not remove it from inventory.",
+        "NoMaterial": "Material: no priced component.",
+        "ManualEffect": "The module reports the result; the GM applies or removes the relevant condition, curse or attunement manually."
+      },
+      "Outcome": {
+        "DramaticFailure": {
+          "Title": "Dramatic Restoration Failure",
+          "Body": "Restoration failed by {minimum} or more. This carries significant complications. The GM determines the effect."
+        },
+        "Failure": {
+          "Title": "Failed Restoration",
+          "Body": "Restoration failed by {minimum}–{maximum}. This carries minor complications. The GM determines the effect."
+        },
+        "BarelySuccess": {
+          "Title": "Barely Successful Restoration",
+          "Body": "Restoration succeeded by {minimum}–{maximum}. The curse is removed, but this carries minor complications. The GM determines the effect."
+        },
+        "Success": {
+          "Title": "Successful Restoration",
+          "Body": "Restoration succeeded by {minimum} or more. The curse is removed without negative effects."
+        }
+      },
+      "Notifications": {
+        "NoSlots": "This actor has no spell slot entry capable of casting this restoration spell.",
+        "NoSlotAtLevel": "There is no available level {level} spell slot. Choose a level showing at least 1 available, or cast from a scroll.",
+        "TargetNotFound": "The selected Restoration target could not be found.",
+        "ActorNotFound": "The Restoration actor could not be found.",
+        "SlotUnavailable": "The selected Restoration slot is no longer available.",
+        "NoGM": "An active GM is required to resolve Restoration.",
+        "AlreadyPending": "This actor already has a pending Restoration workflow.",
+        "RequestTimeout": "The Restoration request expired after three minutes.",
+        "DefensePostFailed": "The GM could not publish the Restoration curse defense.",
+        "CancelledByGM": "The GM cancelled the Restoration workflow.",
+        "CancelledByPlayer": "The Restoration caster cancelled the workflow.",
+        "GenericError": "The Restoration workflow encountered an error."
+      }
+    },
+    "Identify": {
+      "Dialog": {
+        "CasterTitle": "Counterspell PLUS — twoje Identify",
+        "GMTitle": "Counterspell PLUS — zatwierdzenie Identify przez GM-a",
+        "Approve": "Zatwierdź identyfikację",
+        "CastAsRitual": "Rzucanie rytualne",
+        "Slot": "Komórka Identify",
+        "RitualLevel": "Poziom zaklęcia rytualnego",
+        "RiskRollHint": "Homebrew: ten tryb rzutu uzupełni Stat Shift tylko wtedy, gdy GM oznaczy przedmiot jako ryzykowny. GM wybiera tam cechę rzutu obronnego. Bez ryzyka nie wykonuje się rzutu obronnego.",
+        "InventoryItem": "Przedmiot z ekwipunku rzucającego",
+        "SearchInventory": "Przeszukaj ekwipunek…",
+        "ManualItem": "Nazwa ręczna / przedmiotu nie ma na liście",
+        "TypedName": "Nazwa podana przez rzucającego",
+        "TypedNamePlaceholder": "np. dziwny pierścień",
+        "TypedNameHint": "Możesz wpisać dowolną nazwę, także przedmiotu homebrew, który nie istnieje jeszcze jako dokument Foundry.",
+        "DropInventoryHint": "Upuść tutaj przedmiot z ekwipunku albo wybierz go powyżej",
+        "ClearSelectedItem": "Usuń zaznaczony przedmiot",
+        "MaterialTitle": "Komponent materialny:",
+        "MaterialText": "perła warta co najmniej 100 sz i sowie pióro. Moduł wyświetla tę informację, ale nie zużywa komponentu.",
+        "ItemsFound": "Znalezione przedmioty: {count}",
+        "WorldItem": "Przedmiot świata",
+        "ActorItem": "Aktor: {actor}",
+        "DroppedItem": "Upuszczony przedmiot",
+        "WorldSearch": "Faktyczny przedmiot w tym świecie",
+        "SearchWorld": "Przeszukaj wszystkie przedmioty świata i ekwipunki aktorów…",
+        "NoActualItem": "Nazwa ręczna / brak istniejącego dokumentu Item",
+        "DropWorldHint": "Upuść tutaj dokument przedmiotu",
+        "FinalName": "Nazwa ujawniana rzucającemu",
+        "FinalNameHint": "Potwierdź tekst gracza albo zastąp go faktyczną nazwą przedmiotu. Zmiana tego pola odłącza zaznaczony dokument Item.",
+        "NoStoredDescription": "Ten dokument przedmiotu nie ma zapisanego opisu.",
+        "LoadStoredDescription": "Skopiuj zapisany opis do opisu ujawnianego",
+        "MundaneItem": "To zwykły przedmiot pozbawiony dodatkowych efektów",
+        "MundaneItemHint": "Użyj tej opcji tylko wtedy, gdy zaznaczony Item nie ma zapisanego opisu. Pozwala ona zakończyć identyfikację bez wpisywania opisu i wyłącza opcje klątwy oraz ryzyka.",
+        "RevealedDescription": "Opis ujawniany po identyfikacji",
+        "RevealedDescriptionHint": "Wysyłany jest wyłącznie ten edytowalny tekst. Zapisany opis nigdy nie jest kopiowany automatycznie, dzięki czemu informacje o klątwie nie zostaną ujawnione przypadkiem.",
+        "RevealCurse": "Ujawnij informacje o klątwie",
+        "RevealCurseHint": "Domyślnie wyłączone w obu zestawach zasad. Włącz tylko wtedy, gdy Identify ma ujawnić klątwę, a następnie wpisz jej szczegóły poniżej.",
+        "CurseDetails": "Szczegóły klątwy ujawniane rzucającemu",
+        "Risk": "Ta identyfikacja niesie ryzyko homebrew",
         "RiskHint": "Po zatwierdzeniu Stat Shift otworzy Homebrew Save z rzucającym Identify zablokowanym jako cel. Poziom Identify ({level}) zostanie automatycznie dodany do rzutu obronnego. Gdy pole jest wyłączone, nie wykonuje się rzutu.",
         "OfficialNoRisk": "Tryb Official 2014 nie dodaje rzutu obronnego za ryzyko. Szczegóły klątwy pozostają osobną decyzją GM-a i są domyślnie ukryte.",
         "PrivateResultHint": "Zatwierdzony wynik i ujawniony opis otrzymają szeptem wyłącznie GM-owie i użytkownik, który rzucił Identify.",
