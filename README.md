@@ -2,7 +2,7 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.5.4
+## Version 0.5.5
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse, the Restoration family and Identify: Homebrew or Official D&D 2014.
 - Player declarations are sent to the active GM for final review.
@@ -25,7 +25,7 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - Homebrew Remove Curse and Restoration: One Curse can optionally require special curse-removal conditions. The GM confirms each requirement, may describe it, chooses whether its status message is public or GM-only, and an unmet requirement increases the curse DC by a configurable amount (default +5). Official 2014 rules and cursed-item attunement are unchanged.
 - Identify lets the caster select or drop an inventory item, or type any item name. The GM can search every World Item and actor inventory, correct the name, select or drop the actual Item document, and write exactly what is revealed. Editing the supplied/revealed name detaches the selected Item document while preserving the manual name; the selected-item card also has a dedicated remove button. If the selected Item has no stored description, the GM may instead confirm that it is a mundane item with no additional effects.
 - Identify supports Normal Casting, Scroll Casting and Ritual Casting. Curse information is hidden by default in both rulesets and is revealed only through a separate GM-controlled field.
-- Homebrew Identify can optionally carry risk. Only a risky identification opens Stat Shift's editable Homebrew Save window with the caster locked as the target and the Identify cast level automatically added to the saving throw. Identify consequences use Foundry's `scroll-bound-blue-red.webp` icon by default. No risk means no saving throw. Official 2014 Identify never adds this homebrew risk roll.
+- Homebrew Identify can optionally carry risk. Only a risky identification opens Stat Shift's shared Homebrew editor in its required-save mode, with the caster locked as the target and the Identify cast level automatically added to the saving throw. Identify consequences use Foundry's `scroll-bound-blue-red.webp` icon by default. No risk means no saving throw. Official 2014 Identify never adds this homebrew risk roll.
 - English is available throughout the module; Counterspell and Dispel Magic also retain their Polish interface, while the new Remove Curse interface uses English as requested.
 - The primary active GM automatically receives a player-visible `Counterspell PLUS — Rules Reference` Journal Entry with two pages: Official 2014 Rules and the complete Homebrew Rules. The module updates its managed pages when relevant world settings change.
 - Every module dialog now uses theme-aware contrast: light text in dark windows and dark text in light windows, including hints, form controls and placeholders.
@@ -142,13 +142,13 @@ Identification succeeds after GM approval and requires no saving throw. The mate
 
 ### Homebrew risk and Stat Shift
 
-The GM may mark a specific identification as risky. Only then does Counterspell PLUS call `game.statShift.openHomebrewSave(...)` and open Stat Shift for the GM. The identifying actor is locked as the save target, while the GM may edit the ability, DC, roll mode, automatic bonus, success and failure effects, ability/skill/tool/save/attack modifiers, advantage or disadvantage, senses, speed, AC, maximum HP, spell slots, duration, icons and descriptions. Every additional modifier may also have an optional situational note.
+The GM may mark a specific identification as risky. Only then does Counterspell PLUS call `game.statShift.openHomebrew(...)` and open Stat Shift for the GM. The identifying actor is locked as the save target and the **Does not require a saving throw** option is locked off, while the GM may edit the ability, DC, roll mode, automatic bonus, success and failure effects, ability/skill/tool/save/attack modifiers, advantage or disadvantage, senses, speed, AC, maximum HP, spell slots, duration, icons and descriptions. Every additional modifier may also have an optional situational note. Counterspell PLUS falls back to the older `openHomebrewSave(...)` API when used with an earlier compatible Stat Shift release.
 
 The Identify caster does not select a spellcasting ability. If the item is risky, the GM chooses the saving throw ability directly in Stat Shift.
 
 The automatic saving-throw bonus starts at the level used to cast Identify. The caster then makes the saving throw through Stat Shift. The risk save resolves the configured consequence; the GM's approval separately determines that the identification succeeded. If risk is not selected, Stat Shift does not open and no saving throw is made.
 
-Stat Shift **0.2.0 or newer** is recommended rather than required. If it is unavailable, Identify still posts the private identification result and warns the GM that the risk save could not be opened.
+Stat Shift **0.3.0 or newer** is recommended rather than required. If it is unavailable, Identify still posts the private identification result and warns the GM that the risk save could not be opened.
 
 ## Natural 20 and natural 1
 
