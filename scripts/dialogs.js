@@ -287,6 +287,10 @@ export async function promptGMTarget(counter) {
       </div>
       <p class="hint">${t("Dialog.SpecialTargetHint")}</p>
       <div class="form-group">
+        <label>${t("Casting.TargetPlayer")}</label>
+        <div class="form-fields"><select name="ownerUserId" data-csp-target-owner></select></div>
+      </div>
+      <div class="form-group">
         <label>${t("Dialog.SourceType")}</label>
         <div class="form-fields">
           <select name="sourceType" data-csp-source-type-select>
@@ -339,7 +343,23 @@ export async function promptGMTarget(counter) {
     title: t("Dialog.GMTargetTitle"),
     content,
     confirmLabel: t("Dialog.Continue"),
-    onRender: activateTargetSearch
+    onRender: (event, dialog) => {
+      activateTargetSearch(event, dialog);
+      const actorSelect = dialog.element.querySelector('[name="actorUuid"]');
+      const ownerSelect = dialog.element.querySelector('[data-csp-target-owner]');
+      const updateOwners = () => {
+        const actor = getActorFromUuidSync(actorSelect.value);
+        const previous = ownerSelect.value;
+        const owners = game.users.filter(user => user.active && !user.isGM
+          && actor?.testUserPermission(user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER));
+        ownerSelect.innerHTML = `<option value="">${escapeHTML(t("Casting.AutomaticOwner"))}</option>`
+          + owners.map(user => `<option value="${escapeHTML(user.id)}">${escapeHTML(user.name)}</option>`).join("");
+        if (owners.some(user => user.id === previous)) ownerSelect.value = previous;
+      };
+      actorSelect.addEventListener("change", updateOwners);
+      dialog.element.querySelector('[data-csp-target-filter]')?.addEventListener("input", updateOwners);
+      updateOwners();
+    }
   });
   if (!result) return null;
 
@@ -358,7 +378,10 @@ export async function promptGMTarget(counter) {
     return null;
   }
 
-  const owner = getActiveOwner(actor);
+  const requestedOwner = game.users.get(String(result.ownerUserId ?? ""));
+  const owner = requestedOwner?.active && !requestedOwner.isGM
+    && actor?.testUserPermission(requestedOwner, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
+    ? requestedOwner : getActiveOwner(actor);
   const ability = String(result.ability);
   const manualMod = parseNumber(result.creatorMod, 0);
   const manualProf = parseNumber(result.creatorProf, 0);
@@ -378,8 +401,7 @@ export async function promptGMTarget(counter) {
     ownerUserId: owner?.id ?? null,
     askOwner: Boolean(result.askOwner)
       && Boolean(owner)
-      && sourceType === "spell"
-      && selectedRollMode !== "blindroll",
+      && sourceType === "spell",
     sourceType,
     spellName: String(result.spellName || t("Chat.UnknownSpell")),
     spellLevel: parseNumber(result.spellLevel, 0),
@@ -405,7 +427,7 @@ export async function promptTargetPlayer(target) {
 
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
-  const rollMode = defaultRollMode();
+  const rollMode = target.rollMode ?? defaultRollMode();
   const disadvantageField = target.ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -549,6 +571,14 @@ export async function promptGMReview(counter, target) {
         </div>
       </div>
       <div class="form-group">
+        <label>${t("Dialog.CounterRollMode")}</label>
+        <div class="form-fields"><select name="counterRollMode">${selectOptions(getRollModeEntries(counter.rollMode))}</select></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Dialog.TargetRollMode")}</label>
+        <div class="form-fields"><select name="targetRollMode">${selectOptions(getRollModeEntries(target.rollMode))}</select></div>
+      </div>
+      <div class="form-group">
         <label>${counterUsesScroll ? t("Dialog.ScrollAuthorModifier") : t("Dialog.AbilityModifier")}</label>
         <div class="form-fields"><input type="number" name="counterAbilityMod" value="${counter.abilityMod}" step="1"></div>
       </div>
@@ -612,6 +642,7 @@ export async function promptGMReview(counter, target) {
 
   const reviewed = {
     ...target,
+    rollMode: String(result.targetRollMode || target.rollMode),
     spellName: String(result.spellName || target.spellName),
     spellLevel: parseNumber(result.spellLevel, target.spellLevel)
   };
@@ -629,6 +660,7 @@ export async function promptGMReview(counter, target) {
   const reviewedCounterScrollLevel = Math.min(9, Math.max(3, Math.trunc(parseNumber(result.counterScrollLevel, counter.slotLevel))));
   const reviewedCounter = {
     ...counter,
+    rollMode: String(result.counterRollMode || counter.rollMode),
     abilityMod: parseNumber(result.counterAbilityMod, counter.abilityMod),
     proficiency: parseNumber(result.counterProficiency, counter.proficiency),
     slotLevel: counterUsesScroll ? reviewedCounterScrollLevel : counter.slotLevel,

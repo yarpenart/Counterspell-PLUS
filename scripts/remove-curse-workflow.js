@@ -1,8 +1,6 @@
+import { selectCastingSession, promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
-  promptCurseRemover,
-  promptCurseRemoverEffects,
-  promptGMRemoveCurseEffect,
   promptGMRemoveCurseReview,
   promptGMRemoveCurseSetup
 } from "./remove-curse-dialogs.js";
@@ -94,7 +92,9 @@ async function handleSocket(message) {
           const setup = await promptGMRemoveCurseSetup(message.payload.remover);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              const effect = await promptGMRemoveCurseEffect(index, setup.effectCount, setup.targetType);
+              const sourceSession = await selectCastingSession(getActorFromUuidSync(setup.targetUuid), null, "remove-curse-source");
+              if (!sourceSession) break;
+              const effect = await promptCasting(sourceSession, "remove-curse-source", index, setup.effectCount, setup.targetType);
               if (!effect) {
                 result = null;
                 break;
@@ -476,12 +476,15 @@ function validateBonuses(remover, setup) {
 }
 
 async function startRemoveCurse(activity) {
-  const item = getActivityItem(activity);
-  const actor = getItemActor(item);
+  let item = getActivityItem(activity);
+  let actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("RemoveCurse.Notifications.ActorNotFound"));
     return;
   }
+  const session = await selectCastingSession(actor, item, "remove-curse");
+  if (!session) return;
+  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("RemoveCurse.Notifications.AlreadyPending"));
     return;
@@ -496,7 +499,7 @@ async function startRemoveCurse(activity) {
   activeActors.add(actor.uuid);
   try {
     const ruleset = game.settings.get(MODULE_ID, "removeCurseRuleset");
-    let remover = await promptCurseRemover(actor, item, ruleset);
+    let remover = await promptCasting(session, "remove-curse", ruleset);
     if (!remover) return;
 
     let setup = await requestRemote("remove-curse-gm-setup", gm.id, { remover });
@@ -505,7 +508,7 @@ async function startRemoveCurse(activity) {
       return;
     }
 
-    setup = await promptCurseRemoverEffects(remover, setup);
+    setup = await promptCasting(session, "remove-curse-effects", remover, setup);
     if (!setup) {
       ui.notifications.info(t("RemoveCurse.Notifications.CancelledByPlayer"));
       return;

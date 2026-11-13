@@ -1,5 +1,6 @@
+import { selectCastingSession, promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
-import { promptGMIdentifyReview, promptIdentifier } from "./identify-dialogs.js";
+import { promptGMIdentifyReview } from "./identify-dialogs.js";
 import {
   escapeHTML,
   getActivityItem,
@@ -205,12 +206,15 @@ async function completeIdentification(identifier) {
 }
 
 async function startIdentify(activity) {
-  const item = getActivityItem(activity);
-  const actor = getItemActor(item);
+  let item = getActivityItem(activity);
+  let actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("Identify.Notifications.ActorNotFound"));
     return;
   }
+  const session = await selectCastingSession(actor, item, "identify");
+  if (!session) return;
+  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Identify.Notifications.AlreadyPending"));
     return;
@@ -224,7 +228,7 @@ async function startIdentify(activity) {
   activeActors.add(actor.uuid);
   try {
     const ruleset = game.settings.get(MODULE_ID, "identifyRuleset");
-    const identifier = await promptIdentifier(actor, item, ruleset);
+    const identifier = await promptCasting(session, "identify", ruleset);
     if (!identifier) return;
     const result = await requestRemote("identify-gm-review", gm.id, { identifier });
     if (!result?.approved) {

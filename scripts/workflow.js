@@ -1,6 +1,6 @@
+import { selectCastingSession, promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
-  promptCounterspeller,
   promptGMReview,
   promptGMTarget,
   promptTargetPlayer
@@ -155,7 +155,7 @@ async function handleSocket(message) {
         result = await executeTargetRoll(message.payload.target);
         break;
       default:
-        if (["dispel-", "remove-curse-", "restoration-"].some(prefix => String(message.type).startsWith(prefix))) return;
+        if (["casting-", "identify-", "dispel-", "remove-curse-", "restoration-"].some(prefix => String(message.type).startsWith(prefix))) return;
         debug("Unknown socket message", message.type);
     }
     await answerRequest(message, result);
@@ -367,13 +367,16 @@ async function resolveOfficial2014(counter, target) {
 }
 
 async function startCounterspell(activity) {
-  const item = getActivityItem(activity);
-  const actor = getItemActor(item);
+  let item = getActivityItem(activity);
+  let actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("Notifications.ActorNotFound"));
     return;
   }
 
+  const session = await selectCastingSession(actor, item, "counterspell");
+  if (!session) return;
+  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Notifications.AlreadyPending"));
     return;
@@ -388,7 +391,7 @@ async function startCounterspell(activity) {
   activeActors.add(actor.uuid);
   try {
     const ruleset = game.settings.get(MODULE_ID, "ruleset");
-    let counter = await promptCounterspeller(actor, item, ruleset);
+    let counter = await promptCasting(session, "counterspell", ruleset);
     if (!counter) return;
 
     let target = await requestRemote("gm-target", gm.id, { counter });
@@ -450,7 +453,7 @@ export function initializeWorkflow() {
 
   game.counterspellPlus = {
     startFromActivity: startCounterspell,
-    version: "0.5.2"
+    version: game.modules.get(MODULE_ID)?.version
   };
 
   debug("Ready");

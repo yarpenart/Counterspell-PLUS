@@ -1,8 +1,7 @@
+import { selectCastingSession, promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
-  promptGMRestorationReview,
-  promptRestorationEffect,
-  promptRestorer
+  promptGMRestorationReview
 } from "./restoration-dialogs.js";
 import {
   RESTORATION_EFFECTS,
@@ -384,12 +383,15 @@ async function resolveCheck(restorer, selection) {
 }
 
 async function startRestoration(activity, activityType = getRestorationActivityType(activity)) {
-  const item = getActivityItem(activity);
-  const actor = getItemActor(item);
+  let item = getActivityItem(activity);
+  let actor = getItemActor(item);
   if (!activityType || !item || !actor) {
     ui.notifications.error(t("Restoration.Notifications.ActorNotFound"));
     return;
   }
+  const session = await selectCastingSession(actor, item, "restoration", activityType);
+  if (!session) return;
+  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Restoration.Notifications.AlreadyPending"));
     return;
@@ -403,9 +405,9 @@ async function startRestoration(activity, activityType = getRestorationActivityT
   activeActors.add(actor.uuid);
   try {
     const ruleset = game.settings.get(MODULE_ID, "restorationRuleset");
-    let restorer = await promptRestorer(actor, item, ruleset, activityType);
+    let restorer = await promptCasting(session, "restoration", ruleset, activityType);
     if (!restorer) return;
-    let selection = await promptRestorationEffect(restorer);
+    let selection = await promptCasting(session, "restoration-effect", restorer);
     if (!selection) {
       ui.notifications.info(t("Restoration.Notifications.CancelledByPlayer"));
       return;
