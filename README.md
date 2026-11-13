@@ -2,6 +2,12 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.12
+
+- Dispel Magic and Remove Curse restore their complete workflows, dialogs, rules and settings from 0.5.6, alongside the previously restored Identify and Restoration workflows. Remove Curse no longer uses the participant/item picker introduced in 0.5.11.
+- Counterspell retains its 0.5.10 participant routing and final GM review. Disadvantage, Abjurer and Special Spellcaster are independently available for both sides and editable by the GM. An Abjurer receives the existing proficiency benefit; Special Spellcaster applies the configured minimum to each rolling side.
+- The manual Advantage control, source counts and majority-cancellation setting from 0.5.11 are removed. Counterspell’s existing advantage for knowing the countered spell and normal advantage/disadvantage cancellation remain as in 0.5.10. Fixed defenses and automatic successes stay unchanged.
+
 ## Version 0.5.11
 
 - Remove Curse always sends target selection and curse rules/DCs to the GM, including GM → player and player A → player B. The initiator keeps the casting and knowledge forms; the victim receives no curse questionnaire. The GM may type an item name, select an inventory item with search, or leave the item blank to target the character. Item choice remains editable in the final review.
