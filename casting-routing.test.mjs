@@ -29,10 +29,17 @@ async function world() {
     ruleset:'official2014',includeProficiency:true,abjurerEnabled:true,counterspellNames:'Counterspell',counterspellSpecialMinimum:15,rollMode:'publicroll'};
   let serial=0;
   async function client(user) {
-    const answers=[],listeners=[],cache=new Map();
+    const answers=[],listeners=[],cache=new Map(),registrations=new Map();
     class MockRoll {
-      constructor(formula,data={}) { this.formula=formula;this.data=data;this.dice=[{faces:20,results:[{result:12,active:true}]}]; }
-      async evaluate() { this.total=12+Number(this.data.slot??0)+Number(this.data.mod??0)+Number(this.data.prof??0);trace.push([user.id,'roll',{...this.data}]);return this; }
+      constructor(formula,data={},options={}) { this.formula=formula;this.data=data;this.options=options;this.dice=[{faces:20,results:[{result:12,active:true}]}]; }
+      async evaluate() {
+        const kept=this.options.advantage||this.formula.includes('2d20kh')?17:this.options.disadvantage||this.formula.includes('2d20kl')?7:12;
+        const minimum=this.options.minimum??Number(this.formula.match(/min(\d+)/)?.[1]??0);
+        const prof=this.formula.includes('@prof')?Number(this.data.prof??0)*(this.formula.includes('2 * @prof')?2:1):0;
+        this.total=Math.max(kept,minimum)+Number(this.data.slot??0)+Number(this.data.mod??0)+prof;
+        trace.push([user.id,'roll',{...this.data},this.formula,{...this.options},this.total]);return this;
+      }
+      static async toMessage(rolls,data,options) { return rolls[0].toMessage(data,options); }
       async toMessage(messageData,options) { messages.push({...messageData,...options}); }
     }
     const context=vm.createContext({ Roll:MockRoll, console:{debug(){},log(){},error(...args){errors.push(args)}},setTimeout,clearTimeout,queueMicrotask,
@@ -46,7 +53,7 @@ async function world() {
         const answer=answers.shift(); return typeof answer==='function'?answer(config):answer;
       }}}}},
       Hooks:{on(){},once(){}},game:{user,users,actors,items:{contents:[]},modules:new Map([['counterspell-plus',{version:'0.5.9'}]]),
-        settings:{get:(_module,key)=>settings[key]},i18n:{localize:k=>k,format:(k,data)=>`${k}:${JSON.stringify(data)}`},
+        settings:{get:(_module,key)=>settings[key],register:(_module,key,definition)=>registrations.set(key,definition)},i18n:{localize:k=>k,format:(k,data)=>`${k}:${JSON.stringify(data)}`},
         socket:{on:(_name,fn)=>listeners.push(fn),emit:(_name,message)=>{
           trace.push([user.id,'socket',message.type]);
           for (const c of clients) for(const fn of c.listeners) Promise.resolve(fn(structuredClone(message))).catch(e=>errors.push(e));
@@ -66,8 +73,10 @@ async function world() {
     for (const [file,initializer] of [['dispel-workflow.js','initializeDispelWorkflow'],['remove-curse-workflow.js','initializeRemoveCurseWorkflow'],['restoration-workflow.js','initializeRestorationWorkflow'],['identify-workflow.js','initializeIdentifyWorkflow']]) {
       const mod=await load('scripts/'+file);await mod.evaluate();mod.namespace[initializer]();
     }
+    const config=await load('scripts/config.js');await config.evaluate();
+    const traits=await load('scripts/roll-traits.js');await traits.evaluate();
     const participants=await load('scripts/participants.js');await participants.evaluate();
-    const c={user,context,answers,listeners,routing:routing.namespace,participants:participants.namespace,workflow:context.game.counterspellPlus};clients.push(c);return c;
+    const c={user,context,answers,listeners,routing:routing.namespace,participants:participants.namespace,traits:traits.namespace,config:config.namespace,registrations,workflow:context.game.counterspellPlus};clients.push(c);return c;
   }
   const gm=await client(users[0]),p1=await client(users[1]),p2=await client(users[2]);
   return {gm,p1,p2,pc,npc,item,documents,users,trace,errors,messages,settings};
@@ -144,7 +153,7 @@ test('targeted name is carried from acting form to target form and remains edita
  const w=await world();w.gm.answers.push(recipient,config=>{
   assert.match(config.content,/name="targetSpellName"/);assert.match(config.content,/Participants.CastingSpellName/);return counter;
  },config=>{assert.match(config.content,/Delayed Fireball/);return review});
- w.p2.answers.push(config=>{assert.match(config.content,/name="spellName" value="Fireball"/);assert.doesNotMatch(config.content,/name="slotKey"|name="castingSource"|name="abjurer"/);return {...fireball,spellName:'Delayed Fireball'}});
+ w.p2.answers.push(config=>{assert.match(config.content,/name="spellName" value="Fireball"/);assert.doesNotMatch(config.content,/name="slotKey"|name="castingSource"/);return {...fireball,spellName:'Delayed Fireball'}});
  await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
 });
 
@@ -164,32 +173,33 @@ test('remote caster forms are rejected even if requested by a GM',async()=>{
 for (const [kind,api,setupTitle,effectTitle,reviewTitle] of [
  ['dispel','startDispelFromActivity','Dispel.Dialog.GMSetupTitle','Dispel.Dialog.GMEffectTitle','Dispel.Dialog.GMReviewTitle'],
  ['remove-curse','startRemoveCurseFromActivity','RemoveCurse.Dialog.GMSetupTitle','RemoveCurse.Dialog.GMEffectTitle','RemoveCurse.Dialog.GMReviewTitle']
-]) test(`${kind}: initiator retains casting and knowledge forms; target confirms own spell and character; GM reviews last`,async()=>{
+]) test(`${kind}: caster keeps own forms; source details go to the designated reviewer; GM reviews last`,async()=>{
  const w=await world();w.item.name=kind;w.item.system.identifier=kind;
  w.gm.answers.push(recipient,counter,{targetUuid:'special:unknown',effectCount:1,defenseRollMode:'blindroll'},{},null);
- w.p2.answers.push({actorUuid:'Actor.pc',sourceType:'spell',spellName:'Bless',spellLevel:1,casterMod:4,casterProf:3});
+ const source={actorUuid:'Actor.pc',sourceType:'spell',spellName:'Bless',spellLevel:1,casterMod:4,casterProf:3};
+ if(kind==='remove-curse') w.gm.answers.splice(3,0,source); else w.p2.answers.push(source);
  await w.gm.workflow[api]({item:w.item});assert.deepEqual(w.errors,[]);
- const f=forms(w);const received=f.filter(x=>x[0]==='p2');assert.equal(received.length,1);assert.ok(received[0][1].includes(effectTitle));
- assert.match(received[0][2],/name="actorUuid"/);assert.doesNotMatch(received[0][2],/name="slotKey"|name="abjurer"/);
- assert.equal(f.at(-1)[0],'gm');assert.ok(f.at(-1)[1].includes(reviewTitle));assert.match(f.at(-1)[2],/pc/);
+ const f=forms(w);const received=f.filter(x=>x[0]==='p2');assert.equal(received.length,kind==='remove-curse'?0:1);
+ const sourceForm=f.find(x=>x[1].includes(effectTitle));assert.ok(sourceForm);assert.equal(sourceForm[0],kind==='remove-curse'?'gm':'p2');
+ assert.doesNotMatch(sourceForm[2],/name="slotKey"/);
+ assert.equal(f.at(-1)[0],'gm');assert.ok(f.at(-1)[1].includes(reviewTitle));assert.match(f.at(-1)[2],kind==='remove-curse'?/CurseItem/:/pc/);
  assert.equal(w.npc.system.spells.spell3.value,3);
 });
 
-test('Restoration target confirms their character without receiving the casting form',async()=>{
+test('Restoration uses the original 0.5.6 casting, effect choice and GM review flow',async()=>{
  const w=await world();w.item.name='Lesser Restoration';w.item.system.identifier='lesser-restoration';w.item.system.level=2;
- w.gm.answers.push(recipient,counter,{effectId:'disease'},null);w.p2.answers.push({actorUuid:'Actor.pc'});
+ w.gm.answers.push(counter,{effectId:'disease'},null);
  await w.gm.workflow.startRestorationFromActivity({item:w.item},'lesser');assert.deepEqual(w.errors,[]);
- assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','gm','p2','gm']);
- assert.equal(forms(w).filter(x=>x[0]==='p2')[0][1],'COUNTERSPELL_PLUS.Participants.ConfirmTarget');
- assert.match(forms(w).at(-1)[2],/pc/);assert.equal(w.npc.system.spells.spell3.value,3);
+ assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','gm']);
+ assert.ok(!forms(w).some(x=>x[1].includes('Participants.')));assert.equal(w.npc.system.spells.spell3.value,3);
 });
 
-test('Identify target selects their character and item; initiator remains the identifier',async()=>{
+test('Identify uses the original 0.5.6 caster and GM flow without a recipient form',async()=>{
  const w=await world();w.item.name='Identify';w.item.system.identifier='identify';w.item.system.level=1;
- w.gm.answers.push(recipient,{castingSource:'ritual',subjectName:'Unknown ring'},config=>{assert.match(config.content,/Silver ring/);return null});
- w.p2.answers.push({actorUuid:'Actor.pc',subjectName:'Silver ring',subjectItemUuid:''});
+ w.gm.answers.push({castingSource:'ritual',subjectName:'Unknown ring'},null);
  await w.gm.workflow.startIdentifyFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
- assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','gm']);assert.equal(w.npc.system.spells.spell3.value,3);
+ assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm']);assert.equal(w.p2.answers.length,0);
+ assert.ok(!forms(w).some(x=>x[1].includes('Participants.')));
 });
 
 test('Homebrew rolls use the initiator and targeted owner separately, after GM corrections',async()=>{
@@ -201,11 +211,9 @@ test('Homebrew rolls use the initiator and targeted owner separately, after GM c
  assert.equal(w.npc.system.spells.spell3.value,2);assert.equal(w.pc.system.spells.spell3.value,3);
 });
 
-test('Restoration final review preselects confirmed target and consumes only original caster slot',async()=>{
+test('Restoration 0.5.6 review selects the target and consumes only caster slot',async()=>{
  const w=await world();w.item.name='Lesser Restoration';w.item.system.identifier='lesser-restoration';w.item.system.level=2;
- w.gm.answers.push(recipient,counter,{effectId:'disease'},config=>{
-  assert.match(config.content,/<option value="Actor.pc" selected>/);return {targetUuid:'Actor.pc',effectId:'disease'};
- });w.p2.answers.push({actorUuid:'Actor.pc'});
+ w.gm.answers.push(counter,{effectId:'disease'},{targetUuid:'Actor.pc',effectId:'disease'});
  await w.gm.workflow.startRestorationFromActivity({item:w.item},'lesser');
  assert.deepEqual(w.errors,[]);assert.equal(w.npc.system.spells.spell3.value,2);assert.equal(w.pc.system.spells.spell3.value,3);
  assert.ok(w.messages.some(m=>m.content?.includes('pc')));
@@ -219,4 +227,112 @@ test('repeated activity while first recipient picker is open does not open a sec
  await w.gm.workflow.startFromActivity({item:w.item});
  assert.equal(forms(w).length,1);finish(null);await first;
  assert.equal(w.npc.system.spells.spell3.value,3);assert.deepEqual(w.errors,[]);
+});
+
+test('world setting defaults to 2014 cancellation; Restoration settings retain their legacy defaults',async()=>{
+ const w=await world();w.gm.config.registerSettings();
+ const setting=w.gm.registrations.get('advantageCancellation');
+ assert.equal(setting.default,'official2014');assert.equal(setting.scope,'world');assert.equal(setting.restricted,true);
+ assert.ok(Object.hasOwn(setting.choices,'sourceMajority'));
+ assert.equal(w.gm.registrations.get('abjurerEnabled').default,false);
+});
+
+test('2014 cancellation ignores source majority; optional homebrew compares counts',async()=>{
+ const w=await world();const resolve=w.gm.traits.resolveD20Options;
+ for (const [a,d,official,majority] of [[0,0,'normal','normal'],[3,0,'adv','adv'],[0,3,'dis','dis'],[2,1,'normal','adv'],[1,2,'normal','dis'],[3,3,'normal','normal']]) {
+  const flags={advantage:a>0,advantageSources:a,disadvantage:d>0,disadvantageSources:d};
+  const mode=o=>o.advantage?'adv':o.disadvantage?'dis':'normal';
+  w.settings.advantageCancellation='official2014';assert.equal(mode(resolve(flags)),official);
+  w.settings.advantageCancellation='sourceMajority';assert.equal(mode(resolve(flags)),majority);
+ }
+});
+
+test('unchecked fields clear previous traits; source counts alone never enable advantage',async()=>{
+ const w=await world();const read=w.gm.traits.readRollTraits;
+ const traits=read({initiatorTraitsPresent:'1',initiatorAdvantage:false,initiatorAdvantageSources:8},'initiator',{advantage:true,abjurer:true,specialSpellcaster:true});
+ assert.equal(traits.advantage,false);assert.equal(traits.advantageSources,0);assert.equal(traits.abjurer,false);assert.equal(traits.specialSpellcaster,false);
+ const mixed=read({traitsPresent:'1',advantage:true,advantageSources:3,disadvantage:true,disadvantageSources:2});
+ assert.equal(mixed.advantageSources,3);assert.equal(mixed.disadvantageSources,2);
+});
+
+for (const mode of ['official2014','sourceMajority']) test(`Counterspell ${mode}: knowledge counts once and each side has its own Abjurer and minimum`,async()=>{
+ const w=await world();w.settings.ruleset='homebrew';w.settings.advantageCancellation=mode;
+ w.gm.answers.push(recipient,{...counter,traitsPresent:'1',advantage:true,advantageSources:1,disadvantage:true,disadvantageSources:1,knowsTargetSpell:true,abjurer:true,specialSpellcaster:true},{...review,spellLevel:4,knowsTargetSpell:true});
+ w.p2.answers.push({...fireball,traitsPresent:'1',advantage:true,advantageSources:5,abjurer:true,specialSpellcaster:true});
+ await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ const rolls=w.trace.filter(x=>x[1]==='roll');assert.equal(rolls.length,2);
+ assert.match(rolls[0][3],mode==='sourceMajority'?/2d20khmin15/:/1d20min15/);
+ assert.match(rolls[1][3],/2d20khmin15/);assert.doesNotMatch(rolls[1][3],/[3-9]d20/);
+ assert.match(rolls[0][3],/2 \* @prof/);assert.match(rolls[1][3],/2 \* @prof/);
+ assert.equal(rolls[0][0],'gm');assert.equal(rolls[1][0],'p2');
+});
+
+test('known spell plus another advantage source still rolls only 2d20',async()=>{
+ const w=await world();w.settings.ruleset='homebrew';
+ w.gm.answers.push(recipient,{...counter,traitsPresent:'1',advantage:true,advantageSources:1,knowsTargetSpell:true},{...review,knowsTargetSpell:true});w.p2.answers.push(fireball);
+ await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ assert.match(w.trace.find(x=>x[1]==='roll')[3],/^2d20kh/);
+});
+
+test('GM can independently change or remove either participant’s declared traits',async()=>{
+ const w=await world();w.settings.ruleset='homebrew';w.settings.advantageCancellation='sourceMajority';
+ w.gm.answers.push(recipient,{...counter,traitsPresent:'1',advantage:true,abjurer:true,specialSpellcaster:true},{...review,initiatorTraitsPresent:'1',targetTraitsPresent:'1',targetDisadvantage:true,targetDisadvantageSources:2,targetAbjurer:true,targetSpecialSpellcaster:true});
+ w.p2.answers.push({...fireball,traitsPresent:'1',advantage:true,advantageSources:3});
+ await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ const rolls=w.trace.filter(x=>x[1]==='roll');assert.match(rolls[0][3],/^1d20 \+/);assert.doesNotMatch(rolls[0][3],/min15|2 \* @prof/);
+ assert.match(rolls[1][3],/^2d20klmin15/);assert.match(rolls[1][3],/2 \* @prof/);
+});
+
+test('system D20Roll receives resolved advantage flags and minimum for both participants',async()=>{
+ const w=await world();w.settings.ruleset='homebrew';
+ w.gm.context.CONFIG.Dice.D20Roll=w.gm.context.Roll;w.p2.context.CONFIG.Dice.D20Roll=w.p2.context.Roll;
+ w.gm.answers.push(recipient,{...counter,traitsPresent:'1',advantage:true,specialSpellcaster:true},review);
+ w.p2.answers.push({...fireball,traitsPresent:'1',disadvantage:true,specialSpellcaster:true});
+ await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ const rolls=w.trace.filter(x=>x[1]==='roll');assert.equal(rolls[0][4].advantage,true);assert.equal(rolls[0][4].disadvantage,false);assert.equal(rolls[0][4].minimum,15);
+ assert.equal(rolls[1][4].advantage,false);assert.equal(rolls[1][4].disadvantage,true);assert.equal(rolls[1][4].minimum,15);
+});
+
+for (const [kind,api] of [['dispel','startDispelFromActivity'],['remove-curse','startRemoveCurseFromActivity']]) test(`${kind}: advantage and minimum apply to caster checks while target defenses remain fixed`,async()=>{
+ const w=await world();w.settings[kind==='dispel'?'dispelRuleset':'removeCurseRuleset']='homebrew';
+ w.settings[kind==='dispel'?'dispelSpecialMinimum':'removeCurseSpecialMinimum']=15;
+ w.gm.answers.push(recipient,{...counter,traitsPresent:'1',advantage:true,abjurer:true,specialSpellcaster:true}, {targetUuid:'special:unknown',effectCount:1,defenseRollMode:'publicroll'}, {known0:false}, {});
+ const source={actorUuid:'Actor.pc',sourceType:'spell',spellName:'Bless',spellLevel:1,casterMod:4,casterProf:3,traitsPresent:'1',advantage:true,abjurer:true,specialSpellcaster:true};
+ if(kind==='remove-curse') w.gm.answers.splice(3,0,source); else w.p2.answers.push(source);
+ await w.gm.workflow[api]({item:w.item});assert.deepEqual(w.errors,[]);
+ const rolls=w.trace.filter(x=>x[1]==='roll');assert.equal(rolls.length,1);assert.equal(rolls[0][0],'gm');assert.match(rolls[0][3],/^2d20khmin15/);assert.match(rolls[0][3],/2 \* @prof/);
+});
+
+test('both Counterspell sides and GM review expose all four independent traits even when legacy Abjurer toggle is off',async()=>{
+ const w=await world();w.settings.abjurerEnabled=false;
+ const check=(content,prefix='')=>{for(const key of ['advantage','disadvantage','abjurer','specialSpellcaster']) {
+  const name=prefix?prefix+key[0].toUpperCase()+key.slice(1):key;assert.ok(content.includes(`name="${name}"`),name);
+ }};
+ w.gm.answers.push(recipient,config=>{check(config.content);return counter},config=>{check(config.content,'initiator');check(config.content,'target');return review});
+ w.p2.answers.push(config=>{check(config.content);return fireball});
+ await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+});
+
+test('fixed Glyph target ignores target roll traits and never creates a defensive d20',async()=>{
+ const w=await world();w.settings.ruleset='homebrew';
+ w.gm.answers.push({userId:'gm',actorUuid:''},counter,{...fireball,actorUuid:'special:glyph',sourceType:'glyph',creatorMod:4,creatorProf:3,traitsPresent:'1',advantage:true,advantageSources:3,abjurer:true,specialSpellcaster:true},review);
+ await w.gm.workflow.startFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ assert.equal(w.trace.filter(x=>x[1]==='roll').length,1);
+ assert.ok(w.messages.some(m=>m.content?.includes('= <strong>21</strong>')));
+});
+
+for (const initiator of ['gm','p1']) for (const itemMode of ['name','inventory']) test(`Remove Curse ${initiator} → player: GM alone fills curse and ${itemMode} target survives review`,async()=>{
+ const w=await world();const actor=initiator==='gm'?w.npc:w.pc;
+ const item=actor.items[0];item.name='Remove Curse';item.system.identifier='remove-curse';
+ const ring={uuid:'Actor.pc.Item.ring',name:'Cursed ring',type:'equipment'};w.pc.items.push(ring);w.documents.set(ring.uuid,ring);
+ w[initiator].answers.push(recipient,counter);
+ w.gm.answers.push(config=>{assert.match(config.content,/name="targetItemName"/);assert.match(config.content,/name="targetItemUuid"/);return {targetUuid:'Actor.pc',targetItemName:'Cursed ring',targetItemUuid:itemMode==='inventory'?ring.uuid:'',effectCount:1,defenseRollMode:'blindroll'};},
+ {sourceType:'spell',spellName:'Curse',spellLevel:4,casterMod:4,casterProf:3});
+ w[initiator].answers.push({});
+ w.gm.answers.push(config=>{assert.match(config.content,/Cursed ring/);return {};});
+ await w[initiator].workflow.startRemoveCurseFromActivity({item});assert.deepEqual(w.errors,[]);
+ assert.equal(forms(w).filter(x=>x[0]==='p2').length,0);
+ assert.equal(forms(w).find(x=>x[1].includes('RemoveCurse.Dialog.GMEffectTitle'))[0],'gm');
+ assert.equal(actor.system.spells.spell3.value,2);
+ assert.ok(w.messages.some(m=>m.content?.includes('Cursed ring')));
 });

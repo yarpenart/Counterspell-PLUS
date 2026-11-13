@@ -2,6 +2,17 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.11
+
+- Remove Curse always sends target selection and curse rules/DCs to the GM, including GM → player and player A → player B. The initiator keeps the casting and knowledge forms; the victim receives no curse questionnaire. The GM may type an item name, select an inventory item with search, or leave the item blank to target the character. Item choice remains editable in the final review.
+
+- Identify and the entire Restoration family restore the workflow, forms, rules and existing settings from version 0.5.6. Their caster/effect/GM review sequence, Stat Shift integration and legacy Abjurer toggle are preserved. New participant selection and source-count rules do not apply to these two workflows.
+- Counterspell, Dispel Magic and Remove Curse provide **Advantage**, **Disadvantage**, **Abjurer** and **Special Spellcaster** declarations for both sides, including independent corrections in the final GM review.
+- Enable Advantage/Disadvantage with its checkbox and enter the number of manual sources. Unchecked counts are ignored. Counterspell automatically adds one advantage source for knowing a normal target spell (except another Counterspell); do not include that source in the manual count.
+- **Configure Settings → Counterspell PLUS → Advantage / disadvantage cancellation** defaults to **Official 2014**: any advantage and disadvantage cancel, regardless of counts. Optional **Homebrew: the majority of sources wins** compares their counts; ties produce a normal roll. Neither mode ever rolls more than 2d20.
+- On Homebrew checks, a declared Abjurer adds one extra proficiency, independently for each rolling side. On the module's Official 2014 ability checks, it adds proficiency once. Special Spellcaster applies the corresponding workflow’s configured kept-d20 minimum to either rolling side.
+- Passive spell/curse defenses keep their fixed DCs. Target declarations are available for review, but advantage, disadvantage, Abjurer and Special Spellcaster do not create a d20 defense roll or alter a fixed DC. Automatic successes remain automatic.
+
 ## Version 0.5.10
 
 - Final GM review labels editable options as **Initiator** or **Target**, including caster bonuses/knowledge versus target defenses and effects, throughout all supported spells.
