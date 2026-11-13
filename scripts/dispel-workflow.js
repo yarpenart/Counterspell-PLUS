@@ -1,10 +1,10 @@
 import { resolveD20Options } from "./roll-traits.js";
-import { selectTargetParticipant } from "./participants.js";
+import { ownsActor, selectTargetParticipant } from "./participants.js";
 import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
   promptGMDispelReview,
-  promptGMDispelSetup
+  promptDispelTarget
 } from "./dispel-dialogs.js";
 import {
   applyRollMode,
@@ -89,29 +89,15 @@ async function handleSocket(message) {
   try {
     let result = null;
     switch (message.type) {
-      case "dispel-gm-setup":
-        if (game.user.isGM) {
-          const setup = await promptGMDispelSetup(message.payload.dispeller);
-          if (setup) {
-            for (let index = 0; index < setup.effectCount; index += 1) {
-              const participant = message.payload.dispeller.targetParticipant ?? { userId: game.user.id, actorUuid: setup.targetUuid };
-              const sourceSession = { userId: participant.userId, actorUuid: participant.actorUuid };
-              const effect = await promptCasting(sourceSession, "dispel-source", index, setup.effectCount, setup.targetType, participant);
-              if (!effect) {
-                result = null;
-                break;
-              }
-              if (index === 0 && effect.targetActorName) {
-                setup.targetUuid = effect.targetActorUuid;
-                setup.targetName = effect.targetActorName;
-                setup.targetType = effect.targetType;
-              }
-              setup.effects.push(effect);
-            }
-            if (setup.effects.length === setup.effectCount) result = setup;
-          }
+      case "dispel-target": {
+        const sender = game.users.get(message.senderId);
+        const declaration = message.payload?.dispeller;
+        if (sender?.active && declaration?.targetParticipant?.userId === game.user.id
+          && ownsActor(getActorFromUuidSync(declaration.actorUuid), sender)) {
+          result = await promptDispelTarget(declaration);
         }
         break;
+      }
       case "dispel-gm-review":
         if (game.user.isGM) {
           result = await promptGMDispelReview(message.payload.dispeller, message.payload.setup);
@@ -402,18 +388,13 @@ async function startDispelMagic(activity) {
     if (!dispeller) return;
     dispeller.targetParticipant = targetParticipant;
 
-    let setup = await requestRemote("dispel-gm-setup", gm.id, { dispeller });
-    if (!setup) {
-      ui.notifications.info(t("Dispel.Notifications.CancelledByGM"));
-      return;
-    }
-
-    setup = await promptCasting(session, "dispel-effects", dispeller, setup);
+    let setup = await requestRemote("dispel-target", targetParticipant.userId, { dispeller });
     if (!setup) {
       ui.notifications.info(t("Dispel.Notifications.CancelledByPlayer"));
       return;
     }
 
+    setup.defenseUserId = gm.id;
     const review = await requestRemote("dispel-gm-review", gm.id, { dispeller, setup });
     if (!review?.dispeller || !review?.setup) {
       ui.notifications.info(t("Dispel.Notifications.CancelledByGM"));

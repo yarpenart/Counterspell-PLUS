@@ -4,14 +4,12 @@ import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
-  activateTargetSearch,
   escapeHTML,
   getAbilityData,
   getAbilityEntries,
   getActorFromUuidSync,
   getDefaultAbility,
   getRollModeEntries,
-  getSceneCasterEntries,
   getSlotChoices,
   normalizeBonusFormula,
   parseNumber,
@@ -21,25 +19,12 @@ import {
 } from "./utils.js";
 
 const DialogV2 = foundry.applications.api.DialogV2;
-const SPECIAL_TARGET_UNKNOWN = "special:unknown";
-const SPECIAL_TARGET_GLYPH = "special:glyph";
-const SPECIAL_TARGET_OBJECT = "special:object";
 
 function selectOptions(entries, valueKey = "key", labelKey = "label") {
   return entries.map(entry => {
     const selected = entry.selected ? " selected" : "";
     return `<option value="${escapeHTML(entry[valueKey])}"${selected}>${escapeHTML(entry[labelKey])}</option>`;
   }).join("");
-}
-
-function searchableEntries(entries) {
-  const counts = new Map();
-  for (const entry of entries) counts.set(entry.label, (counts.get(entry.label) ?? 0) + 1);
-  return entries.map((entry, index) => {
-    if (counts.get(entry.label) === 1) return { ...entry, searchLabel: entry.label };
-    const suffix = String(entry.key).split(".").pop()?.slice(-6) || String(index + 1);
-    return { ...entry, searchLabel: `${entry.label} [${suffix}]` };
-  });
 }
 
 function levelOptions(selected, minimum = 0) {
@@ -109,14 +94,12 @@ export async function promptDispeller(actor, item, ruleset) {
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
   const proficiencyIncluded = usesHomebrewProficiency();
 
-  const homebrewBonus = ruleset === RULESETS.HOMEBREW
-    ? `
+  const bonusField = `
       <div class="form-group stacked">
         <label>${t("Dialog.BonusDice")}</label>
         <div class="form-fields"><input type="text" name="bonusFormula" placeholder="1d4 + 1d8"></div>
         <p class="hint">${t("Dialog.BonusDiceHint")}</p>
-      </div>`
-    : `<p class="hint">${t("Dispel.Dialog.OfficialBonusLater")}</p>`;
+      </div>`;
 
   const content = `
     <div class="csp-form"${ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-casting" : ""}>
@@ -160,7 +143,9 @@ export async function promptDispeller(actor, item, ruleset) {
         <label>${t("Dialog.RollMode")}</label>
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
       </div>
-      ${homebrewBonus}
+      ${bonusField}
+      <div class="form-group"><label>${t("Dispel.Dialog.EffectCount")}</label><div class="form-fields"><input type="number" name="effectCount" value="1" min="1" max="20" step="1"></div></div>
+      ${ruleset === RULESETS.HOMEBREW ? `<div class="form-group stacked"><label class="checkbox"><input type="checkbox" name="knowsTargetSpell"> ${t("Dispel.Dialog.KnowsEffect")}</label><p class="hint">${t("Dispel.Dialog.InitialKnowledgeHint")}</p></div>` : ""}
 
       ${rollTraitsFields()}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
@@ -194,6 +179,8 @@ export async function promptDispeller(actor, item, ruleset) {
   return {
     ...readRollTraits(result),
     ...abilityData,
+    effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
+    knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     castingSource,
     actorUuid: actor.uuid,
     actorName: actor.name,
@@ -203,99 +190,9 @@ export async function promptDispeller(actor, item, ruleset) {
     slotLevel,
     slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
-    bonusFormula: ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
+    bonusFormula: normalizeBonusFormula(result.bonusFormula),
 
     ruleset
-  };
-}
-
-export async function promptGMDispelSetup(dispeller) {
-  const targets = getSceneCasterEntries();
-  if (!targets.length) {
-    ui.notifications.warn(t("Dispel.Notifications.NoTargets"));
-    return null;
-  }
-  const suggested = dispeller.targetParticipant?.actorUuid;
-  let targetOptions = targets.map((entry, index) => ({
-    key: entry.uuid,
-    label: `${t(entry.kind === "token" ? "Casting.Token" : "Casting.Actor")} - ${entry.name}`,
-    name: entry.name,
-    kind: entry.kind,
-    selected: suggested ? entry.uuid === suggested : index === 0
-  }));
-  targetOptions.push(
-    { key: SPECIAL_TARGET_UNKNOWN, label: `${t("Participants.Special")} - ${t("Dialog.SpecialUnknown")}`, name: t("Dialog.SpecialUnknown"), kind: "special", selected: suggested === SPECIAL_TARGET_UNKNOWN },
-    { key: SPECIAL_TARGET_OBJECT, label: `${t("Participants.Special")} - ${t("Dialog.SpecialObject")}`, name: t("Dialog.SpecialObject"), kind: "special", selected: suggested === SPECIAL_TARGET_OBJECT }
-  );
-  targetOptions = searchableEntries(targetOptions);
-
-  const content = `
-    <div class="csp-form">
-      <div class="csp-panel">
-        <h3>${t("Dispel.Dialog.DispelData")}</h3>
-        <dl>
-          <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(dispeller.actorName)}</dd>
-          <dt>${t("Dialog.AbilityModifier")}</dt><dd>${dispeller.abilityMod >= 0 ? "+" : ""}${dispeller.abilityMod}</dd>
-          <dt>${t("Dialog.Proficiency")}</dt><dd>${dispeller.proficiency >= 0 ? "+" : ""}${dispeller.proficiency}</dd>
-          <dt>${t("Dispel.Dialog.DispelSlot")}</dt><dd>${escapeHTML(dispeller.slotLabel)}</dd>
-        </dl>
-      </div>
-      <div class="form-group">
-        <label>${t("Dispel.Dialog.Target")}</label>
-        <div class="form-fields csp-target-search">
-          <input type="search" data-csp-target-filter placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
-          <select name="targetUuid" data-csp-target-select size="6" required>${selectOptions(targetOptions, "key", "searchLabel")}</select>
-          <small data-csp-target-count></small>
-        </div>
-      </div>
-      <p class="hint">${t("Dispel.Dialog.SpecialTargetHint")}</p>
-      <div class="form-group">
-        <label>${t("Dispel.Dialog.EffectCount")}</label>
-        <div class="form-fields"><input type="number" name="effectCount" value="1" min="1" max="20" step="1"></div>
-      </div>
-      <div class="form-group">
-        <label>${t("Dispel.Dialog.DefenseRollMode")}</label>
-        <div class="form-fields"><select name="defenseRollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
-      </div>
-      <p class="hint">${t("Dispel.Dialog.SetupHint")}</p>
-    </div>`;
-
-  const result = await waitForm({
-    title: t("Dispel.Dialog.GMSetupTitle"),
-    content,
-    confirmLabel: t("Dialog.Continue"),
-    onRender: activateTargetSearch
-  });
-  if (!result) return null;
-
-  const targetChoice = String(result.targetUuid ?? "");
-  const selectedTarget = targetOptions.find(entry => entry.key === targetChoice);
-  if (!selectedTarget) {
-    ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
-    return null;
-  }
-  const specialLabels = {
-    [SPECIAL_TARGET_UNKNOWN]: t("Dialog.SpecialUnknown"),
-    [SPECIAL_TARGET_GLYPH]: t("Dialog.SpecialGlyph"),
-    [SPECIAL_TARGET_OBJECT]: t("Dialog.SpecialObject")
-  };
-  const targetType = targetChoice.startsWith("special:")
-    ? targetChoice.slice("special:".length)
-    : "actor";
-  const target = targetType === "actor" ? getActorFromUuidSync(targetChoice) : null;
-  if (!target && targetType === "actor") {
-    ui.notifications.error(t("Dispel.Notifications.TargetNotFound"));
-    return null;
-  }
-
-  return {
-    targetUuid: target ? targetChoice : "",
-    targetType,
-    targetName: target ? selectedTarget.name : specialLabels[targetChoice] ?? t("Dialog.SpecialUnknown"),
-    effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
-    defenseRollMode: String(result.defenseRollMode),
-    defenseUserId: game.user.id,
-    effects: []
   };
 }
 
@@ -322,6 +219,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
         <strong>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count })}</strong>
       </div>
       ${picker?.html ?? ""}
+      <div class="form-group"><label>${t("Dispel.Dialog.DefenseRollMode")}</label><div class="form-fields"><select name="defenseRollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div></div>
       ${sourceField}
       <div class="form-group">
         <label>${t("Dispel.Dialog.EffectName")}</label>
@@ -346,7 +244,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
   const result = await waitForm({
     title: tf("Dispel.Dialog.GMEffectTitle", { index: index + 1, count }),
     content,
-    confirmLabel: index + 1 === count ? t("Dialog.SendToInitiator") : t("Dialog.Continue"),
+    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue"),
     onRender: picker?.render
   });
   if (!result) return null;
@@ -355,6 +253,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
   if (picker && !confirmed) return null;
   return {
     ...readRollTraits(result),
+    defenseRollMode: String(result.defenseRollMode || defaultRollMode()),
     targetActorUuid: confirmed?.actor ? confirmed.key : "",
     targetActorName: confirmed?.name ?? "",
     targetType: confirmed?.kind === "special" ? confirmed.key.slice(8) : "actor",
@@ -366,63 +265,6 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
     known: false,
     bonusFormula: ""
   };
-}
-
-export async function promptDispellerEffects(dispeller, setup) {
-  const hideLevels = setup.defenseRollMode === "blindroll";
-  const effectCards = setup.effects.map((effect, index) => {
-    const homebrewFields = dispeller.ruleset === RULESETS.HOMEBREW
-      ? `
-        <label class="checkbox">
-          <input type="checkbox" name="known${index}">
-          ${t("Dispel.Dialog.KnowsEffect")}
-        </label>
-        <p class="hint">${t("Dispel.Dialog.KnowsEffectHint")}</p>`
-      : `
-        <div class="form-group stacked">
-          <label>${t("Dispel.Dialog.CheckBonusDice")}</label>
-          <div class="form-fields"><input type="text" name="bonus${index}" placeholder="1d4 + 1d8"></div>
-          <p class="hint">${hideLevels
-            ? t("Dispel.Dialog.HiddenLevelBonusHint")
-            : effect.spellLevel <= dispeller.slotLevel
-              ? t("Dispel.Dialog.AutomaticBonusIgnored")
-              : t("Dispel.Dialog.CheckBonusDiceHint")}</p>
-        </div>`;
-    return `
-      <fieldset class="csp-effect-card">
-        <legend>${index + 1}. ${escapeHTML(effect.spellName)}</legend>
-        <p>${escapeHTML(sourceLabel(effect.sourceType))} · ${hideLevels
-          ? t("Dispel.Dialog.HiddenLevel")
-          : tf("Dispel.Dialog.LevelValue", { level: effect.spellLevel })}</p>
-        ${homebrewFields}
-      </fieldset>`;
-  }).join("");
-
-  const content = `
-    <div class="csp-form">
-      <div class="csp-summary">
-        <strong>${escapeHTML(setup.targetName)}</strong>
-        <span>${tf("Dispel.Dialog.EffectsSummary", { count: setup.effects.length })}</span>
-      </div>
-      ${effectCards}
-      <p class="hint">${t("Dialog.GMWillReview")}</p>
-    </div>`;
-  const result = await waitForm({
-    title: t("Dispel.Dialog.PlayerEffectsTitle"),
-    content,
-    confirmLabel: t("Dialog.SendToGM"),
-    width: 680
-  });
-  if (!result) return null;
-
-  const effects = setup.effects.map((effect, index) => ({
-    ...effect,
-    known: dispeller.ruleset === RULESETS.HOMEBREW && Boolean(result[`known${index}`]),
-    bonusFormula: dispeller.ruleset === RULESETS.OFFICIAL_2014
-      ? normalizeBonusFormula(result[`bonus${index}`])
-      : ""
-  }));
-  return { ...setup, effects };
 }
 
 export async function promptGMDispelReview(dispeller, setup) {
@@ -537,7 +379,7 @@ export async function promptGMDispelReview(dispeller, setup) {
   const reviewedEffects = setup.effects.map((effect, index) => ({
     ...effect,
     ...readRollTraits(result, `target${index}`, effect),
-    sourceType: glyphTarget ? "glyph" : String(result[`source${index}`]),
+    sourceType: glyphTarget ? "glyph" : String(result[`source${index}`] || effect.sourceType),
     spellName: String(result[`name${index}`] || effect.spellName),
     spellLevel: parseNumber(result[`level${index}`], effect.spellLevel),
     casterMod: parseNumber(result[`mod${index}`], effect.casterMod),
@@ -562,4 +404,24 @@ export async function promptGMDispelReview(dispeller, setup) {
     },
     setup: { ...setup, effects: reviewedEffects }
   };
+}
+
+/** The selected target supplies all source declarations before final GM review. */
+export async function promptDispelTarget(dispeller) {
+  const count = Math.min(20, Math.max(1, Math.trunc(Number(dispeller.effectCount) || 1)));
+  const participant = dispeller.targetParticipant;
+  const effects = [];
+  let first;
+  for (let index = 0; index < count; index += 1) {
+    const effect = await promptGMDispelEffect(index, count, first?.targetType ?? "actor", {
+      actorUuid: first?.targetActorUuid || (first ? `special:${first.targetType}` : participant?.actorUuid)
+    });
+    if (!effect) return null;
+    first ??= effect;
+    effects.push({ ...effect, known: Boolean(dispeller.knowsTargetSpell),
+      bonusFormula: dispeller.ruleset === RULESETS.OFFICIAL_2014 ? dispeller.bonusFormula : "" });
+  }
+  return { targetUuid: first.targetActorUuid, targetName: first.targetActorName,
+    targetType: first.targetType, effectCount: count, effects,
+    defenseRollMode: first.defenseRollMode, defenseUserId: game.user.id };
 }
