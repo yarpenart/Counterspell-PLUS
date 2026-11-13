@@ -687,6 +687,31 @@
     "Review": {
       "Initiator": "Initiator",
       "Target": "Target"
+    },
+    "RollTraits": {
+      "Title": "Roll options",
+      "Advantage": "Advantage",
+      "Disadvantage": "Disadvantage",
+      "AdvantageSources": "Number of declared advantage sources",
+      "DisadvantageSources": "Number of declared disadvantage sources",
+      "Abjurer": "Abjurer",
+      "SpecialSpellcaster": "Special Spellcaster",
+      "Hint": "Enable each applicable option. Source counts apply only when its checkbox is checked. Known-spell advantage for Counterspell is counted automatically; do not include it here. Advantage never rolls more than 2d20. Abjurer adds one proficiency to an eligible check. Special Spellcaster uses this spell workflow’s configured d20 minimum.",
+      "PassiveHint": "These declarations are retained for GM review. They affect only eligible d20 ability checks: fixed defenses and automatic successes do not change, and no extra defense roll is created.",
+      "SettingName": "Advantage / disadvantage cancellation",
+      "SettingHint": "2014 rules: any advantage and disadvantage cancel, regardless of source counts. Optional homebrew: compare the number of sources; the larger side wins and ties give a normal roll. Multiple sources never roll more than 2d20. Applies to Counterspell, Dispel Magic and Remove Curse checks. Identify and Restoration keep their 0.5.6 rules.",
+      "Official": "Official 2014: any advantage and disadvantage cancel",
+      "Majority": "Homebrew: the majority of sources wins"
+    },
+    "CurseItem": {
+      "Title": "Target item (optional)",
+      "Name": "Item name",
+      "Placeholder": "Type an item name, or select an item below",
+      "Select": "Choose an item from the target’s inventory",
+      "Search": "Search items…",
+      "Manual": "No item selected / name only",
+      "Hint": "Leave blank to target the character. The GM selects the character or item and supplies all curse rules and DCs.",
+      "RecipientHint": "Choose the targeted player and optionally suggest a visible token or a character you own. The GM selects the affected character or item and fills in the curse details."
     }
   }
 }
