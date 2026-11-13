@@ -2,34 +2,31 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.5.8
+## Version 0.5.9
 
-- The initial picker contains only a player and an owned token/character sheet. Spell choices and the requirement to have a spell in the selected actor’s inventory have been removed.
-- Type the casting spell name in the first detailed caster form. Counterspell also allows the targeted spell name to be entered immediately; it is carried into GM target setup and the original caster’s form.
-- GM final review remains the last step before resolution.
+- The first dialog chooses the **targeted person**, including a GM. It never changes the caster or delegates the casting form.
+- Suggesting a token or character is optional. Initiators see only visible scene tokens and character sheets they own. Private GM actor sheets and hidden tokens are not exposed in the player’s picker.
+- The recipient confirms or changes the character using a searchable list of their own tokens and character sheets. A character does not need an embedded copy of the targeted spell.
+- Counterspell: the initiator fills Counterspell, the recipient immediately receives the original-spell form, and the GM receives both declarations for final corrections. Blind GM Roll does not skip the recipient.
+- Dispel Magic and Remove Curse: the caster keeps casting/knowledge declarations; the selected recipient confirms the character and supplies the source spell/effect data. The GM reviews everything last.
+- Restoration: the caster chooses the restorative effect; the recipient confirms their character. Their choice is preselected in the final GM review.
+- Identify: the caster keeps casting declarations; the recipient confirms the character and item, by selecting an inventory item or typing its name. Identification results still go to the original caster after GM approval.
+- Cancelling any participant form stops the attempt before spell-slot consumption. Only the initiating caster’s slot is consumed after approval.
 
-## Version 0.5.7
+### Example: player counterspells a GM Fireball
 
-- GM-initiated Counterspell keeps the Counterspell form on the GM, sends the original spell form to its selected active owner, and returns both declarations to the GM for final corrections. This now also works with Blind GM Roll.
-- Counterspell target setup allows explicit owner selection when several players own the same actor. The final GM review can correct both roll visibility modes.
-- Every supported spell starts with a player and owned token/character sheet selector. The initiating user is selected by default; the GM may delegate the caster's forms to an active owner. All subsequent caster forms follow that selection.
-- Dispel Magic and Remove Curse allow the GM to select a separate player and owned character for each source spell/effect. That player fills in the source data, then the GM reviews it before resolving the spell. Choose the GM to enter source data locally.
-- Character sheets and scene tokens are listed separately. Players can select only owned characters; offline players cannot receive forms. Cancelled forms do not consume a slot.
-- Repaired the Polish translation file, which contained two concatenated JSON documents.
-
-### Quick example: GM counters a player's Fireball
-
-1. Start the GM caster's Counterspell and keep **GM** selected in the caster picker. Fill in Counterspell normally.
-2. In target setup, select the Fireball caster's token or character sheet, choose its player, and leave **Ask the active owner** enabled.
-3. The chosen player fills in Fireball's spell level, ability, visibility and optional bonuses.
-4. The GM receives the final review for both sides, makes any corrections, and confirms resolution. Slots are consumed only after approval.
+1. Start Counterspell from the casting character.
+2. Choose the GM as the targeted person. Optionally suggest a visible token, or leave the character blank.
+3. Fill in Counterspell and the proposed target spell name. This form stays with the initiator.
+4. The GM receives the **your spell is being countered** form, confirms the actual NPC/token from their own searchable list, and fills in Fireball.
+5. The GM receives the final review for both sides, makes any corrections, and confirms resolution.
 
 ## Existing features
 
 - Verified module manifests and JavaScript syntax for Foundry VTT 14 Build 365.
 
 - Independent world settings for Counterspell, Dispel Magic, Remove Curse, the Restoration family and Identify: Homebrew or Official D&D 2014.
-- Player declarations are sent to the active GM for final review.
+- Both participants’ declarations are sent to the active GM for final review.
 - Standard and Pact Magic slots are supported and the selected slot is consumed only after GM approval.
 - Restoration always lists every casting level through 9 with its current available-slot count, so higher-level tiers remain visible instead of disappearing when Foundry reports zero remaining slots.
 - Every rolling participant chooses Public Roll, Private GM Roll or Blind GM Roll independently.
