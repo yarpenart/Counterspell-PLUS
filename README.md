@@ -2,6 +2,13 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.15
+
+- Homebrew Remove Curse knowledge is declared only in the final GM form, independently for every curse. The player no longer receives a knowledge questionnaire.
+- Dispel Magic no longer asks for knowledge in the initiator form. Knowledge remains independently editable per effect in the final GM review.
+- Target Special Spellcaster adds +5 to the Dispel source base in either ruleset; configure this with **Dispel Magic: target Special Spellcaster defense bonus**. Target Abjurer contributes twice the original caster’s proficiency to Homebrew DC (even with the ordinary proficiency toggle off), or once to Official 2014 DC. These bonuses do not change automatic dispels. Disadvantage on a passive defense does not create a d20 roll.
+- Both managed Rules Journal pages update automatically on GM startup and when relevant module settings change, including the new target bonus.
+
 ## Version 0.5.14
 
 - Selection terminology uses Actor instead of Character sheet.

@@ -76,7 +76,9 @@ async function world() {
     const config=await load('scripts/config.js');await config.evaluate();
     const traits=await load('scripts/roll-traits.js');await traits.evaluate();
     const participants=await load('scripts/participants.js');await participants.evaluate();
-    const c={user,context,answers,listeners,routing:routing.namespace,participants:participants.namespace,traits:traits.namespace,config:config.namespace,registrations,workflow:context.game.counterspellPlus};clients.push(c);return c;
+    const defense=await load('scripts/dispel-workflow.js');
+    const journal=await load('scripts/rules-journal.js');await journal.evaluate();
+    const c={defense:defense.namespace,journal:journal.namespace,user,context,answers,listeners,routing:routing.namespace,participants:participants.namespace,traits:traits.namespace,config:config.namespace,registrations,workflow:context.game.counterspellPlus};clients.push(c);return c;
   }
   const gm=await client(users[0]),p1=await client(users[1]),p2=await client(users[2]);
   return {gm,p1,p2,pc,npc,item,documents,users,trace,errors,messages,settings};
@@ -272,9 +274,9 @@ test('fixed Glyph target ignores target roll traits and never creates a defensiv
  assert.ok(w.messages.some(m=>m.content?.includes('= <strong>21</strong>')));
 });
 
-test('restored workflows and settings match 0.5.6 exactly',async()=>{
+test('Identify and Restoration remain identical to 0.5.6',async()=>{
  const {execFileSync}=await import('node:child_process');
- for(const file of ['remove-curse-dialogs.js','remove-curse-workflow.js','identify-dialogs.js','identify-workflow.js','restoration-dialogs.js','restoration-workflow.js','restoration-rules.js','config.js'])
+ for(const file of ['identify-dialogs.js','identify-workflow.js','restoration-dialogs.js','restoration-workflow.js','restoration-rules.js'])
  assert.equal(await fs.readFile('scripts/'+file,'utf8'),execFileSync('git',['show','v0.5.6:scripts/'+file],{encoding:'utf8'}),file);
 });
 
@@ -325,24 +327,59 @@ test('Dispel target cannot submit a private GM actor and cancellation consumes n
  await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);assert.equal(w.npc.system.spells.spell3.value,3);assert.equal(w.messages.length,0);
 });
 
-test('Dispel initial knowledge reaches final GM review without a return form and applies the DC reduction',async()=>{
+test('Dispel removes initial knowledge; final GM can mark effects independently',async()=>{
  const w=await world();w.settings.dispelRuleset='homebrew';
- w.gm.answers.push(recipient, config=>{assert.match(config.content,/name="knowsTargetSpell"/);return {...counter,knowsTargetSpell:true};}, config=>{assert.match(config.content,/name="known0" checked/);return {known0:true};});
- w.p2.answers.push(config=>{assert.equal(config.buttons.find(b=>b.action==='confirm').label,'COUNTERSPELL_PLUS.Dialog.SendToGM');return {actorUuid:'Actor.pc',sourceType:'spell',spellName:'Bless',spellLevel:4,casterMod:4,casterProf:3,defenseRollMode:'blindroll'};});
- await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
- assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','gm']);assert.equal(w.npc.system.spells.spell3.value,2);
- assert.ok(w.messages.some(m=>m.content?.includes('16')));
-});
-
-test('Dispel multiple target effects preserve separate GM knowledge corrections and stop on cancellation',async()=>{
- const w=await world();w.settings.dispelRuleset='homebrew';
- w.gm.answers.push(recipient,{...counter,effectCount:2,knowsTargetSpell:true},config=>{assert.match(config.content,/name="known0" checked/);assert.match(config.content,/name="known1" checked/);return null;});
- for(const name of ['Bless','Haste'])w.p2.answers.push({actorUuid:'Actor.pc',sourceType:'spell',spellName:name,spellLevel:3,casterMod:4,casterProf:3});
- await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
- assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','p2','gm']);assert.equal(w.npc.system.spells.spell3.value,3);
+ w.gm.answers.push(recipient,config=>{assert.doesNotMatch(config.content,/name="knowsTargetSpell"/);return {...counter,effectCount:2};},config=>{assert.match(config.content,/name="known0"/);assert.match(config.content,/name="known1"/);return {known0:true};});
+ for(const name of ['Bless','Haste'])w.p2.answers.push({actorUuid:'Actor.pc',sourceType:'spell',spellName:name,spellLevel:4,casterMod:4,casterProf:3});
+ await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','p2','gm']);
 });
 
 test('selection names use Actor instead of Character sheet in English',async()=>{
  const lang=JSON.parse(await fs.readFile('lang/en.json','utf8')).COUNTERSPELL_PLUS;
  assert.equal(lang.Casting.Actor,'Actor');assert.doesNotMatch(JSON.stringify(lang.Casting)+JSON.stringify(lang.Participants),/character sheet/i);
+});
+
+test('Remove Curse Homebrew knowledge is GM-only and separate for each curse',async()=>{
+ const w=await world();w.settings.removeCurseRuleset='homebrew';
+ w.p1.answers.push(config=>{assert.doesNotMatch(config.content,/name="known/);return counter;});
+ w.gm.answers.push({targetUuid:'Actor.pc',effectCount:2,defenseRollMode:'publicroll'}, {spellName:'Curse A',spellLevel:3,casterMod:2,casterProf:3}, {spellName:'Curse B',spellLevel:3,casterMod:2,casterProf:3}, config=>{assert.match(config.content,/name="known0"/);assert.match(config.content,/name="known1"/);return null;});
+ await w.p1.workflow.startRemoveCurseFromActivity({item:w.pc.items[0]});assert.deepEqual(w.errors,[]);assert.deepEqual(forms(w).map(x=>x[0]),['p1','gm','gm','gm','gm']);assert.equal(w.pc.system.spells.spell3.value,3);
+});
+
+test('Dispel target DC bonuses apply independently to every source and ruleset',async()=>{
+ const w=await world();w.settings.includeProficiency=true;w.settings.dispelTargetSpecialBonus=5;
+ for(const sourceType of ['spell','scroll','glyph']) {
+  const base=sourceType==='scroll'?7:10;
+  for(const abjurer of [false,true])for(const specialSpellcaster of [false,true]) {
+   const effect={sourceType,spellLevel:4,casterMod:2,casterProf:3,abjurer,specialSpellcaster};
+   const hb=w.gm.defense.calculateHomebrewDefenses({effects:[effect]})[0];assert.equal(hb.dc,base+(specialSpellcaster?5:0)+4+2+(abjurer?6:3));
+   const official=w.gm.defense.calculateOfficialDefenses({effects:[effect]})[0];assert.equal(official.dc,10+(specialSpellcaster?5:0)+4+(abjurer?3:0));
+  }
+ }
+ w.settings.includeProficiency=false;w.settings.dispelTargetSpecialBonus=8;
+ const effect={sourceType:'spell',spellLevel:4,casterMod:2,casterProf:3,abjurer:true,specialSpellcaster:true};
+ assert.equal(w.gm.defense.calculateHomebrewDefenses({effects:[effect]})[0].dc,30);
+ assert.equal(w.gm.defense.calculateOfficialDefenses({effects:[effect]})[0].dc,25);
+ w.gm.config.registerSettings();const setting=w.gm.registrations.get('dispelTargetSpecialBonus');assert.equal(setting.default,5);assert.equal(setting.restricted,true);
+});
+
+test('Rules Journal refreshes both pages when the target bonus changes',async()=>{
+ const w=await world();const ctx=w.gm.context;ctx.CONST.JOURNAL_ENTRY_PAGE_FORMATS={HTML:1};ctx.game.journal=[];
+ ctx.JournalEntry={async create(data){const journal={...data,pages:[],getFlag(m,k){return this.flags?.[m]?.[k]},async setFlag(m,k,v){this.flags[m][k]=v},async createEmbeddedDocuments(type,pages){this.pages.push(...pages.map(p=>({...p,getFlag(m,k){return this.flags?.[m]?.[k]},async update(d){Object.assign(this,d)}})))}};ctx.game.journal.push(journal);return journal;}};
+ w.settings.dispelTargetSpecialBonus=5;const journal=await w.gm.journal.ensureRulesJournal();assert.equal(journal.pages.length,2);
+ for(const page of journal.pages)assert.match(page.text.content,/\+5/);
+ const old=journal.pages[0].getFlag('counterspell-plus','configurationSignature');
+ w.settings.dispelTargetSpecialBonus=9;await w.gm.journal.ensureRulesJournal();assert.notEqual(journal.pages[0].getFlag('counterspell-plus','configurationSignature'),old);
+ for(const page of journal.pages)assert.match(page.text.content,/\+9/);
+ assert.match(journal.pages[1].text.content,/Only the GM declares knowledge of a curse/);
+});
+
+test('Official Dispel target bonuses change higher-level DCs but preserve automatic dispels',async()=>{
+ const w=await world();w.settings.dispelTargetSpecialBonus=5;
+ w.gm.answers.push(recipient,{...counter,effectCount:2}, {target0Abjurer:true,target0SpecialSpellcaster:true,target1Abjurer:true,target1SpecialSpellcaster:true});
+ for(const level of [3,4])w.p2.answers.push({actorUuid:'Actor.pc',sourceType:'spell',spellName:'Spell '+level,spellLevel:level,casterProf:3,traitsPresent:'1',abjurer:true,specialSpellcaster:true});
+ await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ assert.equal(w.trace.filter(x=>x[1]==='roll').length,1);
+ assert.ok(w.messages.some(m=>m.content?.includes('= <strong>22</strong>')));
+ assert.ok(w.messages.some(m=>m.content?.includes('Dispel.Chat.Automatic')));
 });
