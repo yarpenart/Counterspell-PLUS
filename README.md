@@ -2,6 +2,13 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.13
+
+- Counterspell target submission now correctly says **Send to GM**.
+- Dispel Magic uses the participant flow and independent Disadvantage, Abjurer and Special Spellcaster declarations of Counterspell. The initiator keeps casting/knowledge forms; the selected target confirms their character or a special target and provides source details; the GM reviews everything last. Passive defenses remain fixed.
+- Optional initial target suggestions include **Special - Unknown** for Counterspell, and **Special - Unknown** / **Special - Object** for Dispel Magic. Recipients can choose these special targets too, including players without an owned actor. All token/actor/special entries use **Token - XYZ**, **Actor - XYZ**, **Special - Unknown** and **Special - Object** labels. Private unowned GM actor sheets remain hidden from player pickers.
+- Remove Curse, Identify and Restoration remain on their restored 0.5.6 workflows and settings.
+
 ## Version 0.5.12
 
 - Dispel Magic and Remove Curse restore their complete workflows, dialogs, rules and settings from 0.5.6, alongside the previously restored Identify and Restoration workflows. Remove Curse no longer uses the participant/item picker introduced in 0.5.11.
