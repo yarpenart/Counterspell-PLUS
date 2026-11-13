@@ -184,7 +184,7 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
   const content = `
     <div class="csp-form"${homebrew ? " data-csp-homebrew-casting" : ""}>
       <div class="form-group">
-        <label>${t("Dialog.SpellName")}</label>
+        <label>${t("Participants.CastingSpellName")}</label>
         <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
       </div>
       <div class="csp-summary">
@@ -338,17 +338,23 @@ export async function promptGMRestorationReview(restorer, selection) {
   const effectIds = getRestorationEffectIds(restorer.activityType, restorer.slotLevel);
   const material = getRestorationMaterial(restorer.activityType, restorer.slotLevel);
   const targets = getSceneCasterEntries();
+  const confirmedTarget = getActorFromUuidSync(selection.targetActorUuid);
+  if (confirmedTarget && !targets.some(entry => entry.uuid === selection.targetActorUuid)) {
+    targets.push({ uuid: selection.targetActorUuid, name: selection.targetActorName || confirmedTarget.name,
+      actor: confirmedTarget, kind: selection.targetActorUuid.startsWith("Scene.") ? "token" : "actor" });
+  }
+  const defaultTarget = selection.targetActorUuid || (Object.hasOwn(selection, "targetActorUuid") ? SPECIAL_TARGET_UNKNOWN : targets[0]?.uuid);
   let targetOptions = targets.map((entry, index) => ({
     key: entry.uuid,
     label: tf(entry.kind === "token" ? "Dialog.TargetTokenEntry" : "Dialog.TargetActorEntry", { name: entry.name }),
     name: entry.name,
-    selected: index === 0
+    selected: entry.uuid === defaultTarget
   }));
   targetOptions.push({
     key: SPECIAL_TARGET_UNKNOWN,
     label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }),
     name: t("Dialog.SpecialUnknown"),
-    selected: !targets.length
+    selected: defaultTarget === SPECIAL_TARGET_UNKNOWN || !targets.length
   });
   targetOptions = searchableEntries(targetOptions);
   const effectOptions = effectIds.map(effectId => ({
@@ -395,6 +401,7 @@ export async function promptGMRestorationReview(restorer, selection) {
 
   const content = `
     <div class="csp-form">
+      <p><strong>${t("Participants.ConfirmedTarget")}:</strong> ${escapeHTML(selection.targetActorName ?? "")}</p>
       <div class="csp-grid">
         <div class="csp-panel">
           <h3>${escapeHTML(restorer.itemName)}</h3>

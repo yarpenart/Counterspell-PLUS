@@ -1,3 +1,4 @@
+import { ownedTargetPicker } from "./participants.js";
 import { MODULE_ID, RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
@@ -140,7 +141,7 @@ export async function promptCurseRemover(actor, item, ruleset) {
   const content = `
     <div class="csp-form"${ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-casting" : ""}>
       <div class="form-group">
-        <label>${t("Dialog.SpellName")}</label>
+        <label>${t("Participants.CastingSpellName")}</label>
         <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
       </div>
       <div class="csp-summary">
@@ -322,7 +323,8 @@ export async function promptGMRemoveCurseSetup(remover) {
   };
 }
 
-export async function promptGMRemoveCurseEffect(index, count, targetType = "actor") {
+export async function promptGMRemoveCurseEffect(index, count, targetType = "actor", participant = null) {
+  const picker = participant ? ownedTargetPicker(participant.actorUuid, { allowSpecial: true }) : null;
   void targetType;
   const sourceField = `
     <div class="form-group">
@@ -337,6 +339,7 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
       <div class="csp-summary">
         <strong>${tf("RemoveCurse.Dialog.EffectNumber", { index: index + 1, count })}</strong>
       </div>
+      ${picker?.html ?? ""}
       ${sourceField}
       <div class="form-group">
         <label>${t("RemoveCurse.Dialog.EffectName")}</label>
@@ -360,11 +363,17 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
   const result = await waitForm({
     title: tf("RemoveCurse.Dialog.GMEffectTitle", { index: index + 1, count }),
     content,
-    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue")
+    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue"),
+    onRender: picker?.render
   });
   if (!result) return null;
 
+  const confirmed = picker ? picker.read(result.actorUuid) : null;
+  if (picker && !confirmed) return null;
   return {
+    targetActorUuid: confirmed?.actor ? confirmed.key : "",
+    targetActorName: confirmed?.name ?? "",
+    targetType: confirmed?.kind === "special" ? confirmed.key.slice(8) : "actor",
     sourceType: "curse",
     spellName: String(result.spellName || t("RemoveCurse.Chat.UnknownCurse")),
     spellLevel: parseNumber(result.spellLevel, 0),

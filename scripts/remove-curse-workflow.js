@@ -1,4 +1,5 @@
-import { selectCastingSession, promptCasting } from "./casting-session.js";
+import { selectTargetParticipant } from "./participants.js";
+import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
   promptGMRemoveCurseReview,
@@ -92,12 +93,17 @@ async function handleSocket(message) {
           const setup = await promptGMRemoveCurseSetup(message.payload.remover);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              const sourceSession = await selectCastingSession(getActorFromUuidSync(setup.targetUuid), null, "remove-curse-source");
-              if (!sourceSession) break;
-              const effect = await promptCasting(sourceSession, "remove-curse-source", index, setup.effectCount, setup.targetType);
+              const participant = message.payload.remover.targetParticipant ?? { userId: game.user.id, actorUuid: setup.targetUuid };
+              const sourceSession = { userId: participant.userId, actorUuid: participant.actorUuid };
+              const effect = await promptCasting(sourceSession, "remove-curse-source", index, setup.effectCount, setup.targetType, participant);
               if (!effect) {
                 result = null;
                 break;
+              }
+              if (index === 0 && effect.targetActorName) {
+                setup.targetUuid = effect.targetActorUuid;
+                setup.targetName = effect.targetActorName;
+                setup.targetType = effect.targetType;
               }
               setup.effects.push(effect);
             }
@@ -476,15 +482,12 @@ function validateBonuses(remover, setup) {
 }
 
 async function startRemoveCurse(activity) {
-  let item = getActivityItem(activity);
-  let actor = getItemActor(item);
+  const item = getActivityItem(activity);
+  const actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("RemoveCurse.Notifications.ActorNotFound"));
     return;
   }
-  const session = await selectCastingSession(actor, item, "remove-curse");
-  if (!session) return;
-  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("RemoveCurse.Notifications.AlreadyPending"));
     return;
@@ -498,9 +501,13 @@ async function startRemoveCurse(activity) {
 
   activeActors.add(actor.uuid);
   try {
+    const targetParticipant = await selectTargetParticipant();
+    if (!targetParticipant) return;
+    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "removeCurseRuleset");
     let remover = await promptCasting(session, "remove-curse", ruleset);
     if (!remover) return;
+    remover.targetParticipant = targetParticipant;
 
     let setup = await requestRemote("remove-curse-gm-setup", gm.id, { remover });
     if (!setup) {

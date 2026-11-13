@@ -1,5 +1,6 @@
+import { promptTargetConfirmation, ownsActor } from "./participants.js";
 import { SOCKET_NAME } from "./config.js";
-import { escapeHTML, getActorFromUuidSync, getSceneCasterEntries, randomRequestId, t } from "./utils.js";
+import { getActorFromUuidSync, randomRequestId, t } from "./utils.js";
 import { promptCounterspeller } from "./dialogs.js";
 import { promptDispeller, promptDispellerEffects, promptGMDispelEffect } from "./dispel-dialogs.js";
 import { promptCurseRemover, promptCurseRemoverEffects, promptGMRemoveCurseEffect } from "./remove-curse-dialogs.js";
@@ -8,8 +9,8 @@ import { promptIdentifier } from "./identify-dialogs.js";
 
 const pending = new Map();
 const busy = new Set();
-let selecting = false;
 const methods = {
+  "confirm-target": promptTargetConfirmation,
   "dispel-source": promptGMDispelEffect,
   "remove-curse-source": promptGMRemoveCurseEffect,
   counterspell: promptCounterspeller,
@@ -22,95 +23,17 @@ const methods = {
   "restoration-effect": promptRestorationEffect
 };
 
-function owns(actor, user) {
-  return Boolean(actor && user && (user.isGM
-    || actor.testUserPermission(user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)));
-}
-
-function options(entries, selected) {
-  return entries.map(entry => `<option value="${escapeHTML(entry.id)}"${entry.id === selected ? " selected" : ""}>${escapeHTML(entry.name)}</option>`).join("");
-}
-
-/** Select the actual caster and the person who fills in the casting forms. */
-export async function selectCastingSession(originalActor, originalItem, kind, activityType) {
-  const source = kind.endsWith("-source");
-  if (selecting) {
-    ui.notifications.warn(t("Notifications.AlreadyPending"));
-    return null;
-  }
-  selecting = true;
-  try {
-    const users = game.user.isGM
-      ? game.users.filter(user => user.active && (!user.isGM || user.id === game.user.id))
-      : [game.user];
-    const sceneEntries = getSceneCasterEntries();
-    const actorEntries = Array.from(game.actors).filter(actor => !sceneEntries.some(entry => entry.kind === "actor" && entry.actor.uuid === actor.uuid))
-      .map(actor => ({ uuid: actor.uuid, actor, name: actor.name, kind: "actor" }));
-    const entries = [...sceneEntries, ...actorEntries].filter(entry => owns(entry.actor, game.user))
-      .map(entry => ({ id: entry.uuid, actor: entry.actor,
-        name: `${t(entry.kind === "token" ? "Casting.Token" : "Casting.Actor")}: ${entry.name}` }));
-    if (!entries.length) {
-      ui.notifications.warn(t("Casting.NoActor"));
-      return null;
-    }
-    const preferredUser = game.user;
-    const defaultActor = entries.find(entry => entry.actor.uuid === originalActor?.uuid)?.id;
-    const result = await foundry.applications.api.DialogV2.wait({
-      window: { title: t(source ? "Casting.SourceTitle" : "Casting.Title") }, position: { width: 620 },
-      classes: ["counterspell-plus-dialog"], modal: false, rejectClose: false,
-      content: `<div class="csp-form">
-        <p class="hint">${t(source ? "Casting.SourceHint" : "Casting.Hint")}</p>
-        <div class="form-group"><label>${t("Casting.Player")}</label><div class="form-fields"><select name="userId">${options(users, preferredUser.id)}</select></div></div>
-        <div class="form-group"><label>${t("Casting.Caster")}</label><div class="form-fields"><select name="actorUuid" required></select></div></div>
-        <p class="hint">${t("Casting.OwnershipHint")}</p>
-      </div>`,
-      render: (_event, dialog) => {
-        const userSelect = dialog.element.querySelector('[name="userId"]');
-        const actorSelect = dialog.element.querySelector('[name="actorUuid"]');
-        const update = () => {
-          const selected = actorSelect.value || defaultActor;
-          const user = game.users.get(userSelect.value);
-          actorSelect.innerHTML = options(entries.filter(entry => owns(entry.actor, user)), selected);
-        };
-        userSelect.addEventListener("change", update);
-        update();
-      },
-      buttons: [
-        { action: "cancel", label: t("Dialog.Cancel"), callback: () => null },
-        { action: "confirm", label: t("Dialog.Continue"), default: true,
-          callback: (_event, button) => new foundry.applications.ux.FormDataExtended(button.form).object }
-      ]
-    });
-    if (!result) return null;
-    const user = users.find(user => user.id === result.userId);
-    const entry = entries.find(entry => entry.id === result.actorUuid);
-    if (!user?.active || !entry || !owns(entry.actor, user)) {
-      ui.notifications.warn(t("Casting.InvalidSelection"));
-      return null;
-    }
-    // The triggering activity supplies workflow metadata only. The selected actor
-    // need not own an embedded copy of the spell; its slots and abilities are used.
-    const item = originalItem ? {
-      uuid: originalActor?.uuid === entry.actor.uuid ? originalItem.uuid : "",
-      name: originalItem.name,
-      system: { level: originalItem.system?.level }
-    } : null;
-    return { actor: entry.actor, item, userId: user.id };
-  } finally {
-    selecting = false;
-  }
-}
-
 async function runPrompt(method, actor, item, args) {
-  if (method.endsWith("-effects") || method.endsWith("-source") || method === "restoration-effect") return methods[method](...args);
+  if (method === "confirm-target" || method.endsWith("-effects") || method.endsWith("-source") || method === "restoration-effect") return methods[method](...args);
   return methods[method](actor, item, ...args);
 }
 
-/** Keep every player-side form on the selected owner's client. */
+/** Caster forms stay local; the GM can request target-only forms remotely. */
 export async function promptCasting(session, method, ...args) {
   if (session.userId === game.user.id) return runPrompt(method, session.actor, session.item, args);
+  if (!game.user.isGM || !["confirm-target", "dispel-source", "remove-curse-source"].includes(method)) return null;
   const user = game.users.get(session.userId);
-  if (!user?.active || !owns(session.actor, user)) {
+  if (!user?.active || (session.actor && !ownsActor(session.actor, user))) {
     ui.notifications.warn(t("Casting.PlayerUnavailable"));
     return null;
   }
@@ -124,7 +47,7 @@ export async function promptCasting(session, method, ...args) {
     pending.set(requestId, { userId: user.id, resolve, timer });
     game.socket.emit(SOCKET_NAME, { type: "casting-prompt", requestId,
       senderId: game.user.id, recipientId: user.id, method,
-      actorUuid: session.actor.uuid, spell: session.item ? { uuid: session.item.uuid, name: session.item.name, system: { level: session.item.system?.level } } : null, args });
+      actorUuid: session.actor?.uuid ?? session.actorUuid ?? "", spell: session.item ? { uuid: session.item.uuid, name: session.item.name, system: { level: session.item.system?.level } } : null, args });
   });
 }
 
@@ -144,11 +67,10 @@ export function initializeCastingSessions() {
     const actor = getActorFromUuidSync(message.actorUuid);
     const item = message.spell;
     let result = null;
-    const key = actor?.uuid;
-    const valid = sender?.active && sender.isGM && owns(actor, game.user)
-      && (message.method?.endsWith("-source") || message.method?.endsWith("-effects")
-        || message.method === "restoration-effect" || typeof item?.name === "string")
-      && Object.hasOwn(methods, message.method)
+    const key = actor?.uuid ?? message.recipientId;
+    const valid = sender?.active && sender.isGM
+      && (!actor || ownsActor(actor, game.user))
+      && ["confirm-target", "dispel-source", "remove-curse-source"].includes(message.method)
       && Array.isArray(message.args);
     if (valid && !busy.has(key)) {
       busy.add(key);

@@ -1,4 +1,5 @@
-import { selectCastingSession, promptCasting } from "./casting-session.js";
+import { selectTargetParticipant } from "./participants.js";
+import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import { promptGMIdentifyReview } from "./identify-dialogs.js";
 import {
@@ -78,7 +79,19 @@ async function handleSocket(message) {
   try {
     let result = null;
     if (message.type === "identify-gm-review" && game.user.isGM) {
-      const review = await promptGMIdentifyReview(message.payload.identifier);
+      let { identifier } = message.payload;
+      const participant = identifier.targetParticipant;
+      let confirmed = true;
+      if (participant) {
+        confirmed = await promptCasting(participant, "confirm-target", {
+          actorUuid: participant.actorUuid, spellName: identifier.spellName,
+          identify: true, subjectName: identifier.subjectName, subjectItemUuid: identifier.subjectItemUuid
+        });
+        if (confirmed) identifier = { ...identifier,
+          targetActorUuid: confirmed.actorUuid, targetActorName: confirmed.actorName,
+          subjectName: confirmed.subjectName, subjectItemUuid: confirmed.subjectItemUuid };
+      }
+      const review = confirmed ? await promptGMIdentifyReview(identifier) : null;
       if (review) {
         await completeIdentification(review);
         result = { approved: true };
@@ -206,15 +219,12 @@ async function completeIdentification(identifier) {
 }
 
 async function startIdentify(activity) {
-  let item = getActivityItem(activity);
-  let actor = getItemActor(item);
+  const item = getActivityItem(activity);
+  const actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("Identify.Notifications.ActorNotFound"));
     return;
   }
-  const session = await selectCastingSession(actor, item, "identify");
-  if (!session) return;
-  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Identify.Notifications.AlreadyPending"));
     return;
@@ -227,9 +237,13 @@ async function startIdentify(activity) {
 
   activeActors.add(actor.uuid);
   try {
+    const targetParticipant = await selectTargetParticipant();
+    if (!targetParticipant) return;
+    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "identifyRuleset");
-    const identifier = await promptCasting(session, "identify", ruleset);
+    let identifier = await promptCasting(session, "identify", ruleset);
     if (!identifier) return;
+    identifier.targetParticipant = targetParticipant;
     const result = await requestRemote("identify-gm-review", gm.id, { identifier });
     if (!result?.approved) {
       ui.notifications.info(t("Identify.Notifications.CancelledByGM"));

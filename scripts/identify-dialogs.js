@@ -248,7 +248,7 @@ export async function promptIdentifier(actor, item, ruleset) {
   const content = `
     <div class="csp-form">
       <div class="form-group">
-        <label>${t("Dialog.SpellName")}</label>
+        <label>${t("Participants.CastingSpellName")}</label>
         <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
       </div>
       <div class="csp-summary">
@@ -507,6 +507,7 @@ export async function promptGMIdentifyReview(identifier) {
     <p class="hint">${t("Identify.Dialog.OfficialNoRisk")}</p>`;
   const content = `
     <div class="csp-form">
+      <p><strong>${t("Participants.ConfirmedTarget")}:</strong> ${escapeHTML(identifier.targetActorName ?? "")}</p>
       <div class="csp-summary">
         <strong>${escapeHTML(identifier.actorName)}</strong>
         <span>${escapeHTML(identifier.subjectName)}</span>

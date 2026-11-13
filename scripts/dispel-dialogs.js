@@ -1,3 +1,4 @@
+import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
@@ -131,7 +132,7 @@ export async function promptDispeller(actor, item, ruleset) {
   const content = `
     <div class="csp-form"${ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-casting" : ""}>
       <div class="form-group">
-        <label>${t("Dialog.SpellName")}</label>
+        <label>${t("Participants.CastingSpellName")}</label>
         <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
       </div>
       <div class="csp-summary">
@@ -315,7 +316,8 @@ export async function promptGMDispelSetup(dispeller) {
   };
 }
 
-export async function promptGMDispelEffect(index, count, targetType = "actor") {
+export async function promptGMDispelEffect(index, count, targetType = "actor", participant = null) {
+  const picker = participant ? ownedTargetPicker(participant.actorUuid, { allowSpecial: true }) : null;
   const glyphTarget = targetType === "glyph";
   const sourceField = glyphTarget
     ? `
@@ -336,6 +338,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor") {
       <div class="csp-summary">
         <strong>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count })}</strong>
       </div>
+      ${picker?.html ?? ""}
       ${sourceField}
       <div class="form-group">
         <label>${t("Dispel.Dialog.EffectName")}</label>
@@ -359,11 +362,17 @@ export async function promptGMDispelEffect(index, count, targetType = "actor") {
   const result = await waitForm({
     title: tf("Dispel.Dialog.GMEffectTitle", { index: index + 1, count }),
     content,
-    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue")
+    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue"),
+    onRender: picker?.render
   });
   if (!result) return null;
 
+  const confirmed = picker ? picker.read(result.actorUuid) : null;
+  if (picker && !confirmed) return null;
   return {
+    targetActorUuid: confirmed?.actor ? confirmed.key : "",
+    targetActorName: confirmed?.name ?? "",
+    targetType: confirmed?.kind === "special" ? confirmed.key.slice(8) : "actor",
     sourceType: glyphTarget ? "glyph" : String(result.sourceType),
     spellName: String(result.spellName || t("Chat.UnknownSpell")),
     spellLevel: parseNumber(result.spellLevel, 0),

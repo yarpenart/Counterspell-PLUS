@@ -1,17 +1,15 @@
+import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
-  activateTargetSearch,
   escapeHTML,
   getAbilityData,
   getAbilityEntries,
-  getActiveOwner,
   getActorFromUuidSync,
   getDefaultAbility,
   isAbjurerOptionEnabled,
   getSpecialMinimum,
   getRollModeEntries,
-  getSceneCasterEntries,
   getSlotChoices,
   normalizeBonusFormula,
   parseNumber,
@@ -21,24 +19,12 @@ import {
 } from "./utils.js";
 
 const DialogV2 = foundry.applications.api.DialogV2;
-const SPECIAL_TARGET_UNKNOWN = "special:unknown";
-const SPECIAL_TARGET_GLYPH = "special:glyph";
 
 function selectOptions(entries, valueKey = "key", labelKey = "label") {
   return entries.map(entry => {
     const selected = entry.selected ? " selected" : "";
     return `<option value="${escapeHTML(entry[valueKey])}"${selected}>${escapeHTML(entry[labelKey])}</option>`;
   }).join("");
-}
-
-function searchableEntries(entries) {
-  const counts = new Map();
-  for (const entry of entries) counts.set(entry.label, (counts.get(entry.label) ?? 0) + 1);
-  return entries.map((entry, index) => {
-    if (counts.get(entry.label) === 1) return { ...entry, searchLabel: entry.label };
-    const suffix = String(entry.key).split(".").pop()?.slice(-6) || String(index + 1);
-    return { ...entry, searchLabel: `${entry.label} [${suffix}]` };
-  });
 }
 
 function levelOptions(selected, minimum = 0) {
@@ -128,7 +114,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
   const content = `
     <div class="csp-form"${ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-casting" : ""}>
       <div class="form-group">
-        <label>${t("Dialog.SpellName")}</label>
+        <label>${t("Participants.CastingSpellName")}</label>
         <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
       </div>
       <div class="form-group">
@@ -234,206 +220,14 @@ export async function promptCounterspeller(actor, item, ruleset) {
   };
 }
 
-export async function promptGMTarget(counter) {
-  const casters = getSceneCasterEntries();
-  if (!casters.length) {
-    ui.notifications.warn(t("Notifications.NoCasters"));
-    return null;
-  }
-
-  const genericActor = casters[0].actor;
-  const abilities = getAbilityEntries(genericActor, getDefaultAbility(genericActor));
-  const targetRollMode = defaultRollMode();
-  const targetDisadvantageField = counter.ruleset === RULESETS.HOMEBREW
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="disadvantage" data-csp-normal-source>
-          ${t("Dialog.GMTargetDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.GMTargetDisadvantageHint")}</p>
-      </div>`
-    : "";
-  const targetBonusField = counter.ruleset === RULESETS.HOMEBREW
-    ? `
-      <div class="form-group stacked">
-        <label>${t("Dialog.TargetBonusDice")}</label>
-        <div class="form-fields"><input type="text" name="bonusFormula" placeholder="1d4 + 1d8" data-csp-normal-source></div>
-        <p class="hint">${t("Dialog.TargetBonusDiceHint")}</p>
-      </div>`
-    : "";
-  let casterOptions = casters.map((entry, index) => ({
-    key: entry.uuid,
-    label: tf(entry.kind === "token" ? "Dialog.TargetTokenEntry" : "Dialog.TargetActorEntry", { name: entry.name }),
-    name: entry.name,
-    kind: entry.kind,
-    selected: index === 0
-  }));
-  casterOptions.push(
-    { key: SPECIAL_TARGET_UNKNOWN, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }), name: t("Dialog.SpecialUnknown"), kind: "special", selected: false },
-    { key: SPECIAL_TARGET_GLYPH, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialGlyph") }), name: t("Dialog.SpecialGlyph"), kind: "special", selected: false }
-  );
-  casterOptions = searchableEntries(casterOptions);
-
-  const content = `
-    <div class="csp-form"${counter.ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-target-source" : ""}>
-      <div class="csp-panel">
-        <h3>${t("Dialog.CounterspellData")}</h3>
-        <dl>
-          <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(counter.actorName)}</dd>
-          <dt>${t("Dialog.Ability")}</dt><dd>${escapeHTML(counter.ability.toUpperCase())} (${counter.abilityMod >= 0 ? "+" : ""}${counter.abilityMod})</dd>
-          <dt>${t("Dialog.Proficiency")}</dt><dd>${counter.proficiency >= 0 ? "+" : ""}${counter.proficiency}</dd>
-          <dt>${t("Dialog.CounterspellSlot")}</dt><dd>${escapeHTML(counter.slotLabel)}</dd>
-        </dl>
-      </div>
-      <div class="form-group">
-        <label>${t("Dialog.TargetCaster")}</label>
-        <div class="form-fields csp-target-search">
-          <input type="search" data-csp-target-filter placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
-          <select name="actorUuid" data-csp-target-select size="6" required>${selectOptions(casterOptions, "key", "searchLabel")}</select>
-          <small data-csp-target-count></small>
-        </div>
-      </div>
-      <p class="hint">${t("Dialog.SpecialTargetHint")}</p>
-      <div class="form-group">
-        <label>${t("Casting.TargetPlayer")}</label>
-        <div class="form-fields"><select name="ownerUserId" data-csp-target-owner></select></div>
-      </div>
-      <div class="form-group">
-        <label>${t("Dialog.SourceType")}</label>
-        <div class="form-fields">
-          <select name="sourceType" data-csp-source-type-select>
-            <option value="spell">${t("Dialog.NormalSpell")}</option>
-            <option value="scroll">${t("Dialog.Scroll")}</option>
-            <option value="glyph">${t("Dialog.Glyph")}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>${t("Dialog.SpellName")}</label>
-        <div class="form-fields"><input type="text" name="spellName" value="${escapeHTML(counter.targetSpellName ?? "")}" placeholder="Fireball" required></div>
-      </div>
-      <div class="form-group">
-        <label>${t("Dialog.SpellSlotLevel")}</label>
-        <div class="form-fields"><select name="spellLevel">${levelOptions(3)}</select></div>
-      </div>
-      <div class="form-group">
-        <label>${t("Dialog.TargetAbility")}</label>
-        <div class="form-fields"><select name="ability">${selectOptions(abilities)}</select></div>
-      </div>
-      <div class="form-group">
-        <label>${t("Dialog.TargetRollMode")}</label>
-        <div class="form-fields"><select name="targetRollMode">${selectOptions(getRollModeEntries(targetRollMode))}</select></div>
-      </div>
-      ${targetBonusField}
-      ${targetDisadvantageField}
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="askOwner" checked data-csp-normal-source>
-          ${t("Dialog.AskOwner")}
-        </label>
-        <p class="hint">${t("Dialog.AskOwnerHint")}</p>
-      </div>
-      <fieldset>
-        <legend>${t("Dialog.ManualCasterCreator")}</legend>
-        <div class="form-group">
-          <label>${t("Dialog.CreatorModifier")}</label>
-          <div class="form-fields"><input type="number" name="creatorMod" value="0" step="1" data-csp-manual-creator></div>
-        </div>
-        <div class="form-group">
-          <label>${t("Dialog.CreatorProficiency")}</label>
-          <div class="form-fields"><input type="number" name="creatorProf" value="0" min="0" step="1" data-csp-manual-creator></div>
-        </div>
-      </fieldset>
-      <p class="hint">${t("Dialog.ManualDataHint")}</p>
-    </div>`;
-
-  const result = await waitForm({
-    title: t("Dialog.GMTargetTitle"),
-    content,
-    confirmLabel: t("Dialog.Continue"),
-    onRender: (event, dialog) => {
-      activateTargetSearch(event, dialog);
-      const actorSelect = dialog.element.querySelector('[name="actorUuid"]');
-      const ownerSelect = dialog.element.querySelector('[data-csp-target-owner]');
-      const updateOwners = () => {
-        const actor = getActorFromUuidSync(actorSelect.value);
-        const previous = ownerSelect.value;
-        const owners = game.users.filter(user => user.active && !user.isGM
-          && actor?.testUserPermission(user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER));
-        ownerSelect.innerHTML = `<option value="">${escapeHTML(t("Casting.AutomaticOwner"))}</option>`
-          + owners.map(user => `<option value="${escapeHTML(user.id)}">${escapeHTML(user.name)}</option>`).join("");
-        if (owners.some(user => user.id === previous)) ownerSelect.value = previous;
-      };
-      actorSelect.addEventListener("change", updateOwners);
-      dialog.element.querySelector('[data-csp-target-filter]')?.addEventListener("input", updateOwners);
-      updateOwners();
-    }
-  });
-  if (!result) return null;
-
-  const targetChoice = String(result.actorUuid ?? "");
-  const selectedTarget = casterOptions.find(entry => entry.key === targetChoice);
-  if (!selectedTarget) {
-    ui.notifications.error(t("Notifications.SelectTargetSuggestion"));
-    return null;
-  }
-  const isUnknownTarget = targetChoice === SPECIAL_TARGET_UNKNOWN;
-  const isGlyphTarget = targetChoice === SPECIAL_TARGET_GLYPH;
-  const isSpecialTarget = isUnknownTarget || isGlyphTarget;
-  const actor = isSpecialTarget ? null : getActorFromUuidSync(targetChoice);
-  if (!actor && !isSpecialTarget) {
-    ui.notifications.error(t("Notifications.CasterNotFound"));
-    return null;
-  }
-
-  const requestedOwner = game.users.get(String(result.ownerUserId ?? ""));
-  const owner = requestedOwner?.active && !requestedOwner.isGM
-    && actor?.testUserPermission(requestedOwner, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
-    ? requestedOwner : getActiveOwner(actor);
-  const ability = String(result.ability);
-  const manualMod = parseNumber(result.creatorMod, 0);
-  const manualProf = parseNumber(result.creatorProf, 0);
-  const computed = actor
-    ? getAbilityData(actor, ability)
-    : { ability, abilityMod: manualMod, proficiency: manualProf };
-  const sourceType = isGlyphTarget ? "glyph" : String(result.sourceType);
-  const selectedRollMode = String(result.targetRollMode);
-  const actorName = actor
-    ? selectedTarget.name
-    : (isGlyphTarget ? t("Dialog.SpecialGlyph") : t("Dialog.SpecialUnknown"));
-
-  return {
-    actorUuid: actor ? targetChoice : "",
-    actorName,
-    targetType: isGlyphTarget ? "glyph" : isUnknownTarget ? "unknown" : "actor",
-    ownerUserId: owner?.id ?? null,
-    askOwner: Boolean(result.askOwner)
-      && Boolean(owner)
-      && sourceType === "spell",
-    sourceType,
-    spellName: String(result.spellName || t("Chat.UnknownSpell")),
-    spellLevel: parseNumber(result.spellLevel, 0),
-    ability,
-    abilityMod: computed.abilityMod,
-    proficiency: computed.proficiency,
-    creatorMod: manualMod,
-    creatorProf: manualProf,
-    rollMode: selectedRollMode,
-    bonusFormula: counter.ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
-    rollUserId: game.user.id,
-    ruleset: counter.ruleset,
-    disadvantage: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.disadvantage)
-  };
-}
-
 export async function promptTargetPlayer(target) {
-  const actor = getActorFromUuidSync(target.actorUuid);
-  if (!actor) {
-    ui.notifications.error(t("Notifications.CasterNotFound"));
+  const picker = ownedTargetPicker(target.actorUuid, { allowSpecial: true });
+  const actor = picker.entries.find(entry => entry.key === target.actorUuid)?.actor
+    ?? picker.entries.find(entry => entry.actor)?.actor;
+  if (!picker.entries.length) {
+    ui.notifications.warn(t("Casting.NoActor"));
     return null;
   }
-
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
   const rollMode = target.rollMode ?? defaultRollMode();
@@ -458,9 +252,10 @@ export async function promptTargetPlayer(target) {
   const content = `
     <div class="csp-form">
       <div class="csp-summary">
-        <strong>${escapeHTML(actor.name)}</strong>
+        <strong>${escapeHTML(target.actorUuid ? (picker.entries.find(entry => entry.key === target.actorUuid)?.name ?? "") : t("Participants.ConfirmCharacter"))}</strong>
         <span>${t("Dialog.YouAreCountered")}</span>
       </div>
+      ${picker.html}
       <div class="form-group">
         <label>${t("Dialog.SpellName")}</label>
         <div class="form-fields"><input type="text" name="spellName" value="${escapeHTML(target.spellName)}" required></div>
@@ -477,6 +272,13 @@ export async function promptTargetPlayer(target) {
         <label>${t("Dialog.RollMode")}</label>
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(rollMode))}</select></div>
       </div>
+      <div class="form-group"><label>${t("Dialog.SourceType")}</label><div class="form-fields">
+        <select name="sourceType"><option value="spell">${t("Dialog.NormalSpell")}</option><option value="scroll">${t("Dialog.Scroll")}</option><option value="glyph">${t("Dialog.Glyph")}</option></select>
+      </div></div>
+      <fieldset><legend>${t("Dialog.ManualCasterCreator")}</legend>
+        <div class="form-group"><label>${t("Dialog.CreatorModifier")}</label><div class="form-fields"><input type="number" name="creatorMod" value="0" step="1"></div></div>
+        <div class="form-group"><label>${t("Dialog.CreatorProficiency")}</label><div class="form-fields"><input type="number" name="creatorProf" value="0" min="0" step="1"></div></div>
+      </fieldset>
       ${bonusField}
       ${disadvantageField}
       <p class="hint">${t("Dialog.PlayerDataHint")}</p>
@@ -485,15 +287,40 @@ export async function promptTargetPlayer(target) {
   const result = await waitForm({
     title: t("Dialog.TargetPlayerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM")
+    confirmLabel: t("Dialog.SendToGM"),
+    onRender: (event, dialog) => {
+      picker.render(event, dialog);
+      const root = dialog.element;
+      const select = root.querySelector('[name="actorUuid"]');
+      const ability = root.querySelector('[name="ability"]');
+      const update = () => {
+        const entry = picker.entries.find(entry => entry.key === select.value);
+        if (entry?.actor) ability.innerHTML = selectOptions(getAbilityEntries(entry.actor, getDefaultAbility(entry.actor)));
+        if (select.value === "special:glyph") root.querySelector('[name="sourceType"]').value = "glyph";
+      };
+      select?.addEventListener("change", update);
+      update();
+    }
   });
   if (!result) return null;
 
-  const ability = String(result.ability);
+  const selected = picker.read(result.actorUuid);
+  if (!selected) return null;
+  const selectedActor = selected.actor;
+  const sourceType = selected.key === "special:glyph" ? "glyph" : String(result.sourceType || target.sourceType || "spell");
+  const ability = String(result.ability || getDefaultAbility(selectedActor));
   return {
     ...target,
-    ...getAbilityData(actor, ability),
-    spellName: String(result.spellName || target.spellName),
+    ...getAbilityData(selectedActor, ability),
+    actorUuid: selectedActor ? selected.key : "",
+    actorName: selected.name,
+    targetType: selected.kind === "special" ? selected.key.slice(8) : "actor",
+    ownerUserId: game.user.id,
+    sourceType,
+    creatorMod: parseNumber(result.creatorMod, 0),
+    creatorProf: parseNumber(result.creatorProf, 0),
+    ...(!selectedActor ? { abilityMod: parseNumber(result.creatorMod, 0), proficiency: parseNumber(result.creatorProf, 0) } : {}),
+    spellName: String(result.spellName || target.spellName || t("Chat.UnknownSpell")),
     spellLevel: parseNumber(result.spellLevel, target.spellLevel),
     rollMode: String(result.rollMode),
     bonusFormula: target.ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",

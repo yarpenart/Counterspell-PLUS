@@ -1,4 +1,5 @@
-import { selectCastingSession, promptCasting } from "./casting-session.js";
+import { selectTargetParticipant } from "./participants.js";
+import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
   promptGMDispelReview,
@@ -92,12 +93,17 @@ async function handleSocket(message) {
           const setup = await promptGMDispelSetup(message.payload.dispeller);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              const sourceSession = await selectCastingSession(getActorFromUuidSync(setup.targetUuid), null, "dispel-source");
-              if (!sourceSession) break;
-              const effect = await promptCasting(sourceSession, "dispel-source", index, setup.effectCount, setup.targetType);
+              const participant = message.payload.dispeller.targetParticipant ?? { userId: game.user.id, actorUuid: setup.targetUuid };
+              const sourceSession = { userId: participant.userId, actorUuid: participant.actorUuid };
+              const effect = await promptCasting(sourceSession, "dispel-source", index, setup.effectCount, setup.targetType, participant);
               if (!effect) {
                 result = null;
                 break;
+              }
+              if (index === 0 && effect.targetActorName) {
+                setup.targetUuid = effect.targetActorUuid;
+                setup.targetName = effect.targetActorName;
+                setup.targetType = effect.targetType;
               }
               setup.effects.push(effect);
             }
@@ -369,15 +375,12 @@ function validateBonuses(dispeller, setup) {
 }
 
 async function startDispelMagic(activity) {
-  let item = getActivityItem(activity);
-  let actor = getItemActor(item);
+  const item = getActivityItem(activity);
+  const actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("Dispel.Notifications.ActorNotFound"));
     return;
   }
-  const session = await selectCastingSession(actor, item, "dispel");
-  if (!session) return;
-  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Dispel.Notifications.AlreadyPending"));
     return;
@@ -391,9 +394,13 @@ async function startDispelMagic(activity) {
 
   activeActors.add(actor.uuid);
   try {
+    const targetParticipant = await selectTargetParticipant();
+    if (!targetParticipant) return;
+    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "dispelRuleset");
     let dispeller = await promptCasting(session, "dispel", ruleset);
     if (!dispeller) return;
+    dispeller.targetParticipant = targetParticipant;
 
     let setup = await requestRemote("dispel-gm-setup", gm.id, { dispeller });
     if (!setup) {

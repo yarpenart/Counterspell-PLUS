@@ -1,4 +1,5 @@
-import { selectCastingSession, promptCasting } from "./casting-session.js";
+import { selectTargetParticipant } from "./participants.js";
+import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
   promptGMRestorationReview
@@ -94,7 +95,18 @@ async function handleSocket(message) {
     switch (message.type) {
       case "restoration-gm-review":
         if (game.user.isGM) {
-          result = await promptGMRestorationReview(message.payload.restorer, message.payload.selection);
+          const { restorer } = message.payload;
+          let { selection } = message.payload;
+          const participant = restorer.targetParticipant;
+          if (participant) {
+            const confirmed = await promptCasting(participant, "confirm-target", {
+              actorUuid: participant.actorUuid, spellName: restorer.itemName,
+              effectName: selection.effectName
+            });
+            if (!confirmed) break;
+            selection = { ...selection, targetActorUuid: confirmed.actorUuid, targetActorName: confirmed.actorName };
+          }
+          result = await promptGMRestorationReview(restorer, selection);
         }
         break;
       case "restoration-post-defense":
@@ -383,15 +395,12 @@ async function resolveCheck(restorer, selection) {
 }
 
 async function startRestoration(activity, activityType = getRestorationActivityType(activity)) {
-  let item = getActivityItem(activity);
-  let actor = getItemActor(item);
+  const item = getActivityItem(activity);
+  const actor = getItemActor(item);
   if (!activityType || !item || !actor) {
     ui.notifications.error(t("Restoration.Notifications.ActorNotFound"));
     return;
   }
-  const session = await selectCastingSession(actor, item, "restoration", activityType);
-  if (!session) return;
-  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Restoration.Notifications.AlreadyPending"));
     return;
@@ -404,9 +413,13 @@ async function startRestoration(activity, activityType = getRestorationActivityT
 
   activeActors.add(actor.uuid);
   try {
+    const targetParticipant = await selectTargetParticipant();
+    if (!targetParticipant) return;
+    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "restorationRuleset");
     let restorer = await promptCasting(session, "restoration", ruleset, activityType);
     if (!restorer) return;
+    restorer.targetParticipant = targetParticipant;
     let selection = await promptCasting(session, "restoration-effect", restorer);
     if (!selection) {
       ui.notifications.info(t("Restoration.Notifications.CancelledByPlayer"));

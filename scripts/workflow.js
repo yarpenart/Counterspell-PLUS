@@ -1,8 +1,8 @@
-import { selectCastingSession, promptCasting } from "./casting-session.js";
+import { selectTargetParticipant } from "./participants.js";
+import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
   promptGMReview,
-  promptGMTarget,
   promptTargetPlayer
 } from "./dialogs.js";
 import {
@@ -140,9 +140,6 @@ async function handleSocket(message) {
   try {
     let result = null;
     switch (message.type) {
-      case "gm-target":
-        if (game.user.isGM) result = await promptGMTarget(message.payload.counter);
-        break;
       case "target-player":
         result = await promptTargetPlayer(message.payload.target);
         break;
@@ -367,16 +364,13 @@ async function resolveOfficial2014(counter, target) {
 }
 
 async function startCounterspell(activity) {
-  let item = getActivityItem(activity);
-  let actor = getItemActor(item);
+  const item = getActivityItem(activity);
+  const actor = getItemActor(item);
   if (!item || !actor) {
     ui.notifications.error(t("Notifications.ActorNotFound"));
     return;
   }
 
-  const session = await selectCastingSession(actor, item, "counterspell");
-  if (!session) return;
-  ({ actor, item } = session);
   if (activeActors.has(actor.uuid)) {
     ui.notifications.warn(t("Notifications.AlreadyPending"));
     return;
@@ -390,23 +384,26 @@ async function startCounterspell(activity) {
 
   activeActors.add(actor.uuid);
   try {
+    const targetParticipant = await selectTargetParticipant();
+    if (!targetParticipant) return;
+    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "ruleset");
     let counter = await promptCasting(session, "counterspell", ruleset);
     if (!counter) return;
+    counter.targetParticipant = targetParticipant;
 
-    let target = await requestRemote("gm-target", gm.id, { counter });
-    if (!target) {
-      ui.notifications.info(t("Notifications.CancelledByGM"));
-      return;
-    }
-
-    if (target.sourceType === "spell" && target.askOwner && target.ownerUserId) {
-      const playerTarget = await requestRemote("target-player", target.ownerUserId, { target });
-      if (!playerTarget) {
-        ui.notifications.info(t("Notifications.CancelledByTarget"));
-        return;
+    let target = await requestRemote("target-player", targetParticipant.userId, {
+      target: {
+        actorUuid: targetParticipant.actorUuid,
+        spellName: counter.targetSpellName || "",
+        sourceType: "spell", spellLevel: 3,
+        rollMode: game.settings.get("core", "rollMode") || "publicroll",
+        ruleset, bonusFormula: "", disadvantage: false
       }
-      target = playerTarget;
+    });
+    if (!target) {
+      ui.notifications.info(t("Notifications.CancelledByTarget"));
+      return;
     }
 
     const review = await requestRemote("gm-review", gm.id, { counter, target });
