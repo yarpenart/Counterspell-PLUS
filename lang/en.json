@@ -248,7 +248,7 @@
       "Glyph": "Glyph",
       "SpellName": "Target spell name",
       "AskOwner": "Ask the active owner of this actor",
-      "AskOwnerHint": "If an active player owns the selected actor, they will receive their own data window. Blind GM Roll keeps the data with the GM and suppresses that player window.",
+      "AskOwnerHint": "The selected active owner receives their spell form, including for Blind GM Roll. The GM receives both declarations for final review.",
       "ScrollCreator": "Scroll / glyph creator data",
       "ManualCasterCreator": "Manual caster / creator data",
       "CreatorModifier": "Creator's ability modifier",
@@ -267,7 +267,8 @@
       "ScrollAuthor": "Scroll author",
       "ScrollCastingHint": "Normal casting uses the selected slot and character statistics. Scroll casting uses the scroll level and its author's statistics, and consumes no character spell slot. The GM will review these values. The module does not delete a scroll item automatically.",
       "NoSlotsAvailable": "No available spell slots — choose scroll casting",
-      "ScrollCastingLevel": "Level {level} spell scroll"
+      "ScrollCastingLevel": "Level {level} spell scroll",
+      "CounterRollMode": "Counterspell roll visibility"
     },
     "Chat": {
       "UnknownCaster": "Unknown caster",
@@ -645,6 +646,22 @@
         "CancelledByPlayer": "The Remove Curse caster cancelled the workflow.",
         "GenericError": "The Remove Curse workflow encountered an error."
       }
+    },
+    "Casting": {
+      "Title": "Choose caster and player",
+      "Hint": "Choose who fills in the spell forms and which of their tokens or character sheets casts the spell.",
+      "Player": "Player filling in the forms",
+      "Caster": "Token / character sheet and spell",
+      "OwnershipHint": "Players can select only characters they own. The GM can select themselves to fill in the forms locally. Only characters with this spell are listed.",
+      "Token": "Token",
+      "Actor": "Character sheet",
+      "NoSpell": "No owned character has this spell.",
+      "InvalidSelection": "Select an active player and a spell belonging to a character they own.",
+      "PlayerUnavailable": "The selected player is offline or no longer owns this character.",
+      "TargetPlayer": "Target spell’s player",
+      "AutomaticOwner": "Automatic: active owner",
+      "SourceTitle": "Choose the effect’s caster",
+      "SourceHint": "Choose the player and character responsible for this spell or effect. Select the GM to enter the source data locally. The GM still reviews all data before resolution."
     }
   }
 }
