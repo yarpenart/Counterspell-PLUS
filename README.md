@@ -2,6 +2,10 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.10
+
+- Participant form buttons now state their destination: **Send to target** / **Send to initiator**, with Polish equivalents. Forms submitted for GM review retain **Send to GM**. Final GM roll/resolve/approve actions are unchanged.
+
 ## Version 0.5.9
 
 - The first dialog chooses the **targeted person**, including a GM. It never changes the caster or delegates the casting form.
