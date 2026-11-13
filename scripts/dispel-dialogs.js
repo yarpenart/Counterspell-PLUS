@@ -1,3 +1,4 @@
+import { labelReviewSides } from "./review-labels.js";
 import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
 import {
@@ -459,7 +460,7 @@ export async function promptGMDispelReview(dispeller, setup) {
     : "";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
-      <legend>${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
+      <legend>${t("Review.Target")} — ${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
       <div class="form-group">
         <label>${t("Dialog.SourceType")}</label>
         <div class="form-fields">${glyphTarget
@@ -507,7 +508,7 @@ export async function promptGMDispelReview(dispeller, setup) {
     <div class="csp-form">
       <div class="csp-grid">
         <div class="csp-panel">
-          <h3>${t("Dispel.Dialog.DispelData")}</h3>
+          <h3>${t("Review.Initiator")} — ${t("Dispel.Dialog.DispelData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(dispeller.actorName)}</dd>
             <dt>${t("Dialog.CastingMethod")}</dt><dd>${dispellerUsesScroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
@@ -519,7 +520,7 @@ export async function promptGMDispelReview(dispeller, setup) {
           </dl>
         </div>
         <div class="csp-panel">
-          <h3>${t("Dispel.Dialog.TargetData")}</h3>
+          <h3>${t("Review.Target")} — ${t("Dispel.Dialog.TargetData")}</h3>
           <dl>
             <dt>${t("Dispel.Dialog.Target")}</dt><dd>${escapeHTML(setup.targetName)}</dd>
             <dt>${t("Dispel.Dialog.EffectCount")}</dt><dd>${setup.effects.length}</dd>
@@ -566,7 +567,10 @@ export async function promptGMDispelReview(dispeller, setup) {
     content,
     confirmLabel: t("Dialog.Roll"),
     width: 760,
-    onRender: activateAbjurerProficiency
+    onRender: (event, dialog) => {
+      activateAbjurerProficiency(event, dialog);
+      labelReviewSides(dialog, "dispel");
+    }
   });
   if (!result) return null;
 

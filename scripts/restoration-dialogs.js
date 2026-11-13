@@ -1,3 +1,4 @@
+import { labelReviewSides } from "./review-labels.js";
 import { MODULE_ID, RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
@@ -404,7 +405,7 @@ export async function promptGMRestorationReview(restorer, selection) {
       <p><strong>${t("Participants.ConfirmedTarget")}:</strong> ${escapeHTML(selection.targetActorName ?? "")}</p>
       <div class="csp-grid">
         <div class="csp-panel">
-          <h3>${escapeHTML(restorer.itemName)}</h3>
+          <h3>${t("Review.Initiator")} — ${escapeHTML(restorer.itemName)}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(restorer.actorName)}</dd>
             <dt>${t("Dialog.CastingMethod")}</dt><dd>${scroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
@@ -475,6 +476,7 @@ export async function promptGMRestorationReview(restorer, selection) {
     </div>`;
 
   const onRender = (event, dialog) => {
+    labelReviewSides(dialog, "restoration");
     activateTargetSearch(event, dialog);
     activateAbjurerProficiency(event, dialog);
     const root = dialog?.element;

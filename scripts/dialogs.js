@@ -1,3 +1,4 @@
+import { labelReviewSides } from "./review-labels.js";
 import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
 import {
@@ -387,7 +388,7 @@ export async function promptGMReview(counter, target) {
     <div class="csp-form">
       <div class="csp-grid">
         <div class="csp-panel">
-          <h3>${t("Dialog.CounterspellData")}</h3>
+          <h3>${t("Review.Initiator")} — ${t("Dialog.CounterspellData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(counter.actorName)}</dd>
             <dt>${t("Dialog.CastingMethod")}</dt><dd>${counterUsesScroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
@@ -398,7 +399,7 @@ export async function promptGMReview(counter, target) {
           </dl>
         </div>
         <div class="csp-panel">
-          <h3>${t("Dialog.TargetData")}</h3>
+          <h3>${t("Review.Target")} — ${t("Dialog.TargetData")}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(target.actorName)}</dd>
             <dt>${t("Dialog.SourceType")}</dt><dd>${escapeHTML(sourceLabel)}</dd>
@@ -472,7 +473,10 @@ export async function promptGMReview(counter, target) {
     title: t("Dialog.GMReviewTitle"),
     content,
     confirmLabel: t("Dialog.Roll"),
-    onRender: activateAbjurerProficiency
+    onRender: (event, dialog) => {
+      activateAbjurerProficiency(event, dialog);
+      labelReviewSides(dialog, "counterspell");
+    }
   });
   if (!result) return null;
 

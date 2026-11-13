@@ -1,3 +1,4 @@
+import { labelReviewSides } from "./review-labels.js";
 import { MODULE_ID, RULESETS } from "./config.js";
 import {
   escapeHTML,
@@ -509,8 +510,8 @@ export async function promptGMIdentifyReview(identifier) {
     <div class="csp-form">
       <p><strong>${t("Participants.ConfirmedTarget")}:</strong> ${escapeHTML(identifier.targetActorName ?? "")}</p>
       <div class="csp-summary">
-        <strong>${escapeHTML(identifier.actorName)}</strong>
-        <span>${escapeHTML(identifier.subjectName)}</span>
+        <strong>${t("Review.Initiator")} — ${escapeHTML(identifier.actorName)}</strong>
+        <span>${t("Review.Target")} — ${escapeHTML(identifier.subjectName)}</span>
       </div>
       <div class="csp-identify-cast-summary">
         <span>${tf("Identify.Dialog.CastLevelSummary", { level: identifier.castLevel })}</span>
@@ -566,7 +567,10 @@ export async function promptGMIdentifyReview(identifier) {
     content,
     confirmLabel: t("Identify.Dialog.Approve"),
     width: 760,
-    onRender: activateGMItemPicker(entries, initialUuid)
+    onRender: (event, dialog) => {
+      activateGMItemPicker(entries, initialUuid)(event, dialog);
+      labelReviewSides(dialog, "identify");
+    }
   });
   if (!result) return null;
 
