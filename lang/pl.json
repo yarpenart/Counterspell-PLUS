@@ -268,7 +268,9 @@
       "ScrollCastingHint": "Przy zwykłym rzuceniu używane są wybrana komórka i statystyki postaci. Przy zwoju używane są poziom oraz statystyki autora zwoju, a komórka postaci nie jest zużywana. GM zatwierdzi te dane. Moduł nie usuwa automatycznie przedmiotu zwoju.",
       "NoSlotsAvailable": "Brak dostępnych komórek — wybierz zwój",
       "ScrollCastingLevel": "Zwój zaklęcia {level}. poziomu",
-      "CounterRollMode": "Widoczność rzutu Counterspella"
+      "CounterRollMode": "Widoczność rzutu Counterspella",
+      "SendToTarget": "Wyślij do targetowanego",
+      "SendToInitiator": "Wyślij do inicjującego"
     },
     "Chat": {
       "UnknownCaster": "Nieznany rzucający",
