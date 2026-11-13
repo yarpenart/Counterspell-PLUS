@@ -23,16 +23,16 @@ export function participantEntries(owner, observer = game.user) {
 function actorOptions(entries, selected = "", optional = true) {
   const placeholder = optional ? t("Participants.ChooseLater") : t("Participants.ChooseCharacter");
   return `<option value=""${!entries.some(e => e.key === selected) ? " selected" : ""}>${escapeHTML(placeholder)}</option>`
-    + entries.map(entry => `<option value="${escapeHTML(entry.key)}"${entry.key === selected ? " selected" : ""}>${escapeHTML(t(entry.kind === "token" ? "Casting.Token" : entry.kind === "special" ? "Participants.Special" : "Casting.Actor"))}: ${escapeHTML(entry.name)}</option>`).join("");
+    + entries.map(entry => `<option value="${escapeHTML(entry.key)}"${entry.key === selected ? " selected" : ""}>${escapeHTML(t(entry.kind === "token" ? "Casting.Token" : entry.kind === "special" ? "Participants.Special" : "Casting.Actor"))} - ${escapeHTML(entry.name)}</option>`).join("");
 }
 
-export function ownedTargetPicker(suggestedUuid = "", { allowSpecial = false } = {}) {
+function specialEntries(kinds) {
+  return kinds.map(kind => ({ key: `special:${kind}`, name: t(kind === "object" ? "Dialog.SpecialObject" : "Dialog.SpecialUnknown"), kind: "special" }));
+}
+
+export function ownedTargetPicker(suggestedUuid = "", { allowSpecial = false, specialKinds = ["unknown"] } = {}) {
   const entries = participantEntries(game.user);
-  if (allowSpecial && game.user.isGM) {
-    entries.push({ key: "special:unknown", name: t("Dialog.SpecialUnknown"), kind: "special" },
-      { key: "special:glyph", name: t("Dialog.SpecialGlyph"), kind: "special" },
-      { key: "special:object", name: t("Dialog.SpecialObject"), kind: "special" });
-  }
+  if (allowSpecial) entries.push(...specialEntries(specialKinds));
   return {
     entries,
     html: `<div class="form-group stacked"><label>${t("Participants.ConfirmCharacter")}</label>
@@ -75,10 +75,10 @@ function activateParticipantSearch(dialog, entries, suggestedUuid, optional, onC
 }
 
 /** The initiator chooses the other person, never a replacement caster. */
-export async function selectTargetParticipant() {
+export async function selectTargetParticipant({ specialKinds = ["unknown"] } = {}) {
   const users = game.users.filter(user => user.active);
   const defaultUserId = getPrimaryGM()?.id ?? game.user.id;
-  const choices = new Map(users.map(user => [user.id, participantEntries(user)]));
+  const choices = new Map(users.map(user => [user.id, [...participantEntries(user), ...specialEntries(specialKinds)]]));
   const result = await foundry.applications.api.DialogV2.wait({
     window: { title: t("Participants.ChooseRecipient") }, position: { width: 620 },
     classes: ["counterspell-plus-dialog"], modal: false, rejectClose: false,
@@ -88,7 +88,7 @@ export async function selectTargetParticipant() {
       </div></div>
       <div class="form-group stacked"><label>${t("Participants.OptionalCharacter")}</label><div class="form-fields csp-target-search">
         <input type="search" data-csp-participant-search placeholder="${escapeHTML(t("Dialog.SearchTargetPlaceholder"))}" autocomplete="off">
-        <select name="actorUuid" data-csp-participant-actor size="6"></select>
+        <select name="actorUuid" data-csp-participant-actor size="6">${actorOptions(choices.get(defaultUserId) ?? [], "", true)}</select>
         <small data-csp-participant-count></small>
       </div></div><p class="hint">${t("Participants.PrivacyHint")}</p></div>`,
     render: (_event, dialog) => {

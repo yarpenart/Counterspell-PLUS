@@ -1,8 +1,8 @@
+import { resolveD20Options } from "./roll-traits.js";
+import { selectTargetParticipant } from "./participants.js";
+import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
-  promptDispeller,
-  promptDispellerEffects,
-  promptGMDispelEffect,
   promptGMDispelReview,
   promptGMDispelSetup
 } from "./dispel-dialogs.js";
@@ -94,10 +94,17 @@ async function handleSocket(message) {
           const setup = await promptGMDispelSetup(message.payload.dispeller);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              const effect = await promptGMDispelEffect(index, setup.effectCount, setup.targetType);
+              const participant = message.payload.dispeller.targetParticipant ?? { userId: game.user.id, actorUuid: setup.targetUuid };
+              const sourceSession = { userId: participant.userId, actorUuid: participant.actorUuid };
+              const effect = await promptCasting(sourceSession, "dispel-source", index, setup.effectCount, setup.targetType, participant);
               if (!effect) {
                 result = null;
                 break;
+              }
+              if (index === 0 && effect.targetActorName) {
+                setup.targetUuid = effect.targetActorUuid;
+                setup.targetName = effect.targetActorName;
+                setup.targetType = effect.targetType;
               }
               setup.effects.push(effect);
             }
@@ -130,18 +137,19 @@ async function handleSocket(message) {
   }
 }
 
-function createD20Roll(parts, data, { disadvantage = false, minimum } = {}) {
+function createD20Roll(parts, data, { advantage = false, disadvantage = false, minimum } = {}) {
   const RollClass = CONFIG.Dice.D20Roll;
   const formula = ["1d20", ...parts].join(" + ");
   if (RollClass) {
     return new RollClass(formula, data, {
+      advantage,
       disadvantage,
       minimum,
       criticalSuccess: 20,
       criticalFailure: 1
     });
   }
-  const baseDie = disadvantage ? "2d20kl" : "1d20";
+  const baseDie = advantage && !disadvantage ? "2d20kh" : disadvantage && !advantage ? "2d20kl" : "1d20";
   const die = Number.isFinite(minimum) ? `${baseDie}min${minimum}` : baseDie;
   return new Roll([die, ...parts].join(" + "), data);
 }
@@ -290,8 +298,7 @@ async function resolveHomebrew(dispeller, setup) {
     mod: dispeller.abilityMod,
     prof: dispeller.proficiency
   }, {
-    disadvantage: Boolean(dispeller.disadvantage),
-    minimum: specialMinimum
+    ...resolveD20Options(dispeller, { minimumSetting: "dispelSpecialMinimum" })
   }).evaluate();
 
   await postRoll(roll, {
@@ -338,11 +345,10 @@ async function resolveOfficial2014(dispeller, setup) {
     }
 
     const bonusPart = bonusRollPart(effect.bonusFormula);
-    const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), {
-      mod: dispeller.abilityMod
+    const roll = await createD20Roll(["@mod", dispeller.abjurer ? "@prof" : null, bonusPart].filter(Boolean), {
+      mod: dispeller.abilityMod, prof: dispeller.proficiency
     }, {
-      disadvantage: Boolean(dispeller.disadvantage),
-      minimum: specialMinimum
+      ...resolveD20Options(dispeller, { minimumSetting: "dispelSpecialMinimum" })
     }).evaluate();
     await postRoll(roll, {
       actor,
@@ -388,9 +394,13 @@ async function startDispelMagic(activity) {
 
   activeActors.add(actor.uuid);
   try {
+    const targetParticipant = await selectTargetParticipant({ specialKinds: ["unknown", "object"] });
+    if (!targetParticipant) return;
+    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "dispelRuleset");
-    let dispeller = await promptDispeller(actor, item, ruleset);
+    let dispeller = await promptCasting(session, "dispel", ruleset);
     if (!dispeller) return;
+    dispeller.targetParticipant = targetParticipant;
 
     let setup = await requestRemote("dispel-gm-setup", gm.id, { dispeller });
     if (!setup) {
@@ -398,7 +408,7 @@ async function startDispelMagic(activity) {
       return;
     }
 
-    setup = await promptDispellerEffects(dispeller, setup);
+    setup = await promptCasting(session, "dispel-effects", dispeller, setup);
     if (!setup) {
       ui.notifications.info(t("Dispel.Notifications.CancelledByPlayer"));
       return;

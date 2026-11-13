@@ -259,7 +259,7 @@ export async function promptTargetPlayer(target) {
   const result = await waitForm({
     title: t("Dialog.TargetPlayerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToInitiator"),
+    confirmLabel: t("Dialog.SendToGM"),
     onRender: (event, dialog) => {
       picker.render(event, dialog);
       const root = dialog.element;
