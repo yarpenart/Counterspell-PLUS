@@ -343,7 +343,8 @@
         "TargetData": "Cel i pasywne obrony",
         "EffectsToResolve": "Efekty zaklęć",
         "GMReviewHint": "Potwierdź lub popraw każdy efekt i deklarację gracza. Komórka Dispel Magic zostanie zużyta dopiero po kliknięciu „Wykonaj rzuty”.",
-        "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie Dispel Magic"
+        "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie Dispel Magic",
+        "InitialKnowledgeHint": "Zaznacz, jeśli znasz rozpraszane zaklęcie. Przy wielu efektach deklaracja dotyczy początkowo każdego z nich; GM może poprawić znajomość osobno dla każdego efektu."
       },
       "Chat": {
         "DefenseTitle": "Dispel Magic — obrony zaklęć",
@@ -653,10 +654,10 @@
       "Title": "Wybierz rzucającego i gracza",
       "Hint": "Wybierz gracza wypełniającego formularze oraz jego token lub kartę postaci. Nazwy zaklęć wpiszesz w kolejnych formularzach.",
       "Player": "Gracz wypełniający formularze",
-      "Caster": "Token / karta postaci",
+      "Caster": "Token / Actor",
       "OwnershipHint": "Gracze mogą wybrać tylko postacie, których są właścicielami. GM może wybrać siebie, aby wypełnić formularze u siebie. Postać nie musi mieć zaklęcia w ekwipunku.",
       "Token": "Token",
-      "Actor": "Karta postaci",
+      "Actor": "Actor",
       "NoSpell": "Żadna dostępna postać nie posiada tego zaklęcia.",
       "InvalidSelection": "Wybierz aktywnego gracza i należący do niego token lub kartę postaci.",
       "PlayerUnavailable": "Wybrany gracz jest offline lub nie jest już właścicielem tej postaci.",
@@ -676,7 +677,7 @@
       "ChooseRecipient": "Wybierz gracza lub GM-a będącego celem",
       "RecipientHint": "Wybierz osobę, której zaklęcie, efekt, postać lub przedmiot jest celem. Formularz rzucania Twojego zaklęcia zostaje u Ciebie.",
       "Recipient": "Gracz / GM będący celem",
-      "OptionalCharacter": "Token / karta będąca celem (opcjonalnie)",
+      "OptionalCharacter": "Token / Actor celu (opcjonalnie)",
       "PrivacyHint": "Możesz pozostawić postać pustą. Lista zawiera wyłącznie widoczne tokeny i karty, których jesteś właścicielem. Odbiorca potwierdzi postać ze swojej listy.",
       "ConfirmTarget": "Potwierdź cel",
       "ConfirmedTarget": "Cel potwierdzony przez właściciela",
