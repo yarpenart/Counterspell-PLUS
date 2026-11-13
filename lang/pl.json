@@ -649,19 +649,21 @@
     },
     "Casting": {
       "Title": "Wybierz rzucającego i gracza",
-      "Hint": "Wybierz osobę wypełniającą formularze zaklęcia oraz należący do niej token lub kartę postaci.",
+      "Hint": "Wybierz gracza wypełniającego formularze oraz jego token lub kartę postaci. Nazwy zaklęć wpiszesz w kolejnych formularzach.",
       "Player": "Gracz wypełniający formularze",
-      "Caster": "Token / karta postaci i zaklęcie",
-      "OwnershipHint": "Gracze mogą wybrać tylko postacie, których są właścicielami. GM może wybrać siebie, aby wypełnić formularze u siebie. Lista obejmuje postacie posiadające to zaklęcie.",
+      "Caster": "Token / karta postaci",
+      "OwnershipHint": "Gracze mogą wybrać tylko postacie, których są właścicielami. GM może wybrać siebie, aby wypełnić formularze u siebie. Postać nie musi mieć zaklęcia w ekwipunku.",
       "Token": "Token",
       "Actor": "Karta postaci",
       "NoSpell": "Żadna dostępna postać nie posiada tego zaklęcia.",
-      "InvalidSelection": "Wybierz aktywnego gracza i zaklęcie należące do jego postaci.",
+      "InvalidSelection": "Wybierz aktywnego gracza i należący do niego token lub kartę postaci.",
       "PlayerUnavailable": "Wybrany gracz jest offline lub nie jest już właścicielem tej postaci.",
       "TargetPlayer": "Gracz rzucający zaklęcie celu",
       "AutomaticOwner": "Automatycznie: aktywny właściciel",
       "SourceTitle": "Wybierz autora efektu",
-      "SourceHint": "Wybierz gracza i postać odpowiedzialną za to zaklęcie lub efekt. Wybierz GM-a, aby wpisać dane u siebie. Końcowe zatwierdzenie wszystkich danych nadal należy do GM-a."
+      "SourceHint": "Wybierz gracza i postać odpowiedzialną za to zaklęcie lub efekt. Wybierz GM-a, aby wpisać dane u siebie. Końcowe zatwierdzenie wszystkich danych nadal należy do GM-a.",
+      "NoActor": "Brak dostępnych tokenów lub kart postaci.",
+      "TargetSpellName": "Nazwa zaklęcia będącego celem"
     }
   }
 }

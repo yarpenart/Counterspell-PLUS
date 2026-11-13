@@ -649,19 +649,21 @@
     },
     "Casting": {
       "Title": "Choose caster and player",
-      "Hint": "Choose who fills in the spell forms and which of their tokens or character sheets casts the spell.",
+      "Hint": "Choose the player filling in the forms and their token or character sheet. Enter spell names in the following forms.",
       "Player": "Player filling in the forms",
-      "Caster": "Token / character sheet and spell",
-      "OwnershipHint": "Players can select only characters they own. The GM can select themselves to fill in the forms locally. Only characters with this spell are listed.",
+      "Caster": "Token / character sheet",
+      "OwnershipHint": "Players can select only characters they own. The GM can select themselves to fill in the forms locally. The character does not need a spell in its inventory.",
       "Token": "Token",
       "Actor": "Character sheet",
       "NoSpell": "No owned character has this spell.",
-      "InvalidSelection": "Select an active player and a spell belonging to a character they own.",
+      "InvalidSelection": "Select an active player and a token or character sheet they own.",
       "PlayerUnavailable": "The selected player is offline or no longer owns this character.",
       "TargetPlayer": "Target spell’s player",
       "AutomaticOwner": "Automatic: active owner",
       "SourceTitle": "Choose the effect’s caster",
-      "SourceHint": "Choose the player and character responsible for this spell or effect. Select the GM to enter the source data locally. The GM still reviews all data before resolution."
+      "SourceHint": "Choose the player and character responsible for this spell or effect. Select the GM to enter the source data locally. The GM still reviews all data before resolution.",
+      "NoActor": "No owned token or character sheet is available.",
+      "TargetSpellName": "Targeted spell name"
     }
   }
 }
