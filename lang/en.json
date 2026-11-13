@@ -664,6 +664,23 @@
       "SourceHint": "Choose the player and character responsible for this spell or effect. Select the GM to enter the source data locally. The GM still reviews all data before resolution.",
       "NoActor": "No owned token or character sheet is available.",
       "TargetSpellName": "Targeted spell name"
+    },
+    "Participants": {
+      "ChooseLater": "No character selected — recipient will choose",
+      "ChooseCharacter": "Choose a character or token",
+      "Special": "Special",
+      "ConfirmCharacter": "Confirm or choose your targeted character",
+      "InvalidCharacter": "Choose a character you own, or leave the initial character suggestion empty.",
+      "ChooseRecipient": "Choose the targeted player or GM",
+      "RecipientHint": "Choose the person whose spell, effect, character or item is targeted. Your casting form stays with you.",
+      "Recipient": "Targeted player / GM",
+      "OptionalCharacter": "Target token / character sheet (optional)",
+      "PrivacyHint": "You may leave the character blank. Only visible tokens and character sheets you own appear here. The recipient confirms the character using their own list.",
+      "ConfirmTarget": "Confirm the target",
+      "ConfirmedTarget": "Target confirmed by its owner",
+      "InventoryItem": "Item from the selected character’s inventory (optional)",
+      "ItemName": "Target item name",
+      "CastingSpellName": "Your casting spell name"
     }
   }
 }

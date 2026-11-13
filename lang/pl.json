@@ -664,6 +664,23 @@
       "SourceHint": "Wybierz gracza i postać odpowiedzialną za to zaklęcie lub efekt. Wybierz GM-a, aby wpisać dane u siebie. Końcowe zatwierdzenie wszystkich danych nadal należy do GM-a.",
       "NoActor": "Brak dostępnych tokenów lub kart postaci.",
       "TargetSpellName": "Nazwa zaklęcia będącego celem"
+    },
+    "Participants": {
+      "ChooseLater": "Bez wskazanej postaci — odbiorca wybierze u siebie",
+      "ChooseCharacter": "Wybierz kartę postaci lub token",
+      "Special": "Cel specjalny",
+      "ConfirmCharacter": "Potwierdź lub wybierz swoją postać będącą celem",
+      "InvalidCharacter": "Wybierz postać, której jesteś właścicielem, albo pozostaw początkową propozycję pustą.",
+      "ChooseRecipient": "Wybierz gracza lub GM-a będącego celem",
+      "RecipientHint": "Wybierz osobę, której zaklęcie, efekt, postać lub przedmiot jest celem. Formularz rzucania Twojego zaklęcia zostaje u Ciebie.",
+      "Recipient": "Gracz / GM będący celem",
+      "OptionalCharacter": "Token / karta będąca celem (opcjonalnie)",
+      "PrivacyHint": "Możesz pozostawić postać pustą. Lista zawiera wyłącznie widoczne tokeny i karty, których jesteś właścicielem. Odbiorca potwierdzi postać ze swojej listy.",
+      "ConfirmTarget": "Potwierdź cel",
+      "ConfirmedTarget": "Cel potwierdzony przez właściciela",
+      "InventoryItem": "Przedmiot z ekwipunku wybranej postaci (opcjonalnie)",
+      "ItemName": "Nazwa przedmiotu będącego celem",
+      "CastingSpellName": "Nazwa Twojego rzucanego zaklęcia"
     }
   }
 }
