@@ -690,28 +690,11 @@
     },
     "RollTraits": {
       "Title": "Opcje rzutu",
-      "Advantage": "Advantage — ułatwienie",
-      "Disadvantage": "Disadvantage — utrudnienie",
-      "AdvantageSources": "Liczba zadeklarowanych źródeł advantage",
-      "DisadvantageSources": "Liczba zadeklarowanych źródeł disadvantage",
+      "Disadvantage": "Utrudnienie",
       "Abjurer": "Abjurer",
       "SpecialSpellcaster": "Special Spellcaster",
-      "Hint": "Zaznacz odpowiednie opcje. Liczba źródeł działa tylko przy zaznaczonym polu. Advantage za znajomość kontrowanego zaklęcia jest liczony automatycznie — nie dodawaj go tutaj. Advantage nigdy nie daje więcej niż 2d20. Abjurer dodaje jedną biegłość do właściwego testu. Special Spellcaster korzysta z minimum d20 ustawionego dla danego zaklęcia modułu.",
-      "PassiveHint": "Deklaracje trafiają do przeglądu GM-a. Działają wyłącznie na właściwe testy cech z d20: stałe DC i automatyczne sukcesy pozostają bez zmian; nie powstaje dodatkowy rzut obrony.",
-      "SettingName": "Znoszenie advantage / disadvantage",
-      "SettingHint": "Zasady 2014: dowolne advantage i disadvantage znoszą się niezależnie od liczby źródeł. Opcjonalne homebrew: porównaj liczbę źródeł; wygrywa liczniejsza strona, remis daje zwykły rzut. Wiele źródeł nigdy nie daje więcej niż 2d20. Dotyczy testów Counterspell, Dispel Magic i Remove Curse. Identify i Restoration zachowują zasady wersji 0.5.6.",
-      "Official": "Oficjalne 2014: advantage i disadvantage znoszą się",
-      "Majority": "Homebrew: wygrywa przewaga liczby źródeł"
-    },
-    "CurseItem": {
-      "Title": "Przedmiot celu (opcjonalnie)",
-      "Name": "Nazwa przedmiotu",
-      "Placeholder": "Wpisz nazwę lub wybierz przedmiot poniżej",
-      "Select": "Wybierz przedmiot z ekwipunku celu",
-      "Search": "Szukaj przedmiotów…",
-      "Manual": "Bez wybranego przedmiotu / tylko nazwa",
-      "Hint": "Pozostaw puste, aby wskazać postać. GM wybiera postać lub przedmiot i podaje zasady oraz ST klątwy.",
-      "RecipientHint": "Wybierz gracza będącego celem i opcjonalnie wskaż widoczny token lub własną kartę. GM wybierze postać lub przedmiot i wypełni dane klątwy."
+      "Hint": "Opcje dotyczą niezależnie rzutu tej strony. Ułatwienie ze znajomości zaklęcia i utrudnienie znoszą się.",
+      "PassiveHint": "Deklaracje nie zmieniają stałej obrony ani nie tworzą dodatkowego rzutu."
     }
   }
 }
