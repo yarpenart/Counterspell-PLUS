@@ -4,6 +4,8 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 
 ## Version 0.5.10
 
+- Final GM review labels editable options as **Initiator** or **Target**, including caster bonuses/knowledge versus target defenses and effects, throughout all supported spells.
+
 - Participant form buttons now state their destination: **Send to target** / **Send to initiator**, with Polish equivalents. Forms submitted for GM review retain **Send to GM**. Final GM roll/resolve/approve actions are unchanged.
 
 ## Version 0.5.9
