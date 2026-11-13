@@ -97,6 +97,12 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "dispelTargetSpecialBonus", {
+    name: "COUNTERSPELL_PLUS.Settings.DispelTargetSpecialBonus.Name",
+    hint: "COUNTERSPELL_PLUS.Settings.DispelTargetSpecialBonus.Hint",
+    scope: "world", config: true, type: Number, default: 5, restricted: true
+  });
+
   game.settings.register(MODULE_ID, "dispelDefenseBase", {
     name: "COUNTERSPELL_PLUS.Settings.DispelDefenseBase.Name",
     hint: "COUNTERSPELL_PLUS.Settings.DispelDefenseBase.Hint",

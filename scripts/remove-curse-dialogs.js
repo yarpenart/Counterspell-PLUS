@@ -375,12 +375,7 @@ export async function promptCurseRemoverEffects(remover, setup) {
   const hideLevels = setup.defenseRollMode === "blindroll";
   const effectCards = setup.effects.map((effect, index) => {
     const homebrewFields = remover.ruleset === RULESETS.HOMEBREW
-      ? `
-        <label class="checkbox">
-          <input type="checkbox" name="known${index}">
-          ${t("RemoveCurse.Dialog.KnowsEffect")}
-        </label>
-        <p class="hint">${t("RemoveCurse.Dialog.KnowsEffectHint")}</p>`
+      ? ""
       : `
         <div class="form-group stacked">
           <label>${t("RemoveCurse.Dialog.CheckBonusDice")}</label>
@@ -420,7 +415,7 @@ export async function promptCurseRemoverEffects(remover, setup) {
 
   const effects = setup.effects.map((effect, index) => ({
     ...effect,
-    known: remover.ruleset === RULESETS.HOMEBREW && Boolean(result[`known${index}`]),
+    known: Boolean(effect.known),
     bonusFormula: remover.ruleset === RULESETS.OFFICIAL_2014
       ? normalizeBonusFormula(result[`bonus${index}`])
       : ""

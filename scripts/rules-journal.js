@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 7;
+const CONTENT_VERSION = 9;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -22,6 +22,7 @@ function configuration() {
     wildMagic: Boolean(game.settings.get(MODULE_ID, "wildMagic")),
     counterspellScrollBase: configuredNumber("scrollDefenseBase", 7),
     counterspellGlyphBase: configuredNumber("glyphDefenseBase", 10),
+    dispelTargetSpecialBonus: configuredNumber("dispelTargetSpecialBonus", 5),
     dispelSpellBase: configuredNumber("dispelDefenseBase", 10),
     dispelScrollBase: configuredNumber("dispelScrollDefenseBase", 7),
     dispelGlyphBase: configuredNumber("dispelGlyphDefenseBase", 10),
@@ -56,9 +57,9 @@ function officialRules(config) {
         <div class="csp-rules-formula">1d20 + spellcasting ability modifier + optional dice<br><strong>vs.</strong> DC 10 + target spell level</div>
         <ul>
           <li>Meeting the DC succeeds.</li>
-          <li>Proficiency is not added in Official 2014 mode.</li>
+          <li>Proficiency is normally not added. Declaring the initiator an Abjurer adds their proficiency once to the ability check.</li>
           <li>Declared disadvantage and optional dice are applied to the check.</li>
-          <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.counterspellMinimum}</strong>.</li>
+          <li>Each rolling Special Spellcaster uses a minimum kept d20 result of <strong>${config.counterspellMinimum}</strong>. The target sends their declaration to the final GM review using Send to GM.</li>
         </ul>
       </section>
 
@@ -72,7 +73,9 @@ function officialRules(config) {
         </ol>
         <div class="csp-rules-formula">1d20 + spellcasting ability modifier + optional dice for that effect<br><strong>vs.</strong> DC 10 + effect level</div>
         <ul>
-          <li>Meeting the DC succeeds. Proficiency is not added.</li>
+          <li>Meeting the DC succeeds. An initiator Abjurer adds their proficiency once to their ability check.</li>
+          <li><strong>Module target options:</strong> Target Special Spellcaster adds <strong>+${config.dispelTargetSpecialBonus}</strong> to the base of 10. Target Abjurer adds the original caster’s proficiency once to the DC. Thus DC = 10 + target special bonus + effect level + target Abjurer proficiency. These optional module modifiers do not change level-based automatic dispels.</li>
+          <li>The initiator fills the casting form, the selected target fills the source form, then the GM receives the final editable review. No knowledge checkbox is shown to the initiator.</li>
           <li>Different optional dice may be entered for different effects.</li>
           <li>The selected roll mode and disadvantage apply to every required check.</li>
           <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.dispelMinimum}</strong>.</li>
@@ -156,7 +159,7 @@ function homebrewRules(config) {
           <thead><tr><th>World option</th><th>Current value</th></tr></thead>
           <tbody>
             <tr><td>Proficiency in homebrew calculations</td><td><strong>${proficiencyState}</strong></td></tr>
-            <tr><td>Abjurer declaration</td><td><strong>${abjurerState}</strong></td></tr>
+            <tr><td>Legacy Abjurer declaration (Remove Curse / Restoration)</td><td><strong>${abjurerState}</strong></td></tr>
             <tr><td>Counterspell against Counterspell — Wild Magic reminder</td><td><strong>${wildMagicState}</strong></td></tr>
             <tr><td>Curse-removal requirements</td><td><strong>${requirementsState}</strong>${config.curseRequirementsEnabled ? `; unmet requirement: +${config.curseRequirementsPenalty} DC` : ""}</td></tr>
           </tbody>
@@ -164,7 +167,7 @@ function homebrewRules(config) {
         <ul>
           <li>An ordinary caster adds <strong>${ordinaryMultiplier}× proficiency</strong> to their homebrew caster roll.</li>
           <li>When the Abjurer option is available and confirmed by the GM, an Abjurer adds <strong>${abjurerMultiplier}× proficiency</strong> to their caster roll.</li>
-          <li>Abjurer changes only the caster's Counterspell, Dispel Magic, Remove Curse or Restoration roll. It does not change the opposing spell roll or a passive defense DC.</li>
+          <li>Counterspell and Dispel Magic expose Disadvantage, Abjurer and Special Spellcaster independently for both sides, editable by the GM. Remove Curse and Restoration retain their legacy caster Abjurer toggle. On a Counterspell contest, each rolling Abjurer adds ${abjurerMultiplier}× their own proficiency; each Special Spellcaster applies the configured d20 minimum. Counterspell fixed Scroll/Glyph defenses do not gain these roll benefits.</li>
           <li>When one of these spells is cast from a scroll, its level, ability modifier and proficiency come from the scroll author. No character spell slot is consumed, and the scroll item is removed manually.</li>
           <li>Optional dice, disadvantage and roll visibility are selected by the appropriate participant and remain editable by the GM.</li>
         </ul>
@@ -178,7 +181,7 @@ function homebrewRules(config) {
         <ul>
           <li>Knowing the normal target spell grants advantage, except when the target spell is another Counterspell.</li>
           <li>Each rolling side can declare disadvantage separately. Advantage and disadvantage cancel each other.</li>
-          <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.counterspellMinimum}</strong>.</li>
+          <li>Each rolling Special Spellcaster uses a minimum kept d20 result of <strong>${config.counterspellMinimum}</strong>. The target sends their declaration to the final GM review using Send to GM.</li>
         </ul>
 
         <h3>Against a spell scroll or Spell Glyph</h3>
@@ -193,10 +196,10 @@ function homebrewRules(config) {
 
       <section>
         <h2>Dispel Magic</h2>
-        <p>The caster rolls once, then the same total is compared with every effect on the selected target.</p>
+        <p>The initiator selects the recipient and optional token / Actor / Special target, then completes their casting form. The target confirms their token, Actor, Unknown or Object and enters source data. The target sends the final declarations directly to the GM for corrections. The caster rolls once, then the same total is compared with every effect.</p>
         <div class="csp-rules-formula">1d20 + Dispel Magic level + ability modifier + caster proficiency + optional dice</div>
         <p>Every effect has its own passive defense:</p>
-        <div class="csp-rules-formula">source base + effect level + original caster/creator modifier + normal original proficiency + multiple-effect bonus − knowledge reduction</div>
+        <div class="csp-rules-formula">source base + target Special Spellcaster bonus + effect level + original caster/creator modifier + original proficiency contribution + multiple-effect bonus − GM knowledge reduction</div>
         <table>
           <thead><tr><th>Effect source</th><th>Current base</th></tr></thead>
           <tbody>
@@ -207,8 +210,9 @@ function homebrewRules(config) {
         </table>
         <ul>
           <li>With one effect, the multiple-effect bonus is 0. With two or more effects, add the total number of effects to every DC.</li>
-          <li>Knowing an individual effect reduces only that effect's DC by 5.</li>
-          <li>The original caster or creator proficiency is included only when the shared proficiency setting is enabled.</li>
+          <li>Knowledge is declared only in the final GM review, independently per effect: knowing that spell reduces only its DC by 5. The initiator form has no knowledge checkbox.</li>
+          <li>Target Special Spellcaster adds <strong>+${config.dispelTargetSpecialBonus}</strong> to the source base, independently for every effect. This bonus is editable in module settings.</li>
+          <li>Target Abjurer contributes <strong>2× the original caster/creator’s proficiency</strong> to the DC, including when the ordinary proficiency setting is off. Without Target Abjurer, ordinary proficiency contributes ${ordinaryMultiplier}× according to the shared setting. Target Disadvantage has no numerical effect on a passive DC; no defensive d20 is rolled.</li>
           <li>The Dispel Magic result must be <strong>strictly higher</strong> than an effect's DC. A tie leaves that effect in place.</li>
           <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.dispelMinimum}</strong>.</li>
           <li>The module reports which effects should be removed but never deletes them automatically.</li>
@@ -223,7 +227,7 @@ function homebrewRules(config) {
         <ul>
           <li>Remove Curse offers only the <strong>Curse</strong> affected-source type. A scroll may still be used to cast Remove Curse itself.</li>
           <li>With one curse, the multiple-curse bonus is 0. With two or more curses, add the total number of curses to every DC.</li>
-          <li>Knowing an individual curse reduces only that curse's DC by 5.</li>
+          <li>Only the GM declares knowledge of a curse, separately for every effect in the final review. A known curse reduces only its own DC by 5. The player receives no Homebrew knowledge questionnaire.</li>
           ${config.curseRequirementsEnabled ? `<li>The GM decides separately for every curse whether its removal requirements are fulfilled. An unmet requirement adds <strong>+${config.curseRequirementsPenalty}</strong> to that curse's DC. The GM also chooses whether the status message is public or GM-only.</li>` : ""}
           <li>The result must be strictly higher than the curse DC. A tie is a failure.</li>
           <li>Special Cursecaster uses a minimum kept d20 result of <strong>${config.removeCurseMinimum}</strong>.</li>

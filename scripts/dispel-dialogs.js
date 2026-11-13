@@ -145,7 +145,6 @@ export async function promptDispeller(actor, item, ruleset) {
       </div>
       ${bonusField}
       <div class="form-group"><label>${t("Dispel.Dialog.EffectCount")}</label><div class="form-fields"><input type="number" name="effectCount" value="1" min="1" max="20" step="1"></div></div>
-      ${ruleset === RULESETS.HOMEBREW ? `<div class="form-group stacked"><label class="checkbox"><input type="checkbox" name="knowsTargetSpell"> ${t("Dispel.Dialog.KnowsEffect")}</label><p class="hint">${t("Dispel.Dialog.InitialKnowledgeHint")}</p></div>` : ""}
 
       ${rollTraitsFields()}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
@@ -180,7 +179,6 @@ export async function promptDispeller(actor, item, ruleset) {
     ...readRollTraits(result),
     ...abilityData,
     effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
-    knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
     castingSource,
     actorUuid: actor.uuid,
     actorName: actor.name,
@@ -238,6 +236,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
         <div class="form-fields"><input type="number" name="casterProf" value="0" min="0" step="1"></div>
       </div>
       ${rollTraitsFields({}, { passive: true })}
+      <p class="hint">${t("Dispel.Dialog.TargetTraitsHint")}</p>
       <p class="hint">${t("Dispel.Dialog.SourceBaseHint")}</p>
     </div>`;
 
@@ -308,6 +307,7 @@ export async function promptGMDispelReview(dispeller, setup) {
           <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
         </div>`}
       ${rollTraitsFields(effect, { prefix: `target${index}`, side: "Target", passive: true })}
+      <p class="hint">${t("Dispel.Dialog.TargetTraitsHint")}</p>
     </fieldset>`).join("");
 
   const generalBonus = homebrew
@@ -418,7 +418,7 @@ export async function promptDispelTarget(dispeller) {
     });
     if (!effect) return null;
     first ??= effect;
-    effects.push({ ...effect, known: Boolean(dispeller.knowsTargetSpell),
+    effects.push({ ...effect, known: false,
       bonusFormula: dispeller.ruleset === RULESETS.OFFICIAL_2014 ? dispeller.bonusFormula : "" });
   }
   return { targetUuid: first.targetActorUuid, targetName: first.targetActorName,

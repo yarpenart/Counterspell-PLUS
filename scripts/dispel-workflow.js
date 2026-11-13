@@ -175,30 +175,33 @@ function getHomebrewBase(sourceType) {
   return configuredNumber("dispelDefenseBase", 10);
 }
 
-function calculateHomebrewDefenses(setup) {
+export function calculateHomebrewDefenses(setup) {
   const countBonus = setup.effects.length > 1 ? setup.effects.length : 0;
   const proficiencyIncluded = usesHomebrewProficiency();
   return setup.effects.map(effect => {
-    const base = getHomebrewBase(effect.sourceType);
+    const sourceBase = getHomebrewBase(effect.sourceType);
+    const specialBonus = effect.specialSpellcaster ? configuredNumber("dispelTargetSpecialBonus", 5) : 0;
+    const base = sourceBase + specialBonus;
+    const proficiencyMultiplier = effect.abjurer ? 2 : proficiencyIncluded ? 1 : 0;
+    const proficiencyBonus = proficiencyMultiplier * Number(effect.casterProf);
     const knownReduction = effect.known ? 5 : 0;
-    const dc = base
-      + Number(effect.spellLevel)
-      + Number(effect.casterMod)
-      + (proficiencyIncluded ? Number(effect.casterProf) : 0)
-      + countBonus
-      - knownReduction;
-    return { ...effect, base, countBonus, knownReduction, proficiencyIncluded, dc };
+    const dc = base + Number(effect.spellLevel) + Number(effect.casterMod)
+      + proficiencyBonus + countBonus - knownReduction;
+    return { ...effect, sourceBase, specialBonus, base, proficiencyMultiplier,
+      proficiencyBonus, countBonus, knownReduction, proficiencyIncluded, dc };
   });
 }
 
-function calculateOfficialDefenses(setup) {
-  return setup.effects.map(effect => ({
-    ...effect,
-    base: 10,
-    countBonus: 0,
-    knownReduction: 0,
-    dc: 10 + Number(effect.spellLevel)
-  }));
+export function calculateOfficialDefenses(setup) {
+  return setup.effects.map(effect => {
+    const sourceBase = 10;
+    const specialBonus = effect.specialSpellcaster ? configuredNumber("dispelTargetSpecialBonus", 5) : 0;
+    const base = sourceBase + specialBonus;
+    const proficiencyMultiplier = effect.abjurer ? 1 : 0;
+    const proficiencyBonus = proficiencyMultiplier * Number(effect.casterProf);
+    return { ...effect, sourceBase, specialBonus, base, proficiencyMultiplier, proficiencyBonus,
+      countBonus: 0, knownReduction: 0, dc: base + Number(effect.spellLevel) + proficiencyBonus };
+  });
 }
 
 function sourceLabel(sourceType) {
@@ -210,9 +213,11 @@ function sourceLabel(sourceType) {
 async function postDefenseSummary(dispeller, setup, defenses) {
   const homebrew = dispeller.ruleset === RULESETS.HOMEBREW;
   const rows = defenses.map(effect => {
+    const baseFormula = `${effect.sourceBase}${effect.specialBonus ? ` + ${effect.specialBonus}` : ""}`;
+    const profFormula = effect.proficiencyMultiplier ? ` + ${effect.proficiencyMultiplier === 2 ? "2 × " : ""}${effect.casterProf}` : "";
     const formula = homebrew
-      ? `${effect.base} + ${effect.spellLevel} + ${effect.casterMod}${effect.proficiencyIncluded ? ` + ${effect.casterProf}` : ""}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
-      : `10 + ${effect.spellLevel}`;
+      ? `${baseFormula} + ${effect.spellLevel} + ${effect.casterMod}${profFormula}${effect.countBonus ? ` + ${effect.countBonus}` : ""}${effect.knownReduction ? ` - ${effect.knownReduction}` : ""}`
+      : `${baseFormula} + ${effect.spellLevel}${profFormula}`;
     return `
       <tr>
         <td><strong>${escapeHTML(effect.spellName)}</strong><br><small>${escapeHTML(sourceLabel(effect.sourceType))}</small></td>

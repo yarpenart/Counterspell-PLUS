@@ -505,7 +505,7 @@ async function startRemoveCurse(activity) {
       return;
     }
 
-    setup = await promptCurseRemoverEffects(remover, setup);
+    if (ruleset !== RULESETS.HOMEBREW) setup = await promptCurseRemoverEffects(remover, setup);
     if (!setup) {
       ui.notifications.info(t("RemoveCurse.Notifications.CancelledByPlayer"));
       return;
