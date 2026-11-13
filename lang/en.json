@@ -154,6 +154,10 @@
       "AbjurerEnabled": {
         "Name": "Homebrew: enable Abjurer option",
         "Hint": "Shows an Abjurer declaration for Counterspell, Dispel Magic, Remove Curse and Restoration. An Abjurer adds one extra proficiency bonus to their caster roll: double proficiency when proficiency is normally included, or single proficiency when it is disabled. The GM confirms the declaration."
+      },
+      "DispelTargetSpecialBonus": {
+        "Name": "Dispel Magic: target Special Spellcaster defense bonus",
+        "Hint": "Added to the target effect’s source base in both rulesets when Target Special Spellcaster is checked. Default +5; automatic dispels remain automatic."
       }
     },
     "Rules": {
@@ -344,7 +348,7 @@
         "EffectsToResolve": "Spell effects",
         "GMReviewHint": "Confirm or correct every effect and player declaration. The Dispel Magic slot is consumed only after you press Roll.",
         "GMReviewTitle": "Counterspell PLUS — final Dispel Magic review",
-        "InitialKnowledgeHint": "Declare whether you know the spell being dispelled. For multiple effects this is the initial declaration for each; the GM can correct knowledge separately for every effect."
+        "TargetTraitsHint": "Target Special Spellcaster adds the configured bonus (default +5) to the source base. Target Abjurer contributes twice the original caster’s proficiency to Homebrew DC, or once to Official 2014 DC. No defense d20 is rolled."
       },
       "Chat": {
         "DefenseTitle": "Dispel Magic — spell defenses",
@@ -695,7 +699,7 @@
       "Abjurer": "Abjurer",
       "SpecialSpellcaster": "Special Spellcaster",
       "Hint": "These options apply independently to this participant’s roll. Advantage from knowing the spell and disadvantage cancel.",
-      "PassiveHint": "These declarations do not change a fixed defense or create an additional roll."
+      "PassiveHint": "Passive defenses do not roll a d20. Consult the workflow’s target rules for applicable DC bonuses."
     }
   }
 }

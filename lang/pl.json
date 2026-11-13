@@ -154,6 +154,10 @@
       "AbjurerEnabled": {
         "Name": "Homebrew: włącz opcję Abjurera",
         "Hint": "Pokazuje deklarację Abjurer przy Counterspell, Dispel Magic, Remove Curse i Restoration. Abjurer dodaje do swojego rzutu jeden dodatkowy poziom biegłości: podwójną biegłość, gdy biegłość jest normalnie dodawana, albo pojedynczą, gdy jest wyłączona. GM zatwierdza deklarację."
+      },
+      "DispelTargetSpecialBonus": {
+        "Name": "Dispel Magic: premia obrony celu Special Spellcaster",
+        "Hint": "Dodawana do bazy źródła efektu w obu trybach, gdy zaznaczono Special Spellcaster celu. Domyślnie +5; automatyczne rozproszenie pozostaje automatyczne."
       }
     },
     "Rules": {
@@ -344,7 +348,7 @@
         "EffectsToResolve": "Efekty zaklęć",
         "GMReviewHint": "Potwierdź lub popraw każdy efekt i deklarację gracza. Komórka Dispel Magic zostanie zużyta dopiero po kliknięciu „Wykonaj rzuty”.",
         "GMReviewTitle": "Counterspell PLUS — końcowe zatwierdzenie Dispel Magic",
-        "InitialKnowledgeHint": "Zaznacz, jeśli znasz rozpraszane zaklęcie. Przy wielu efektach deklaracja dotyczy początkowo każdego z nich; GM może poprawić znajomość osobno dla każdego efektu."
+        "TargetTraitsHint": "Special Spellcaster celu dodaje premię z ustawień (domyślnie +5) do bazy źródła. Abjurer celu dodaje do ST dwukrotną biegłość oryginalnego castera w Homebrew albo jednokrotną w Official 2014. Obrona nie wymaga rzutu k20."
       },
       "Chat": {
         "DefenseTitle": "Dispel Magic — obrony zaklęć",
@@ -695,7 +699,7 @@
       "Abjurer": "Abjurer",
       "SpecialSpellcaster": "Special Spellcaster",
       "Hint": "Opcje dotyczą niezależnie rzutu tej strony. Ułatwienie ze znajomości zaklęcia i utrudnienie znoszą się.",
-      "PassiveHint": "Deklaracje nie zmieniają stałej obrony ani nie tworzą dodatkowego rzutu."
+      "PassiveHint": "Obrona pasywna nie wymaga rzutu k20. Premie do ST zależą od zasad danego zaklęcia."
     }
   }
 }
