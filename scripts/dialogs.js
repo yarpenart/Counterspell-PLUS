@@ -151,7 +151,6 @@ export async function promptCounterspeller(actor, item, ruleset) {
       </div>
       ${knowledgeField}
 
-
       ${rollTraitsFields()}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
     </div>`;
@@ -192,7 +191,6 @@ export async function promptCounterspeller(actor, item, ruleset) {
     rollMode: String(result.rollMode),
     bonusFormula: normalizeBonusFormula(result.bonusFormula),
     knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
-
 
     actorUuid: actor.uuid,
     actorName: actor.name,
@@ -401,9 +399,6 @@ export async function promptGMReview(counter, target) {
         </div>` : ""}
       ${knowledgeField}
 
-
-
-
       ${rollTraitsFields(counter, { prefix: "initiator", side: "Initiator" })}
       ${rollTraitsFields(target, { prefix: "target", side: "Target", passive: isFixedSource || counter.ruleset !== RULESETS.HOMEBREW })}
       <p class="hint">${t("Dialog.GMReviewHint")}</p>
@@ -447,7 +442,6 @@ export async function promptGMReview(counter, target) {
       ? tf("Dialog.ScrollCastingLevel", { level: reviewedCounterScrollLevel })
       : counter.slotLabel,
     bonusFormula: normalizeBonusFormula(result.counterBonusFormula),
-
 
     knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
 

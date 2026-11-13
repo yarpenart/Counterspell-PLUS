@@ -1,8 +1,8 @@
-import { resolveD20Options } from "./roll-traits.js";
-import { selectTargetParticipant } from "./participants.js";
-import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
+  promptCurseRemover,
+  promptCurseRemoverEffects,
+  promptGMRemoveCurseEffect,
   promptGMRemoveCurseReview,
   promptGMRemoveCurseSetup
 } from "./remove-curse-dialogs.js";
@@ -94,17 +94,10 @@ async function handleSocket(message) {
           const setup = await promptGMRemoveCurseSetup(message.payload.remover);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              // Curse mechanics are always supplied by the GM, never by the victim.
-              const sourceSession = { userId: game.user.id, actorUuid: setup.targetUuid };
-              const effect = await promptCasting(sourceSession, "remove-curse-source", index, setup.effectCount, setup.targetType);
+              const effect = await promptGMRemoveCurseEffect(index, setup.effectCount, setup.targetType);
               if (!effect) {
                 result = null;
                 break;
-              }
-              if (index === 0 && effect.targetActorName) {
-                setup.targetUuid = effect.targetActorUuid;
-                setup.targetName = effect.targetActorName;
-                setup.targetType = effect.targetType;
               }
               setup.effects.push(effect);
             }
@@ -137,19 +130,18 @@ async function handleSocket(message) {
   }
 }
 
-function createD20Roll(parts, data, { advantage = false, disadvantage = false, minimum } = {}) {
+function createD20Roll(parts, data, { disadvantage = false, minimum } = {}) {
   const RollClass = CONFIG.Dice.D20Roll;
   const formula = ["1d20", ...parts].join(" + ");
   if (RollClass) {
     return new RollClass(formula, data, {
-      advantage,
       disadvantage,
       minimum,
       criticalSuccess: 20,
       criticalFailure: 1
     });
   }
-  const baseDie = advantage && !disadvantage ? "2d20kh" : disadvantage && !advantage ? "2d20kl" : "1d20";
+  const baseDie = disadvantage ? "2d20kl" : "1d20";
   const die = Number.isFinite(minimum) ? `${baseDie}min${minimum}` : baseDie;
   return new Roll([die, ...parts].join(" + "), data);
 }
@@ -404,7 +396,8 @@ async function resolveHomebrew(remover, setup) {
     mod: remover.abilityMod,
     prof: remover.proficiency
   }, {
-    ...resolveD20Options(remover, { minimumSetting: "removeCurseSpecialMinimum" })
+    disadvantage: Boolean(remover.disadvantage),
+    minimum: specialMinimum
   }).evaluate();
 
   await postRoll(roll, {
@@ -452,10 +445,11 @@ async function resolveOfficial2014(remover, setup) {
     }
 
     const bonusPart = bonusRollPart(effect.bonusFormula);
-    const roll = await createD20Roll(["@mod", remover.abjurer ? "@prof" : null, bonusPart].filter(Boolean), {
-      mod: remover.abilityMod, prof: remover.proficiency
+    const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), {
+      mod: remover.abilityMod
     }, {
-      ...resolveD20Options(remover, { minimumSetting: "removeCurseSpecialMinimum" })
+      disadvantage: Boolean(remover.disadvantage),
+      minimum: specialMinimum
     }).evaluate();
     await postRoll(roll, {
       actor,
@@ -501,13 +495,9 @@ async function startRemoveCurse(activity) {
 
   activeActors.add(actor.uuid);
   try {
-    const targetParticipant = await selectTargetParticipant({ gmHandlesTarget: true });
-    if (!targetParticipant) return;
-    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "removeCurseRuleset");
-    let remover = await promptCasting(session, "remove-curse", ruleset);
+    let remover = await promptCurseRemover(actor, item, ruleset);
     if (!remover) return;
-    remover.targetParticipant = targetParticipant;
 
     let setup = await requestRemote("remove-curse-gm-setup", gm.id, { remover });
     if (!setup) {
@@ -515,7 +505,7 @@ async function startRemoveCurse(activity) {
       return;
     }
 
-    setup = await promptCasting(session, "remove-curse-effects", remover, setup);
+    setup = await promptCurseRemoverEffects(remover, setup);
     if (!setup) {
       ui.notifications.info(t("RemoveCurse.Notifications.CancelledByPlayer"));
       return;
