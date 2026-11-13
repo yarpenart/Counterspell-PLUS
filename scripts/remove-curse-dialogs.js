@@ -1,3 +1,5 @@
+import { curseItemFields, activateCurseItemPicker, readCurseItem, curseTargetName } from "./curse-items.js";
+import { rollTraitsFields, readRollTraits } from "./roll-traits.js";
 import { labelReviewSides } from "./review-labels.js";
 import { ownedTargetPicker } from "./participants.js";
 import { MODULE_ID, RULESETS } from "./config.js";
@@ -9,8 +11,6 @@ import {
   getAbilityEntries,
   getActorFromUuidSync,
   getDefaultAbility,
-  isAbjurerOptionEnabled,
-  getSpecialMinimum,
   getRollModeEntries,
   getSceneCasterEntries,
   getSlotChoices,
@@ -118,17 +118,6 @@ export async function promptCurseRemover(actor, item, ruleset) {
     ? selectOptions(slots)
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
   const proficiencyIncluded = usesHomebrewProficiency();
-  const showAbjurer = ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
-  const abjurerField = showAbjurer
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="abjurer" data-csp-abjurer>
-          ${t("Dialog.Abjurer")}
-        </label>
-        <p class="hint">${t("Dialog.AbjurerHint")}</p>
-      </div>`
-    : "";
 
   const homebrewBonus = ruleset === RULESETS.HOMEBREW
     ? `
@@ -182,21 +171,16 @@ export async function promptCurseRemover(actor, item, ruleset) {
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
       </div>
       ${homebrewBonus}
-      ${abjurerField}
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="disadvantage">
-          ${t("Dialog.DeclareDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.DisadvantageHint")}</p>
-      </div>
+
+
+      ${rollTraitsFields()}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
     </div>`;
 
   const result = await waitForm({
     title: t("RemoveCurse.Dialog.DispellerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToTarget"),
+    confirmLabel: t("Dialog.SendToGM"),
     onRender: activateAbjurerProficiency
   });
   if (!result) return null;
@@ -219,6 +203,7 @@ export async function promptCurseRemover(actor, item, ruleset) {
     ? parseNumber(result.scrollLevel, 3)
     : selectedSlot.level;
   return {
+    ...readRollTraits(result),
     ...abilityData,
     castingSource,
     actorUuid: actor.uuid,
@@ -230,8 +215,8 @@ export async function promptCurseRemover(actor, item, ruleset) {
     slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
     bonusFormula: ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
-    abjurer: showAbjurer && Boolean(result.abjurer),
-    disadvantage: Boolean(result.disadvantage),
+
+
     ruleset
   };
 }
@@ -242,12 +227,16 @@ export async function promptGMRemoveCurseSetup(remover) {
     ui.notifications.warn(t("RemoveCurse.Notifications.NoTargets"));
     return null;
   }
+  const participant = remover.targetParticipant;
+  const victim = game.users.get(participant?.userId);
+  const suggested = participant?.actorUuid || victim?.character?.uuid
+    || targets.find(entry => victim && entry.actor.testUserPermission(victim, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER))?.uuid;
   let targetOptions = targets.map((entry, index) => ({
     key: entry.uuid,
     label: tf(entry.kind === "token" ? "Dialog.TargetTokenEntry" : "Dialog.TargetActorEntry", { name: entry.name }),
     name: entry.name,
     kind: entry.kind,
-    selected: index === 0
+    selected: suggested ? entry.uuid === suggested : index === 0
   }));
   targetOptions.push(
     { key: SPECIAL_TARGET_UNKNOWN, label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }), name: t("Dialog.SpecialUnknown"), kind: "special", selected: false },
@@ -283,6 +272,7 @@ export async function promptGMRemoveCurseSetup(remover) {
         <label>${t("RemoveCurse.Dialog.DefenseRollMode")}</label>
         <div class="form-fields"><select name="defenseRollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
       </div>
+      ${curseItemFields()}
       <p class="hint">${t("RemoveCurse.Dialog.SetupHint")}</p>
     </div>`;
 
@@ -290,7 +280,10 @@ export async function promptGMRemoveCurseSetup(remover) {
     title: t("RemoveCurse.Dialog.GMSetupTitle"),
     content,
     confirmLabel: t("Dialog.Continue"),
-    onRender: activateTargetSearch
+    onRender: (event, dialog) => {
+      activateTargetSearch(event, dialog);
+      activateCurseItemPicker(dialog);
+    }
   });
   if (!result) return null;
 
@@ -313,10 +306,14 @@ export async function promptGMRemoveCurseSetup(remover) {
     return null;
   }
 
+  const selectedItem = readCurseItem(result, target ? targetChoice : "");
+  const actorName = target ? selectedTarget.name : "";
   return {
+    ...selectedItem,
+    targetActorName: actorName,
     targetUuid: target ? targetChoice : "",
-    targetType,
-    targetName: target ? selectedTarget.name : specialLabels[targetChoice] ?? t("Dialog.SpecialUnknown"),
+    targetType: selectedItem.targetItemName ? "object" : targetType,
+    targetName: curseTargetName(actorName, selectedItem.targetItemName, specialLabels[targetChoice] ?? t("Dialog.SpecialUnknown")),
     effectCount: Math.min(20, Math.max(1, Math.trunc(parseNumber(result.effectCount, 1)))),
     defenseRollMode: String(result.defenseRollMode),
     defenseUserId: game.user.id,
@@ -358,6 +355,7 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
         <label>${t("RemoveCurse.Dialog.CasterCreatorProficiency")}</label>
         <div class="form-fields"><input type="number" name="casterProf" value="0" min="0" step="1"></div>
       </div>
+      ${rollTraitsFields({}, { passive: true })}
       <p class="hint">${t("RemoveCurse.Dialog.SourceBaseHint")}</p>
     </div>`;
 
@@ -372,6 +370,7 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
   const confirmed = picker ? picker.read(result.actorUuid) : null;
   if (picker && !confirmed) return null;
   return {
+    ...readRollTraits(result),
     targetActorUuid: confirmed?.actor ? confirmed.key : "",
     targetActorName: confirmed?.name ?? "",
     targetType: confirmed?.kind === "special" ? confirmed.key.slice(8) : "actor",
@@ -446,20 +445,8 @@ export async function promptGMRemoveCurseReview(remover, setup) {
   const homebrew = remover.ruleset === RULESETS.HOMEBREW;
   const showRequirements = requirementsEnabled(remover);
   const unmetPenalty = requirementsPenalty();
-  const specialMinimum = getSpecialMinimum("removeCurseSpecialMinimum");
   const removerUsesScroll = remover.castingSource === "scroll";
   const proficiencyIncluded = usesHomebrewProficiency();
-  const showAbjurer = homebrew && isAbjurerOptionEnabled();
-  const abjurerField = showAbjurer
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="removerAbjurer" data-csp-abjurer${remover.abjurer ? " checked" : ""}>
-          ${t("Dialog.GMConfirmAbjurer")}
-        </label>
-        <p class="hint">${t("Dialog.AbjurerHint")}</p>
-      </div>`
-    : "";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${t("Review.Target")} — ${tf("RemoveCurse.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
@@ -506,6 +493,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
           <div class="form-fields"><input type="text" name="effectBonus${index}" value="${escapeHTML(effect.bonusFormula)}" placeholder="1d4 + 1d8"></div>
           <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
         </div>`}
+      ${rollTraitsFields(effect, { prefix: `target${index}`, side: "Target", passive: true })}
     </fieldset>`).join("");
 
   const generalBonus = homebrew
@@ -566,25 +554,15 @@ export async function promptGMRemoveCurseReview(remover, setup) {
           <label>${t("Dialog.ScrollLevel")}</label>
           <div class="form-fields"><input type="number" name="removerScrollLevel" value="${remover.slotLevel}" min="3" max="9" step="1"></div>
         </div>` : ""}
+      ${curseItemFields(setup)}
       ${generalBonus}
-      ${abjurerField}
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="specialSpellcaster"${remover.specialSpellcaster ? " checked" : ""}>
-          ${t("RemoveCurse.Dialog.SpecialSpellcaster")}
-        </label>
-        <p class="hint">${tf("RemoveCurse.Dialog.SpecialCursecasterHint", { minimum: specialMinimum })}</p>
-      </div>
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="disadvantage"${remover.disadvantage ? " checked" : ""}>
-          ${t("RemoveCurse.Dialog.GMConfirmDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.GMDisadvantageHint")}</p>
-      </div>
+
+
+
       <h3>${t("RemoveCurse.Dialog.EffectsToResolve")}</h3>
       ${effectRows}
       ${requirementsControls}
+      ${rollTraitsFields(remover, { prefix: "initiator", side: "Initiator" })}
       <p class="hint">${t("RemoveCurse.Dialog.GMReviewHint")}</p>
     </div>`;
 
@@ -595,6 +573,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
     width: 760,
     onRender: (event, dialog) => {
       activateAbjurerProficiency(event, dialog);
+      activateCurseItemPicker(dialog, setup);
       labelReviewSides(dialog, "remove-curse");
     }
   });
@@ -602,6 +581,7 @@ export async function promptGMRemoveCurseReview(remover, setup) {
 
   const reviewedEffects = setup.effects.map((effect, index) => ({
     ...effect,
+    ...readRollTraits(result, `target${index}`, effect),
     sourceType: "curse",
     spellName: String(result[`name${index}`] || effect.spellName),
     spellLevel: parseNumber(result[`level${index}`], effect.spellLevel),
@@ -617,9 +597,12 @@ export async function promptGMRemoveCurseReview(remover, setup) {
     ? String(result.requirementsRollMode)
     : "gmroll";
 
+  const selectedItem = readCurseItem({ ...setup, ...result }, setup.targetUuid);
+  const actorName = setup.targetActorName ?? (setup.targetType === "actor" ? setup.targetName : "");
   return {
     remover: {
       ...remover,
+      ...readRollTraits(result, "initiator", remover),
       abilityMod: parseNumber(result.removerAbilityMod, remover.abilityMod),
       proficiency: parseNumber(result.removerProficiency, remover.proficiency),
       slotLevel: removerUsesScroll ? reviewedScrollLevel : remover.slotLevel,
@@ -627,12 +610,16 @@ export async function promptGMRemoveCurseReview(remover, setup) {
         ? tf("Dialog.ScrollCastingLevel", { level: reviewedScrollLevel })
         : remover.slotLabel,
       bonusFormula: homebrew ? normalizeBonusFormula(result.bonusFormula) : "",
-      specialSpellcaster: Boolean(result.specialSpellcaster),
-      abjurer: showAbjurer && Boolean(result.removerAbjurer),
-      disadvantage: Boolean(result.disadvantage)
+
+
+
     },
     setup: {
       ...setup,
+      ...selectedItem,
+      targetActorName: actorName,
+      targetType: selectedItem.targetItemName ? "object" : (setup.targetUuid ? "actor" : setup.targetType),
+      targetName: curseTargetName(actorName, selectedItem.targetItemName, setup.targetName),
       effects: reviewedEffects,
       requirementsRollMode: showRequirements ? requirementsRollMode : "gmroll"
     }

@@ -3,7 +3,7 @@ import { getPrimaryGM, getSpecialMinimum, usesHomebrewProficiency } from "./util
 
 const JOURNAL_FLAG = "rulesReference";
 const PAGE_FLAG = "rulesPage";
-const CONTENT_VERSION = 7;
+const CONTENT_VERSION = 8;
 const JOURNAL_NAME = "Counterspell PLUS — Rules Reference";
 
 let refreshTimer = null;
@@ -19,6 +19,7 @@ function configuration() {
   return {
     includeProficiency: usesHomebrewProficiency(),
     abjurerEnabled: Boolean(game.settings.get(MODULE_ID, "abjurerEnabled")),
+    advantageCancellation: game.settings.get(MODULE_ID, "advantageCancellation"),
     wildMagic: Boolean(game.settings.get(MODULE_ID, "wildMagic")),
     counterspellScrollBase: configuredNumber("scrollDefenseBase", 7),
     counterspellGlyphBase: configuredNumber("glyphDefenseBase", 10),
@@ -57,7 +58,7 @@ function officialRules(config) {
         <ul>
           <li>Meeting the DC succeeds.</li>
           <li>Proficiency is not added in Official 2014 mode.</li>
-          <li>Declared disadvantage and optional dice are applied to the check.</li>
+          <li>Declared advantage/disadvantage and optional dice are applied to the check. A declared Abjurer adds proficiency once; Special Spellcaster applies its configured minimum.</li>
           <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.counterspellMinimum}</strong>.</li>
         </ul>
       </section>
@@ -156,7 +157,8 @@ function homebrewRules(config) {
           <thead><tr><th>World option</th><th>Current value</th></tr></thead>
           <tbody>
             <tr><td>Proficiency in homebrew calculations</td><td><strong>${proficiencyState}</strong></td></tr>
-            <tr><td>Abjurer declaration</td><td><strong>${abjurerState}</strong></td></tr>
+            <tr><td>Abjurer declaration</td><td><strong>${abjurerState}</strong> for the legacy Restoration workflow; the other three workflows always offer independent declarations</td></tr>
+            <tr><td>Advantage cancellation</td><td>${config.advantageCancellation === "sourceMajority" ? "Homebrew: compare source counts" : "2014: any advantage and disadvantage cancel"}</td></tr>
             <tr><td>Counterspell against Counterspell — Wild Magic reminder</td><td><strong>${wildMagicState}</strong></td></tr>
             <tr><td>Curse-removal requirements</td><td><strong>${requirementsState}</strong>${config.curseRequirementsEnabled ? `; unmet requirement: +${config.curseRequirementsPenalty} DC` : ""}</td></tr>
           </tbody>
@@ -164,7 +166,7 @@ function homebrewRules(config) {
         <ul>
           <li>An ordinary caster adds <strong>${ordinaryMultiplier}× proficiency</strong> to their homebrew caster roll.</li>
           <li>When the Abjurer option is available and confirmed by the GM, an Abjurer adds <strong>${abjurerMultiplier}× proficiency</strong> to their caster roll.</li>
-          <li>Abjurer changes only the caster's Counterspell, Dispel Magic, Remove Curse or Restoration roll. It does not change the opposing spell roll or a passive defense DC.</li>
+          <li>Abjurer can be declared by either rolling side, including the original spell caster defending against Counterspell. It does not change a passive defense DC.</li>
           <li>When one of these spells is cast from a scroll, its level, ability modifier and proficiency come from the scroll author. No character spell slot is consumed, and the scroll item is removed manually.</li>
           <li>Optional dice, disadvantage and roll visibility are selected by the appropriate participant and remain editable by the GM.</li>
         </ul>
@@ -177,7 +179,7 @@ function homebrewRules(config) {
         <div class="csp-rules-formula"><strong>Counterspell:</strong> 1d20 + Counterspell level + ability modifier + caster proficiency + optional dice<br><strong>Original spell:</strong> 1d20 + spell level + ability modifier + normal proficiency + optional dice</div>
         <ul>
           <li>Knowing the normal target spell grants advantage, except when the target spell is another Counterspell.</li>
-          <li>Each rolling side can declare disadvantage separately. Advantage and disadvantage cancel each other.</li>
+          <li>Each side can declare advantage, disadvantage, Abjurer and Special Spellcaster independently. By default any advantage and disadvantage cancel regardless of source counts. The optional source-majority setting instead compares the counts; a tie gives a normal roll. Extra sources never add more than one extra d20. Knowledge of the normal target spell adds one automatic advantage source and must not be counted again among manual sources.</li>
           <li>Special Spellcaster uses a minimum kept d20 result of <strong>${config.counterspellMinimum}</strong>.</li>
         </ul>
 

@@ -1,3 +1,4 @@
+import { resolveD20Options } from "./roll-traits.js";
 import { selectTargetParticipant } from "./participants.js";
 import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
@@ -93,9 +94,9 @@ async function handleSocket(message) {
           const setup = await promptGMRemoveCurseSetup(message.payload.remover);
           if (setup) {
             for (let index = 0; index < setup.effectCount; index += 1) {
-              const participant = message.payload.remover.targetParticipant ?? { userId: game.user.id, actorUuid: setup.targetUuid };
-              const sourceSession = { userId: participant.userId, actorUuid: participant.actorUuid };
-              const effect = await promptCasting(sourceSession, "remove-curse-source", index, setup.effectCount, setup.targetType, participant);
+              // Curse mechanics are always supplied by the GM, never by the victim.
+              const sourceSession = { userId: game.user.id, actorUuid: setup.targetUuid };
+              const effect = await promptCasting(sourceSession, "remove-curse-source", index, setup.effectCount, setup.targetType);
               if (!effect) {
                 result = null;
                 break;
@@ -136,18 +137,19 @@ async function handleSocket(message) {
   }
 }
 
-function createD20Roll(parts, data, { disadvantage = false, minimum } = {}) {
+function createD20Roll(parts, data, { advantage = false, disadvantage = false, minimum } = {}) {
   const RollClass = CONFIG.Dice.D20Roll;
   const formula = ["1d20", ...parts].join(" + ");
   if (RollClass) {
     return new RollClass(formula, data, {
+      advantage,
       disadvantage,
       minimum,
       criticalSuccess: 20,
       criticalFailure: 1
     });
   }
-  const baseDie = disadvantage ? "2d20kl" : "1d20";
+  const baseDie = advantage && !disadvantage ? "2d20kh" : disadvantage && !advantage ? "2d20kl" : "1d20";
   const die = Number.isFinite(minimum) ? `${baseDie}min${minimum}` : baseDie;
   return new Roll([die, ...parts].join(" + "), data);
 }
@@ -402,8 +404,7 @@ async function resolveHomebrew(remover, setup) {
     mod: remover.abilityMod,
     prof: remover.proficiency
   }, {
-    disadvantage: Boolean(remover.disadvantage),
-    minimum: specialMinimum
+    ...resolveD20Options(remover, { minimumSetting: "removeCurseSpecialMinimum" })
   }).evaluate();
 
   await postRoll(roll, {
@@ -451,11 +452,10 @@ async function resolveOfficial2014(remover, setup) {
     }
 
     const bonusPart = bonusRollPart(effect.bonusFormula);
-    const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), {
-      mod: remover.abilityMod
+    const roll = await createD20Roll(["@mod", remover.abjurer ? "@prof" : null, bonusPart].filter(Boolean), {
+      mod: remover.abilityMod, prof: remover.proficiency
     }, {
-      disadvantage: Boolean(remover.disadvantage),
-      minimum: specialMinimum
+      ...resolveD20Options(remover, { minimumSetting: "removeCurseSpecialMinimum" })
     }).evaluate();
     await postRoll(roll, {
       actor,
@@ -501,7 +501,7 @@ async function startRemoveCurse(activity) {
 
   activeActors.add(actor.uuid);
   try {
-    const targetParticipant = await selectTargetParticipant();
+    const targetParticipant = await selectTargetParticipant({ gmHandlesTarget: true });
     if (!targetParticipant) return;
     const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "removeCurseRuleset");

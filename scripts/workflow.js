@@ -1,3 +1,4 @@
+import { resolveD20Options } from "./roll-traits.js";
 import { selectTargetParticipant } from "./participants.js";
 import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
@@ -256,13 +257,15 @@ async function executeTargetRoll(target) {
 
   const targetActor = getActorFromUuidSync(target.actorUuid);
   const bonusPart = bonusRollPart(target.bonusFormula);
-  const targetParts = ["@slot", "@mod", proficiencyIncluded ? "@prof" : null, bonusPart].filter(Boolean);
+  const targetMultiplier = getHomebrewProficiencyMultiplier(target.abjurer);
+  const targetProfPart = targetMultiplier === 2 ? "2 * @prof" : targetMultiplier === 1 ? "@prof" : null;
+  const targetParts = ["@slot", "@mod", targetProfPart, bonusPart].filter(Boolean);
   const targetRoll = await createD20Roll(targetParts, {
     slot: target.spellLevel,
     mod: target.abilityMod,
     prof: target.proficiency
   }, {
-    disadvantage: Boolean(target.disadvantage)
+    ...resolveD20Options(target, { minimumSetting: "counterspellSpecialMinimum" })
   }).evaluate();
   await postRoll(targetRoll, {
     actor: targetActor,
@@ -276,7 +279,7 @@ async function executeTargetRoll(target) {
 async function resolveHomebrew(counter, target) {
   const counterActor = getActorFromUuidSync(counter.actorUuid);
   const isFixedSource = ["scroll", "glyph"].includes(target.sourceType);
-  const hasAdvantage = Boolean(counter.knowsTargetSpell)
+  const knowledgeAdvantage = Boolean(counter.knowsTargetSpell)
     && target.sourceType === "spell"
     && !isCounterspellName(target.spellName);
   const bonusPart = bonusRollPart(counter.bonusFormula);
@@ -295,15 +298,13 @@ async function resolveHomebrew(counter, target) {
     mod: counter.abilityMod,
     prof: counter.proficiency
   }, {
-    advantage: hasAdvantage,
-    disadvantage: Boolean(counter.disadvantage),
-    minimum: specialMinimum
+    ...resolveD20Options(counter, { bonusAdvantageSources: knowledgeAdvantage ? 1 : 0, minimumSetting: "counterspellSpecialMinimum" })
   }).evaluate();
 
   await postRoll(counterRoll, {
     actor: counterActor,
     alias: counter.actorName,
-    flavor: `${tf(hasAdvantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", { actor: counter.actorName })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
+    flavor: `${tf(resolveD20Options(counter, { bonusAdvantageSources: knowledgeAdvantage ? 1 : 0 }).advantage ? "Chat.CounterspellRollAdvantage" : "Chat.CounterspellRoll", { actor: counter.actorName })}${specialMinimum ? ` — ${tf("Chat.SpecialMinimum", { minimum: specialMinimum })}` : ""}`,
     rollMode: counter.rollMode
   });
 
@@ -343,9 +344,8 @@ async function resolveOfficial2014(counter, target) {
   const specialMinimum = counter.specialSpellcaster
     ? getSpecialMinimum("counterspellSpecialMinimum")
     : undefined;
-  const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), { mod: counter.abilityMod }, {
-    disadvantage: Boolean(counter.disadvantage),
-    minimum: specialMinimum
+  const roll = await createD20Roll(["@mod", counter.abjurer ? "@prof" : null, bonusPart].filter(Boolean), { mod: counter.abilityMod, prof: counter.proficiency }, {
+    ...resolveD20Options(counter, { minimumSetting: "counterspellSpecialMinimum" })
   }).evaluate();
   await postRoll(roll, {
     actor: counterActor,

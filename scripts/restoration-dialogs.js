@@ -1,4 +1,3 @@
-import { labelReviewSides } from "./review-labels.js";
 import { MODULE_ID, RULESETS } from "./config.js";
 import {
   activateAbjurerProficiency,
@@ -184,10 +183,6 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
 
   const content = `
     <div class="csp-form"${homebrew ? " data-csp-homebrew-casting" : ""}>
-      <div class="form-group">
-        <label>${t("Participants.CastingSpellName")}</label>
-        <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
-      </div>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(homebrew ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
@@ -262,7 +257,7 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
-    itemName: String(result.castingSpellName || item.name),
+    itemName: item.name,
     slotKey: castingSource === "scroll" ? null : selectedSlot.key,
     slotLevel,
     slotLabel: castingSource === "scroll"
@@ -317,7 +312,7 @@ export async function promptRestorationEffect(restorer) {
   const result = await waitForm({
     title: t("Restoration.Dialog.EffectTitle"),
     content,
-    confirmLabel: t("Dialog.SendToTarget"),
+    confirmLabel: t("Dialog.SendToGM"),
     onRender
   });
   if (!result) return null;
@@ -339,23 +334,17 @@ export async function promptGMRestorationReview(restorer, selection) {
   const effectIds = getRestorationEffectIds(restorer.activityType, restorer.slotLevel);
   const material = getRestorationMaterial(restorer.activityType, restorer.slotLevel);
   const targets = getSceneCasterEntries();
-  const confirmedTarget = getActorFromUuidSync(selection.targetActorUuid);
-  if (confirmedTarget && !targets.some(entry => entry.uuid === selection.targetActorUuid)) {
-    targets.push({ uuid: selection.targetActorUuid, name: selection.targetActorName || confirmedTarget.name,
-      actor: confirmedTarget, kind: selection.targetActorUuid.startsWith("Scene.") ? "token" : "actor" });
-  }
-  const defaultTarget = selection.targetActorUuid || (Object.hasOwn(selection, "targetActorUuid") ? SPECIAL_TARGET_UNKNOWN : targets[0]?.uuid);
   let targetOptions = targets.map((entry, index) => ({
     key: entry.uuid,
     label: tf(entry.kind === "token" ? "Dialog.TargetTokenEntry" : "Dialog.TargetActorEntry", { name: entry.name }),
     name: entry.name,
-    selected: entry.uuid === defaultTarget
+    selected: index === 0
   }));
   targetOptions.push({
     key: SPECIAL_TARGET_UNKNOWN,
     label: tf("Dialog.TargetSpecialEntry", { name: t("Dialog.SpecialUnknown") }),
     name: t("Dialog.SpecialUnknown"),
-    selected: defaultTarget === SPECIAL_TARGET_UNKNOWN || !targets.length
+    selected: !targets.length
   });
   targetOptions = searchableEntries(targetOptions);
   const effectOptions = effectIds.map(effectId => ({
@@ -402,10 +391,9 @@ export async function promptGMRestorationReview(restorer, selection) {
 
   const content = `
     <div class="csp-form">
-      <p><strong>${t("Participants.ConfirmedTarget")}:</strong> ${escapeHTML(selection.targetActorName ?? "")}</p>
       <div class="csp-grid">
         <div class="csp-panel">
-          <h3>${t("Review.Initiator")} — ${escapeHTML(restorer.itemName)}</h3>
+          <h3>${escapeHTML(restorer.itemName)}</h3>
           <dl>
             <dt>${t("Dialog.Caster")}</dt><dd>${escapeHTML(restorer.actorName)}</dd>
             <dt>${t("Dialog.CastingMethod")}</dt><dd>${scroll ? t("Dialog.CastFromScroll") : t("Dialog.CastNormally")}</dd>
@@ -476,7 +464,6 @@ export async function promptGMRestorationReview(restorer, selection) {
     </div>`;
 
   const onRender = (event, dialog) => {
-    labelReviewSides(dialog, "restoration");
     activateTargetSearch(event, dialog);
     activateAbjurerProficiency(event, dialog);
     const root = dialog?.element;

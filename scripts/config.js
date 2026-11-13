@@ -51,6 +51,17 @@ export function registerSettings() {
     restricted: true
   });
 
+  game.settings.register(MODULE_ID, "advantageCancellation", {
+    name: "COUNTERSPELL_PLUS.RollTraits.SettingName",
+    hint: "COUNTERSPELL_PLUS.RollTraits.SettingHint",
+    scope: "world", config: true, restricted: true, type: String,
+    choices: {
+      official2014: "COUNTERSPELL_PLUS.RollTraits.Official",
+      sourceMajority: "COUNTERSPELL_PLUS.RollTraits.Majority"
+    },
+    default: "official2014"
+  });
+
   game.settings.register(MODULE_ID, "counterspellSpecialMinimum", {
     name: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Name",
     hint: "COUNTERSPELL_PLUS.Settings.CounterspellSpecialMinimum.Hint",

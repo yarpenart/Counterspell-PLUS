@@ -1,4 +1,3 @@
-import { labelReviewSides } from "./review-labels.js";
 import { MODULE_ID, RULESETS } from "./config.js";
 import {
   escapeHTML,
@@ -248,10 +247,6 @@ export async function promptIdentifier(actor, item, ruleset) {
 
   const content = `
     <div class="csp-form">
-      <div class="form-group">
-        <label>${t("Participants.CastingSpellName")}</label>
-        <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
-      </div>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(homebrew ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
@@ -308,7 +303,7 @@ export async function promptIdentifier(actor, item, ruleset) {
   const result = await waitForm({
     title: t("Identify.Dialog.CasterTitle"),
     content,
-    confirmLabel: t("Dialog.SendToTarget"),
+    confirmLabel: t("Dialog.Continue"),
     onRender: activateCasterForm(entries)
   });
   if (!result) return null;
@@ -338,7 +333,7 @@ export async function promptIdentifier(actor, item, ruleset) {
     actorUuid: actor.uuid,
     actorName: actor.name,
     spellUuid: item.uuid,
-    spellName: String(result.castingSpellName || item.name),
+    spellName: item.name,
     userId: game.user.id,
     castingSource,
     slotKey: castingSource === "spell" ? selectedSlot.key : null,
@@ -508,10 +503,9 @@ export async function promptGMIdentifyReview(identifier) {
     <p class="hint">${t("Identify.Dialog.OfficialNoRisk")}</p>`;
   const content = `
     <div class="csp-form">
-      <p><strong>${t("Participants.ConfirmedTarget")}:</strong> ${escapeHTML(identifier.targetActorName ?? "")}</p>
       <div class="csp-summary">
-        <strong>${t("Review.Initiator")} — ${escapeHTML(identifier.actorName)}</strong>
-        <span>${t("Review.Target")} — ${escapeHTML(identifier.subjectName)}</span>
+        <strong>${escapeHTML(identifier.actorName)}</strong>
+        <span>${escapeHTML(identifier.subjectName)}</span>
       </div>
       <div class="csp-identify-cast-summary">
         <span>${tf("Identify.Dialog.CastLevelSummary", { level: identifier.castLevel })}</span>
@@ -567,10 +561,7 @@ export async function promptGMIdentifyReview(identifier) {
     content,
     confirmLabel: t("Identify.Dialog.Approve"),
     width: 760,
-    onRender: (event, dialog) => {
-      activateGMItemPicker(entries, initialUuid)(event, dialog);
-      labelReviewSides(dialog, "identify");
-    }
+    onRender: activateGMItemPicker(entries, initialUuid)
   });
   if (!result) return null;
 

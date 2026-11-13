@@ -1,3 +1,4 @@
+import { rollTraitsFields, readRollTraits } from "./roll-traits.js";
 import { labelReviewSides } from "./review-labels.js";
 import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
@@ -9,8 +10,6 @@ import {
   getAbilityEntries,
   getActorFromUuidSync,
   getDefaultAbility,
-  isAbjurerOptionEnabled,
-  getSpecialMinimum,
   getRollModeEntries,
   getSceneCasterEntries,
   getSlotChoices,
@@ -109,17 +108,6 @@ export async function promptDispeller(actor, item, ruleset) {
     ? selectOptions(slots)
     : `<option value="">${t("Dialog.NoSlotsAvailable")}</option>`;
   const proficiencyIncluded = usesHomebrewProficiency();
-  const showAbjurer = ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
-  const abjurerField = showAbjurer
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="abjurer" data-csp-abjurer>
-          ${t("Dialog.Abjurer")}
-        </label>
-        <p class="hint">${t("Dialog.AbjurerHint")}</p>
-      </div>`
-    : "";
 
   const homebrewBonus = ruleset === RULESETS.HOMEBREW
     ? `
@@ -173,14 +161,9 @@ export async function promptDispeller(actor, item, ruleset) {
         <div class="form-fields"><select name="rollMode">${selectOptions(getRollModeEntries(defaultRollMode()))}</select></div>
       </div>
       ${homebrewBonus}
-      ${abjurerField}
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="disadvantage">
-          ${t("Dialog.DeclareDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.DisadvantageHint")}</p>
-      </div>
+
+
+      ${rollTraitsFields()}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
     </div>`;
 
@@ -210,6 +193,7 @@ export async function promptDispeller(actor, item, ruleset) {
     ? parseNumber(result.scrollLevel, 3)
     : selectedSlot.level;
   return {
+    ...readRollTraits(result),
     ...abilityData,
     castingSource,
     actorUuid: actor.uuid,
@@ -221,8 +205,8 @@ export async function promptDispeller(actor, item, ruleset) {
     slotLabel: castingSource === "scroll" ? tf("Dialog.ScrollCastingLevel", { level: slotLevel }) : selectedSlot.label,
     rollMode: String(result.rollMode),
     bonusFormula: ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
-    abjurer: showAbjurer && Boolean(result.abjurer),
-    disadvantage: Boolean(result.disadvantage),
+
+
     ruleset
   };
 }
@@ -357,6 +341,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
         <label>${t("Dispel.Dialog.CasterCreatorProficiency")}</label>
         <div class="form-fields"><input type="number" name="casterProf" value="0" min="0" step="1"></div>
       </div>
+      ${rollTraitsFields({}, { passive: true })}
       <p class="hint">${t("Dispel.Dialog.SourceBaseHint")}</p>
     </div>`;
 
@@ -371,6 +356,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
   const confirmed = picker ? picker.read(result.actorUuid) : null;
   if (picker && !confirmed) return null;
   return {
+    ...readRollTraits(result),
     targetActorUuid: confirmed?.actor ? confirmed.key : "",
     targetActorName: confirmed?.name ?? "",
     targetType: confirmed?.kind === "special" ? confirmed.key.slice(8) : "actor",
@@ -444,20 +430,8 @@ export async function promptDispellerEffects(dispeller, setup) {
 export async function promptGMDispelReview(dispeller, setup) {
   const homebrew = dispeller.ruleset === RULESETS.HOMEBREW;
   const glyphTarget = setup.targetType === "glyph";
-  const specialMinimum = getSpecialMinimum("dispelSpecialMinimum");
   const dispellerUsesScroll = dispeller.castingSource === "scroll";
   const proficiencyIncluded = usesHomebrewProficiency();
-  const showAbjurer = homebrew && isAbjurerOptionEnabled();
-  const abjurerField = showAbjurer
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="dispellerAbjurer" data-csp-abjurer${dispeller.abjurer ? " checked" : ""}>
-          ${t("Dialog.GMConfirmAbjurer")}
-        </label>
-        <p class="hint">${t("Dialog.AbjurerHint")}</p>
-      </div>`
-    : "";
   const effectRows = setup.effects.map((effect, index) => `
     <fieldset class="csp-effect-card">
       <legend>${t("Review.Target")} — ${tf("Dispel.Dialog.EffectNumber", { index: index + 1, count: setup.effects.length })}</legend>
@@ -493,6 +467,7 @@ export async function promptGMDispelReview(dispeller, setup) {
           <div class="form-fields"><input type="text" name="effectBonus${index}" value="${escapeHTML(effect.bonusFormula)}" placeholder="1d4 + 1d8"></div>
           <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
         </div>`}
+      ${rollTraitsFields(effect, { prefix: `target${index}`, side: "Target", passive: true })}
     </fieldset>`).join("");
 
   const generalBonus = homebrew
@@ -542,23 +517,12 @@ export async function promptGMDispelReview(dispeller, setup) {
           <div class="form-fields"><input type="number" name="dispellerScrollLevel" value="${dispeller.slotLevel}" min="3" max="9" step="1"></div>
         </div>` : ""}
       ${generalBonus}
-      ${abjurerField}
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="specialSpellcaster"${dispeller.specialSpellcaster ? " checked" : ""}>
-          ${t("Dispel.Dialog.SpecialSpellcaster")}
-        </label>
-        <p class="hint">${tf("Dialog.SpecialSpellcasterHint", { minimum: specialMinimum })}</p>
-      </div>
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="disadvantage"${dispeller.disadvantage ? " checked" : ""}>
-          ${t("Dispel.Dialog.GMConfirmDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.GMDisadvantageHint")}</p>
-      </div>
+
+
+
       <h3>${t("Dispel.Dialog.EffectsToResolve")}</h3>
       ${effectRows}
+      ${rollTraitsFields(dispeller, { prefix: "initiator", side: "Initiator" })}
       <p class="hint">${t("Dispel.Dialog.GMReviewHint")}</p>
     </div>`;
 
@@ -576,6 +540,7 @@ export async function promptGMDispelReview(dispeller, setup) {
 
   const reviewedEffects = setup.effects.map((effect, index) => ({
     ...effect,
+    ...readRollTraits(result, `target${index}`, effect),
     sourceType: glyphTarget ? "glyph" : String(result[`source${index}`]),
     spellName: String(result[`name${index}`] || effect.spellName),
     spellLevel: parseNumber(result[`level${index}`], effect.spellLevel),
@@ -589,6 +554,7 @@ export async function promptGMDispelReview(dispeller, setup) {
   return {
     dispeller: {
       ...dispeller,
+      ...readRollTraits(result, "initiator", dispeller),
       abilityMod: parseNumber(result.dispellerAbilityMod, dispeller.abilityMod),
       proficiency: parseNumber(result.dispellerProficiency, dispeller.proficiency),
       slotLevel: dispellerUsesScroll ? reviewedScrollLevel : dispeller.slotLevel,
@@ -596,9 +562,9 @@ export async function promptGMDispelReview(dispeller, setup) {
         ? tf("Dialog.ScrollCastingLevel", { level: reviewedScrollLevel })
         : dispeller.slotLabel,
       bonusFormula: homebrew ? normalizeBonusFormula(result.bonusFormula) : "",
-      specialSpellcaster: Boolean(result.specialSpellcaster),
-      abjurer: showAbjurer && Boolean(result.dispellerAbjurer),
-      disadvantage: Boolean(result.disadvantage)
+
+
+
     },
     setup: { ...setup, effects: reviewedEffects }
   };

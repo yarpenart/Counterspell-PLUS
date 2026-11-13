@@ -1,3 +1,4 @@
+import { resolveD20Options } from "./roll-traits.js";
 import { selectTargetParticipant } from "./participants.js";
 import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
@@ -136,18 +137,19 @@ async function handleSocket(message) {
   }
 }
 
-function createD20Roll(parts, data, { disadvantage = false, minimum } = {}) {
+function createD20Roll(parts, data, { advantage = false, disadvantage = false, minimum } = {}) {
   const RollClass = CONFIG.Dice.D20Roll;
   const formula = ["1d20", ...parts].join(" + ");
   if (RollClass) {
     return new RollClass(formula, data, {
+      advantage,
       disadvantage,
       minimum,
       criticalSuccess: 20,
       criticalFailure: 1
     });
   }
-  const baseDie = disadvantage ? "2d20kl" : "1d20";
+  const baseDie = advantage && !disadvantage ? "2d20kh" : disadvantage && !advantage ? "2d20kl" : "1d20";
   const die = Number.isFinite(minimum) ? `${baseDie}min${minimum}` : baseDie;
   return new Roll([die, ...parts].join(" + "), data);
 }
@@ -296,8 +298,7 @@ async function resolveHomebrew(dispeller, setup) {
     mod: dispeller.abilityMod,
     prof: dispeller.proficiency
   }, {
-    disadvantage: Boolean(dispeller.disadvantage),
-    minimum: specialMinimum
+    ...resolveD20Options(dispeller, { minimumSetting: "dispelSpecialMinimum" })
   }).evaluate();
 
   await postRoll(roll, {
@@ -344,11 +345,10 @@ async function resolveOfficial2014(dispeller, setup) {
     }
 
     const bonusPart = bonusRollPart(effect.bonusFormula);
-    const roll = await createD20Roll(["@mod", bonusPart].filter(Boolean), {
-      mod: dispeller.abilityMod
+    const roll = await createD20Roll(["@mod", dispeller.abjurer ? "@prof" : null, bonusPart].filter(Boolean), {
+      mod: dispeller.abilityMod, prof: dispeller.proficiency
     }, {
-      disadvantage: Boolean(dispeller.disadvantage),
-      minimum: specialMinimum
+      ...resolveD20Options(dispeller, { minimumSetting: "dispelSpecialMinimum" })
     }).evaluate();
     await postRoll(roll, {
       actor,

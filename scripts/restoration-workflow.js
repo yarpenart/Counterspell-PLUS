@@ -1,8 +1,8 @@
-import { selectTargetParticipant } from "./participants.js";
-import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
 import {
-  promptGMRestorationReview
+  promptGMRestorationReview,
+  promptRestorationEffect,
+  promptRestorer
 } from "./restoration-dialogs.js";
 import {
   RESTORATION_EFFECTS,
@@ -95,18 +95,7 @@ async function handleSocket(message) {
     switch (message.type) {
       case "restoration-gm-review":
         if (game.user.isGM) {
-          const { restorer } = message.payload;
-          let { selection } = message.payload;
-          const participant = restorer.targetParticipant;
-          if (participant) {
-            const confirmed = await promptCasting(participant, "confirm-target", {
-              actorUuid: participant.actorUuid, spellName: restorer.itemName,
-              effectName: selection.effectName
-            });
-            if (!confirmed) break;
-            selection = { ...selection, targetActorUuid: confirmed.actorUuid, targetActorName: confirmed.actorName };
-          }
-          result = await promptGMRestorationReview(restorer, selection);
+          result = await promptGMRestorationReview(message.payload.restorer, message.payload.selection);
         }
         break;
       case "restoration-post-defense":
@@ -413,14 +402,10 @@ async function startRestoration(activity, activityType = getRestorationActivityT
 
   activeActors.add(actor.uuid);
   try {
-    const targetParticipant = await selectTargetParticipant();
-    if (!targetParticipant) return;
-    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "restorationRuleset");
-    let restorer = await promptCasting(session, "restoration", ruleset, activityType);
+    let restorer = await promptRestorer(actor, item, ruleset, activityType);
     if (!restorer) return;
-    restorer.targetParticipant = targetParticipant;
-    let selection = await promptCasting(session, "restoration-effect", restorer);
+    let selection = await promptRestorationEffect(restorer);
     if (!selection) {
       ui.notifications.info(t("Restoration.Notifications.CancelledByPlayer"));
       return;

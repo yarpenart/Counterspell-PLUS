@@ -1,3 +1,4 @@
+import { rollTraitsFields, readRollTraits } from "./roll-traits.js";
 import { labelReviewSides } from "./review-labels.js";
 import { ownedTargetPicker } from "./participants.js";
 import { RULESETS } from "./config.js";
@@ -8,8 +9,6 @@ import {
   getAbilityEntries,
   getActorFromUuidSync,
   getDefaultAbility,
-  isAbjurerOptionEnabled,
-  getSpecialMinimum,
   getRollModeEntries,
   getSlotChoices,
   normalizeBonusFormula,
@@ -82,7 +81,6 @@ export async function promptCounterspeller(actor, item, ruleset) {
 
   const rollMode = defaultRollMode();
   const proficiencyIncluded = usesHomebrewProficiency();
-  const showAbjurer = ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
   const knowledgeField = ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -91,24 +89,6 @@ export async function promptCounterspeller(actor, item, ruleset) {
           ${t("Dialog.KnowsTargetSpell")}
         </label>
         <p class="hint">${t("Dialog.KnowsTargetSpellHint")}</p>
-      </div>`
-    : "";
-  const disadvantageField = `
-    <div class="form-group stacked">
-      <label class="checkbox">
-        <input type="checkbox" name="disadvantage">
-        ${t("Dialog.DeclareDisadvantage")}
-      </label>
-      <p class="hint">${t("Dialog.DisadvantageHint")}</p>
-    </div>`;
-  const abjurerField = showAbjurer
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="abjurer" data-csp-abjurer>
-          ${t("Dialog.Abjurer")}
-        </label>
-        <p class="hint">${t("Dialog.AbjurerHint")}</p>
       </div>`
     : "";
 
@@ -170,8 +150,9 @@ export async function promptCounterspeller(actor, item, ruleset) {
         <p class="hint">${t("Dialog.BonusDiceHint")}</p>
       </div>
       ${knowledgeField}
-      ${abjurerField}
-      ${disadvantageField}
+
+
+      ${rollTraitsFields()}
       <p class="hint">${t("Dialog.GMWillReview")}</p>
     </div>`;
 
@@ -202,6 +183,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
     : selectedSlot.level;
 
   return {
+    ...readRollTraits(result),
     ...abilityData,
     castingSource,
     slotKey: castingSource === "scroll" ? null : selectedSlot.key,
@@ -210,8 +192,8 @@ export async function promptCounterspeller(actor, item, ruleset) {
     rollMode: String(result.rollMode),
     bonusFormula: normalizeBonusFormula(result.bonusFormula),
     knowsTargetSpell: ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
-    abjurer: showAbjurer && Boolean(result.abjurer),
-    disadvantage: Boolean(result.disadvantage),
+
+
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
@@ -232,16 +214,6 @@ export async function promptTargetPlayer(target) {
   const defaultAbility = getDefaultAbility(actor);
   const abilities = getAbilityEntries(actor, defaultAbility);
   const rollMode = target.rollMode ?? defaultRollMode();
-  const disadvantageField = target.ruleset === RULESETS.HOMEBREW
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="disadvantage"${target.disadvantage ? " checked" : ""}>
-          ${t("Dialog.DeclareDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.DisadvantageHint")}</p>
-      </div>`
-    : "";
   const bonusField = target.ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -281,7 +253,8 @@ export async function promptTargetPlayer(target) {
         <div class="form-group"><label>${t("Dialog.CreatorProficiency")}</label><div class="form-fields"><input type="number" name="creatorProf" value="0" min="0" step="1"></div></div>
       </fieldset>
       ${bonusField}
-      ${disadvantageField}
+
+      ${rollTraitsFields(target)}
       <p class="hint">${t("Dialog.PlayerDataHint")}</p>
     </div>`;
 
@@ -312,6 +285,7 @@ export async function promptTargetPlayer(target) {
   const ability = String(result.ability || getDefaultAbility(selectedActor));
   return {
     ...target,
+    ...readRollTraits(result, "", target),
     ...getAbilityData(selectedActor, ability),
     actorUuid: selectedActor ? selected.key : "",
     actorName: selected.name,
@@ -326,7 +300,7 @@ export async function promptTargetPlayer(target) {
     rollMode: String(result.rollMode),
     bonusFormula: target.ruleset === RULESETS.HOMEBREW ? normalizeBonusFormula(result.bonusFormula) : "",
     rollUserId: game.user.id,
-    disadvantage: target.ruleset === RULESETS.HOMEBREW && Boolean(result.disadvantage)
+
   };
 }
 
@@ -341,9 +315,7 @@ export async function promptGMReview(counter, target) {
       : t("Dialog.NormalSpell");
   const mod = isFixedSource ? target.creatorMod : target.abilityMod;
   const prof = isFixedSource ? target.creatorProf : target.proficiency;
-  const specialMinimum = getSpecialMinimum("counterspellSpecialMinimum");
   const proficiencyIncluded = usesHomebrewProficiency();
-  const showAbjurer = counter.ruleset === RULESETS.HOMEBREW && isAbjurerOptionEnabled();
   const knowledgeField = counter.ruleset === RULESETS.HOMEBREW
     ? `
       <div class="form-group stacked">
@@ -354,35 +326,7 @@ export async function promptGMReview(counter, target) {
         <p class="hint">${t("Dialog.GMConfirmKnowledgeHint")}</p>
       </div>`
     : "";
-  const counterDisadvantageField = `
-    <div class="form-group stacked">
-      <label class="checkbox">
-        <input type="checkbox" name="counterDisadvantage"${counter.disadvantage ? " checked" : ""}>
-        ${t("Dialog.GMConfirmCounterDisadvantage")}
-      </label>
-      <p class="hint">${t("Dialog.GMDisadvantageHint")}</p>
-    </div>`;
-  const targetDisadvantageField = counter.ruleset === RULESETS.HOMEBREW && !isFixedSource
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="targetDisadvantage"${target.disadvantage ? " checked" : ""}>
-          ${t("Dialog.GMConfirmTargetDisadvantage")}
-        </label>
-        <p class="hint">${t("Dialog.GMDisadvantageHint")}</p>
-      </div>`
-    : "";
   const counterUsesScroll = counter.castingSource === "scroll";
-  const abjurerField = showAbjurer
-    ? `
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="counterAbjurer" data-csp-abjurer${counter.abjurer ? " checked" : ""}>
-          ${t("Dialog.GMConfirmAbjurer")}
-        </label>
-        <p class="hint">${t("Dialog.AbjurerHint")}</p>
-      </div>`
-    : "";
 
   const content = `
     <div class="csp-form">
@@ -456,16 +400,12 @@ export async function promptGMReview(counter, target) {
           <p class="hint">${t("Dialog.BonusDiceGMHint")}</p>
         </div>` : ""}
       ${knowledgeField}
-      ${abjurerField}
-      <div class="form-group stacked">
-        <label class="checkbox">
-          <input type="checkbox" name="specialSpellcaster"${counter.specialSpellcaster ? " checked" : ""}>
-          ${t("Dialog.SpecialSpellcasterCounterspell")}
-        </label>
-        <p class="hint">${tf("Dialog.SpecialSpellcasterHint", { minimum: specialMinimum })}</p>
-      </div>
-      ${counterDisadvantageField}
-      ${targetDisadvantageField}
+
+
+
+
+      ${rollTraitsFields(counter, { prefix: "initiator", side: "Initiator" })}
+      ${rollTraitsFields(target, { prefix: "target", side: "Target", passive: isFixedSource || counter.ruleset !== RULESETS.HOMEBREW })}
       <p class="hint">${t("Dialog.GMReviewHint")}</p>
     </div>`;
 
@@ -482,6 +422,7 @@ export async function promptGMReview(counter, target) {
 
   const reviewed = {
     ...target,
+    ...readRollTraits(result, "target", target),
     rollMode: String(result.targetRollMode || target.rollMode),
     spellName: String(result.spellName || target.spellName),
     spellLevel: parseNumber(result.spellLevel, target.spellLevel)
@@ -494,12 +435,10 @@ export async function promptGMReview(counter, target) {
     reviewed.proficiency = parseNumber(result.targetProf, target.proficiency);
     reviewed.bonusFormula = normalizeBonusFormula(result.targetBonusFormula);
   }
-  reviewed.disadvantage = counter.ruleset === RULESETS.HOMEBREW
-    && !isFixedSource
-    && Boolean(result.targetDisadvantage);
   const reviewedCounterScrollLevel = Math.min(9, Math.max(3, Math.trunc(parseNumber(result.counterScrollLevel, counter.slotLevel))));
   const reviewedCounter = {
     ...counter,
+    ...readRollTraits(result, "initiator", counter),
     rollMode: String(result.counterRollMode || counter.rollMode),
     abilityMod: parseNumber(result.counterAbilityMod, counter.abilityMod),
     proficiency: parseNumber(result.counterProficiency, counter.proficiency),
@@ -508,10 +447,10 @@ export async function promptGMReview(counter, target) {
       ? tf("Dialog.ScrollCastingLevel", { level: reviewedCounterScrollLevel })
       : counter.slotLabel,
     bonusFormula: normalizeBonusFormula(result.counterBonusFormula),
-    specialSpellcaster: Boolean(result.specialSpellcaster),
-    abjurer: showAbjurer && Boolean(result.counterAbjurer),
+
+
     knowsTargetSpell: counter.ruleset === RULESETS.HOMEBREW && Boolean(result.knowsTargetSpell),
-    disadvantage: Boolean(result.counterDisadvantage)
+
   };
   return { counter: reviewedCounter, target: reviewed };
 }

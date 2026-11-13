@@ -1,7 +1,5 @@
-import { selectTargetParticipant } from "./participants.js";
-import { promptCasting } from "./casting-session.js";
 import { MODULE_ID, RULESETS, SOCKET_NAME } from "./config.js";
-import { promptGMIdentifyReview } from "./identify-dialogs.js";
+import { promptGMIdentifyReview, promptIdentifier } from "./identify-dialogs.js";
 import {
   escapeHTML,
   getActivityItem,
@@ -79,19 +77,7 @@ async function handleSocket(message) {
   try {
     let result = null;
     if (message.type === "identify-gm-review" && game.user.isGM) {
-      let { identifier } = message.payload;
-      const participant = identifier.targetParticipant;
-      let confirmed = true;
-      if (participant) {
-        confirmed = await promptCasting(participant, "confirm-target", {
-          actorUuid: participant.actorUuid, spellName: identifier.spellName,
-          identify: true, subjectName: identifier.subjectName, subjectItemUuid: identifier.subjectItemUuid
-        });
-        if (confirmed) identifier = { ...identifier,
-          targetActorUuid: confirmed.actorUuid, targetActorName: confirmed.actorName,
-          subjectName: confirmed.subjectName, subjectItemUuid: confirmed.subjectItemUuid };
-      }
-      const review = confirmed ? await promptGMIdentifyReview(identifier) : null;
+      const review = await promptGMIdentifyReview(message.payload.identifier);
       if (review) {
         await completeIdentification(review);
         result = { approved: true };
@@ -237,13 +223,9 @@ async function startIdentify(activity) {
 
   activeActors.add(actor.uuid);
   try {
-    const targetParticipant = await selectTargetParticipant();
-    if (!targetParticipant) return;
-    const session = { actor, item, userId: game.user.id };
     const ruleset = game.settings.get(MODULE_ID, "identifyRuleset");
-    let identifier = await promptCasting(session, "identify", ruleset);
+    const identifier = await promptIdentifier(actor, item, ruleset);
     if (!identifier) return;
-    identifier.targetParticipant = targetParticipant;
     const result = await requestRemote("identify-gm-review", gm.id, { identifier });
     if (!result?.approved) {
       ui.notifications.info(t("Identify.Notifications.CancelledByGM"));

@@ -1,37 +1,31 @@
-import { promptTargetConfirmation, ownsActor } from "./participants.js";
+import { ownsActor } from "./participants.js";
 import { SOCKET_NAME } from "./config.js";
 import { getActorFromUuidSync, randomRequestId, t } from "./utils.js";
 import { promptCounterspeller } from "./dialogs.js";
 import { promptDispeller, promptDispellerEffects, promptGMDispelEffect } from "./dispel-dialogs.js";
 import { promptCurseRemover, promptCurseRemoverEffects, promptGMRemoveCurseEffect } from "./remove-curse-dialogs.js";
-import { promptRestorer, promptRestorationEffect } from "./restoration-dialogs.js";
-import { promptIdentifier } from "./identify-dialogs.js";
 
 const pending = new Map();
 const busy = new Set();
 const methods = {
-  "confirm-target": promptTargetConfirmation,
   "dispel-source": promptGMDispelEffect,
   "remove-curse-source": promptGMRemoveCurseEffect,
   counterspell: promptCounterspeller,
   dispel: promptDispeller,
   "remove-curse": promptCurseRemover,
-  restoration: promptRestorer,
-  identify: promptIdentifier,
   "dispel-effects": promptDispellerEffects,
   "remove-curse-effects": promptCurseRemoverEffects,
-  "restoration-effect": promptRestorationEffect
 };
 
 async function runPrompt(method, actor, item, args) {
-  if (method === "confirm-target" || method.endsWith("-effects") || method.endsWith("-source") || method === "restoration-effect") return methods[method](...args);
+  if (method.endsWith("-effects") || method.endsWith("-source")) return methods[method](...args);
   return methods[method](actor, item, ...args);
 }
 
 /** Caster forms stay local; the GM can request target-only forms remotely. */
 export async function promptCasting(session, method, ...args) {
   if (session.userId === game.user.id) return runPrompt(method, session.actor, session.item, args);
-  if (!game.user.isGM || !["confirm-target", "dispel-source", "remove-curse-source"].includes(method)) return null;
+  if (!game.user.isGM || !["dispel-source", "remove-curse-source"].includes(method)) return null;
   const user = game.users.get(session.userId);
   if (!user?.active || (session.actor && !ownsActor(session.actor, user))) {
     ui.notifications.warn(t("Casting.PlayerUnavailable"));
@@ -70,7 +64,7 @@ export function initializeCastingSessions() {
     const key = actor?.uuid ?? message.recipientId;
     const valid = sender?.active && sender.isGM
       && (!actor || ownsActor(actor, game.user))
-      && ["confirm-target", "dispel-source", "remove-curse-source"].includes(message.method)
+      && ["dispel-source", "remove-curse-source"].includes(message.method)
       && Array.isArray(message.args);
     if (valid && !busy.has(key)) {
       busy.add(key);

@@ -15,7 +15,7 @@ export function labelReviewSides(dialog, workflow) {
     if (control.type === "hidden") continue;
     const label = control.closest("label") ?? control.closest(".form-group")?.querySelector("label");
     if (!label || label.querySelector("[data-csp-review-side]")) continue;
-    const side = initiator?.test(control.name ?? "") ? "Initiator" : "Target";
+    const side = control.name?.startsWith("initiator") || initiator?.test(control.name ?? "") ? "Initiator" : "Target";
     const marker = document.createElement("strong");
     marker.dataset.cspReviewSide = side;
     marker.textContent = `${t(`Review.${side}`)} — `;
