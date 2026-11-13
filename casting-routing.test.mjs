@@ -281,8 +281,8 @@ test('restored workflows and settings match 0.5.6 exactly',async()=>{
 for(const special of ['special:unknown','special:object','Actor.pc']) test(`Dispel: player target confirms ${special}; caster keeps own forms and GM reviews both`,async()=>{
  const w=await world();w.settings.dispelRuleset='homebrew';w.settings.dispelSpecialMinimum=15;
  const actor=w.pc,item=actor.items[0];item.name='Dispel Magic';item.system.identifier='dispel-magic';
- w.p1.answers.push({userId:'p2',actorUuid:special}, {...counter,traitsPresent:'1',disadvantage:true,abjurer:true,specialSpellcaster:true},{});
- w.gm.answers.push({targetUuid:special,effectCount:1,defenseRollMode:'publicroll'}, config=>{
+ w.p1.answers.push({userId:'p2',actorUuid:special}, {...counter,traitsPresent:'1',disadvantage:true,abjurer:true,specialSpellcaster:true});
+ w.gm.answers.push(config=>{
   for(const key of ['Disadvantage','Abjurer','SpecialSpellcaster']) {assert.ok(config.content.includes('name="initiator'+key+'"'));assert.ok(config.content.includes('name="target0'+key+'"'));}return {};
  });
  w.p2.answers.push(config=>{
@@ -291,7 +291,7 @@ for(const special of ['special:unknown','special:object','Actor.pc']) test(`Disp
   return {actorUuid:special,sourceType:'spell',spellName:'Bless',spellLevel:4,casterMod:4,casterProf:3,traitsPresent:'1',abjurer:true,specialSpellcaster:true,disadvantage:true};
  });
  await w.p1.workflow.startDispelFromActivity({item});assert.deepEqual(w.errors,[]);
- assert.deepEqual(forms(w).map(f=>f[0]),['p1','p1','gm','p2','p1','gm']);
+ assert.deepEqual(forms(w).map(f=>f[0]),['p1','p1','p2','gm']);
  const rolls=w.trace.filter(x=>x[1]==='roll');assert.equal(rolls.length,1);assert.equal(rolls[0][0],'p1');assert.match(rolls[0][3],/^2d20klmin15/);assert.match(rolls[0][3],/2 \* @prof/);
  assert.equal(w.pc.system.spells.spell3.value,2);assert.equal(w.npc.system.spells.spell3.value,3);
 });
@@ -313,14 +313,36 @@ test('Dispel initial optional picker offers Object and Unknown; player without a
 
 test('GM-initiated Dispel sends target-only form to player and final correction form back to GM',async()=>{
  const w=await world();
- w.gm.answers.push(recipient,counter,{targetUuid:'special:object',effectCount:1,defenseRollMode:'blindroll'},{},config=>{assert.match(config.content,/Bless/);return null;});
+ w.gm.answers.push(recipient,counter,config=>{assert.match(config.content,/Bless/);return null;});
  w.p2.answers.push({actorUuid:'special:object',sourceType:'spell',spellName:'Bless',spellLevel:4,casterMod:4,casterProf:3});
  await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
- assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','gm','p2','gm','gm']);assert.equal(w.npc.system.spells.spell3.value,3);
+ assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','gm']);assert.equal(w.npc.system.spells.spell3.value,3);
 });
 
 test('Dispel target cannot submit a private GM actor and cancellation consumes no slot',async()=>{
- const w=await world();w.gm.answers.push(recipient,counter,{targetUuid:'special:unknown',effectCount:1,defenseRollMode:'blindroll'});
+ const w=await world();w.gm.answers.push(recipient,counter);
  w.p2.answers.push({actorUuid:'Actor.npc',sourceType:'spell',spellName:'Bless'});
  await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);assert.equal(w.npc.system.spells.spell3.value,3);assert.equal(w.messages.length,0);
+});
+
+test('Dispel initial knowledge reaches final GM review without a return form and applies the DC reduction',async()=>{
+ const w=await world();w.settings.dispelRuleset='homebrew';
+ w.gm.answers.push(recipient, config=>{assert.match(config.content,/name="knowsTargetSpell"/);return {...counter,knowsTargetSpell:true};}, config=>{assert.match(config.content,/name="known0" checked/);return {known0:true};});
+ w.p2.answers.push(config=>{assert.equal(config.buttons.find(b=>b.action==='confirm').label,'COUNTERSPELL_PLUS.Dialog.SendToGM');return {actorUuid:'Actor.pc',sourceType:'spell',spellName:'Bless',spellLevel:4,casterMod:4,casterProf:3,defenseRollMode:'blindroll'};});
+ await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','gm']);assert.equal(w.npc.system.spells.spell3.value,2);
+ assert.ok(w.messages.some(m=>m.content?.includes('16')));
+});
+
+test('Dispel multiple target effects preserve separate GM knowledge corrections and stop on cancellation',async()=>{
+ const w=await world();w.settings.dispelRuleset='homebrew';
+ w.gm.answers.push(recipient,{...counter,effectCount:2,knowsTargetSpell:true},config=>{assert.match(config.content,/name="known0" checked/);assert.match(config.content,/name="known1" checked/);return null;});
+ for(const name of ['Bless','Haste'])w.p2.answers.push({actorUuid:'Actor.pc',sourceType:'spell',spellName:name,spellLevel:3,casterMod:4,casterProf:3});
+ await w.gm.workflow.startDispelFromActivity({item:w.item});assert.deepEqual(w.errors,[]);
+ assert.deepEqual(forms(w).map(x=>x[0]),['gm','gm','p2','p2','gm']);assert.equal(w.npc.system.spells.spell3.value,3);
+});
+
+test('selection names use Actor instead of Character sheet in English',async()=>{
+ const lang=JSON.parse(await fs.readFile('lang/en.json','utf8')).COUNTERSPELL_PLUS;
+ assert.equal(lang.Casting.Actor,'Actor');assert.doesNotMatch(JSON.stringify(lang.Casting)+JSON.stringify(lang.Participants),/character sheet/i);
 });

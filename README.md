@@ -2,6 +2,12 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.14
+
+- Selection terminology uses Actor instead of Character sheet.
+- Dispel Magic now goes directly from the initiator’s casting form to the selected target’s source form, then to the final editable GM review. There is no intermediate GM setup or return questionnaire for the initiator.
+- The initial Dispel form includes the number of effects and, in Homebrew mode, whether the initiator knows the dispelled spell. For multiple effects this supplies the initial declaration for each; the final GM review can correct knowledge separately for each effect. The target declares defense visibility and confirms their own token, Actor, Unknown or Object.
+
 ## Version 0.5.13
 
 - Counterspell target submission now correctly says **Send to GM**.
