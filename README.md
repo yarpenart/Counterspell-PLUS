@@ -2,6 +2,12 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
+## Version 0.5.8
+
+- The initial picker contains only a player and an owned token/character sheet. Spell choices and the requirement to have a spell in the selected actor’s inventory have been removed.
+- Type the casting spell name in the first detailed caster form. Counterspell also allows the targeted spell name to be entered immediately; it is carried into GM target setup and the original caster’s form.
+- GM final review remains the last step before resolution.
+
 ## Version 0.5.7
 
 - GM-initiated Counterspell keeps the Counterspell form on the GM, sends the original spell form to its selected active owner, and returns both declarations to the GM for final corrections. This now also works with Blind GM Roll.

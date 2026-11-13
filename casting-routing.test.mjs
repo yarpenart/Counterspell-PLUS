@@ -62,7 +62,7 @@ async function world() {
   const gm=await client(users[0]),p1=await client(users[1]),p2=await client(users[2]);
   return {gm,p1,p2,pc,npc,item,documents,users,trace,errors,messages,settings};
 }
-const select={userId:'gm',itemUuid:'Actor.npc|counter'};
+const select={userId:'gm',actorUuid:'Actor.npc'};
 const counter={castingSource:'spell',slotKey:'spell3',ability:'int',rollMode:'publicroll'};
 const target={actorUuid:'Actor.pc',ownerUserId:'p2',askOwner:true,sourceType:'spell',spellName:'Fireball',spellLevel:3,ability:'int',targetRollMode:'blindroll'};
 const fireball={spellName:'Fireball',spellLevel:4,ability:'int',rollMode:'blindroll'};
@@ -82,7 +82,7 @@ test('GM Counterspell -> explicitly selected Fireball owner -> GM final review, 
 });
 
 test('player Counterspell -> GM target setup -> other player Fireball -> GM review',async()=>{
- const w=await world();w.p1.answers.push({userId:'p1',itemUuid:'Actor.pc|counter'},counter);
+ const w=await world();w.p1.answers.push({userId:'p1',actorUuid:'Actor.pc'},counter);
  w.gm.answers.push(target,review);w.p2.answers.push(fireball);
  await w.p1.workflow.startFromActivity({item:w.pc.items[0]});
  assert.deepEqual(w.errors,[]);assert.equal(w.pc.system.spells.spell3.value,2);
@@ -98,7 +98,7 @@ test('target cancellation stops before GM review and slot consumption',async()=>
 });
 
 test('GM can delegate caster form without giving away final review',async()=>{
- const w=await world();w.gm.answers.push({userId:'p1',itemUuid:'Actor.pc|counter'},target,review);
+ const w=await world();w.gm.answers.push({userId:'p1',actorUuid:'Actor.pc'},target,review);
  w.p1.answers.push(counter);w.p2.answers.push(fireball);
  await w.gm.workflow.startFromActivity({item:w.item});
  assert.deepEqual(w.errors,[]);assert.equal(w.pc.system.spells.spell3.value,2);
@@ -159,10 +159,40 @@ test('selection separates token from actor sheet and defaults the GM to local fo
    let markup='';
    const itemSelect={value:'',set innerHTML(value){markup=value},get innerHTML(){return markup}};
    config.render(null,{element:{querySelector:selector=>selector.includes('userId')?userSelect:itemSelect}});
-   assert.match(markup,/Scene.s.Token.t\|counter/);assert.match(markup,/Actor.pc\|counter/);
+   assert.match(markup,/Scene.s.Token.t/);assert.match(markup,/Actor.pc/);
    assert.doesNotMatch(markup,/Actor.npc/);
-   return {userId:'p2',itemUuid:'Scene.s.Token.t|counter'};
+   return {userId:'p2',actorUuid:'Scene.s.Token.t'};
  });
  const result=await w.gm.routing.selectCastingSession(w.npc,w.item,'counterspell');
  assert.equal(result.userId,'p2');assert.equal(result.actor,w.pc);
+});
+
+test('actor without embedded spells can be selected and receives the delegated caster form',async()=>{
+ const w=await world();w.pc.items.length=0;
+ w.gm.answers.push({userId:'p2',actorUuid:'Actor.pc'});
+ const session=await w.gm.routing.selectCastingSession(w.npc,w.item,'counterspell');
+ assert.equal(session.actor,w.pc);assert.equal(session.item.uuid,'');
+ w.p2.answers.push({...counter,castingSpellName:'Counterspell custom',targetSpellName:'Fireball'});
+ const result=await w.gm.routing.promptCasting(session,'counterspell','official2014');
+ assert.equal(result.itemName,'Counterspell custom');assert.equal(result.targetSpellName,'Fireball');
+ assert.equal(result.actorUuid,'Actor.pc');assert.equal(w.pc.system.spells.spell3.value,3);
+ assert.deepEqual(w.errors,[]);
+});
+
+test('targeted spell name is entered on the first caster form and carried to GM target setup',async()=>{
+ const w=await world();
+ w.gm.answers.push(select,config=>{
+   assert.match(config.content,/name="castingSpellName"/);
+   assert.match(config.content,/name="targetSpellName"/);
+   return {...counter,targetSpellName:'Fireball'};
+ },config=>{
+   assert.match(config.content,/name="spellName" value="Fireball"/);
+   return target;
+ },review);
+ w.p2.answers.push(config=>{
+   assert.match(config.content,/name="spellName" value="Fireball"/);
+   return fireball;
+ });
+ await w.gm.workflow.startFromActivity({item:w.item});
+ assert.deepEqual(w.errors,[]);assert.equal(w.messages.length,1);
 });
