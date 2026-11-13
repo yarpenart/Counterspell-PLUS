@@ -683,6 +683,10 @@
       "InventoryItem": "Item from the selected character’s inventory (optional)",
       "ItemName": "Target item name",
       "CastingSpellName": "Your casting spell name"
+    },
+    "Review": {
+      "Initiator": "Initiator",
+      "Target": "Target"
     }
   }
 }

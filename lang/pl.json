@@ -683,6 +683,10 @@
       "InventoryItem": "Przedmiot z ekwipunku wybranej postaci (opcjonalnie)",
       "ItemName": "Nazwa przedmiotu będącego celem",
       "CastingSpellName": "Nazwa Twojego rzucanego zaklęcia"
+    },
+    "Review": {
+      "Initiator": "Initiator",
+      "Target": "Target"
     }
   }
 }
