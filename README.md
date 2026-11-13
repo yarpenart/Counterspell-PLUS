@@ -2,7 +2,23 @@
 
 Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Restoration**, **Greater Restoration**, homebrew **Restoration** and **Identify** in Foundry VTT 14 Build 365 with D&D5e 5.3.3.
 
-## Version 0.5.6
+## Version 0.5.7
+
+- GM-initiated Counterspell keeps the Counterspell form on the GM, sends the original spell form to its selected active owner, and returns both declarations to the GM for final corrections. This now also works with Blind GM Roll.
+- Counterspell target setup allows explicit owner selection when several players own the same actor. The final GM review can correct both roll visibility modes.
+- Every supported spell starts with a player and owned token/character sheet selector. The initiating user is selected by default; the GM may delegate the caster's forms to an active owner. All subsequent caster forms follow that selection.
+- Dispel Magic and Remove Curse allow the GM to select a separate player and owned character for each source spell/effect. That player fills in the source data, then the GM reviews it before resolving the spell. Choose the GM to enter source data locally.
+- Character sheets and scene tokens are listed separately. Players can select only owned characters; offline players cannot receive forms. Cancelled forms do not consume a slot.
+- Repaired the Polish translation file, which contained two concatenated JSON documents.
+
+### Quick example: GM counters a player's Fireball
+
+1. Start the GM caster's Counterspell and keep **GM** selected in the caster picker. Fill in Counterspell normally.
+2. In target setup, select the Fireball caster's token or character sheet, choose its player, and leave **Ask the active owner** enabled.
+3. The chosen player fills in Fireball's spell level, ability, visibility and optional bonuses.
+4. The GM receives the final review for both sides, makes any corrections, and confirms resolution. Slots are consumed only after approval.
+
+## Existing features
 
 - Verified module manifests and JavaScript syntax for Foundry VTT 14 Build 365.
 
@@ -21,7 +37,7 @@ Automation for **Counterspell**, **Dispel Magic**, **Remove Curse**, **Lesser Re
 - Counterspell and Dispel Magic target selectors provide a live-filtered search list instead of requiring scrolling through long actor lists.
 - Target searches combine tokens on the active scene with Actors that do not have a token on that scene, and label every result as Token, Actor or Special.
 - Long workflow windows keep the full-size target list and scroll the complete form, including the action buttons, within the available screen height.
-- A Blind GM defense hides affected spell levels from players; Counterspell keeps the target data with the GM, while Dispel Magic masks levels in the caster's effect list.
+- A Blind GM defense hides numeric results. Counterspell still asks the selected original caster for their own spell data; Dispel Magic masks levels in the dispeller’s effect list.
 - Hidden d20 messages do not expose natural 1 or natural 20 through critical/fumble colors.
 - The GM can mark a Counterspell, Dispel Magic, Remove Curse or Restoration caster as a Special Spellcaster. Separate world settings set the kept d20 minimum from 1 to 20 (default 15).
 - Homebrew Remove Curse and Restoration: One Curse can optionally require special curse-removal conditions. The GM confirms each requirement, may describe it, chooses whether its status message is public or GM-only, and an unmet requirement increases the curse DC by a configurable amount (default +5). Official 2014 rules and cursed-item attunement are unchanged.
@@ -266,3 +282,7 @@ https://github.com/yarpenart/Counterspell-PLUS/releases/latest/download/module.j
 ## License
 
 MIT
+
+## Developer verification
+
+Run `node --experimental-vm-modules --test casting-routing.test.mjs` for simulated independent GM/player clients. A live Foundry world is still required for UI and Dice So Nice verification.
