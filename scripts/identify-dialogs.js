@@ -247,6 +247,10 @@ export async function promptIdentifier(actor, item, ruleset) {
 
   const content = `
     <div class="csp-form">
+      <div class="form-group">
+        <label>${t("Dialog.SpellName")}</label>
+        <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
+      </div>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(homebrew ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
@@ -333,7 +337,7 @@ export async function promptIdentifier(actor, item, ruleset) {
     actorUuid: actor.uuid,
     actorName: actor.name,
     spellUuid: item.uuid,
-    spellName: item.name,
+    spellName: String(result.castingSpellName || item.name),
     userId: game.user.id,
     castingSource,
     slotKey: castingSource === "spell" ? selectedSlot.key : null,

@@ -183,6 +183,10 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
 
   const content = `
     <div class="csp-form"${homebrew ? " data-csp-homebrew-casting" : ""}>
+      <div class="form-group">
+        <label>${t("Dialog.SpellName")}</label>
+        <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
+      </div>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(homebrew ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
@@ -257,7 +261,7 @@ export async function promptRestorer(actor, item, ruleset, activityType) {
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
-    itemName: item.name,
+    itemName: String(result.castingSpellName || item.name),
     slotKey: castingSource === "scroll" ? null : selectedSlot.key,
     slotLevel,
     slotLabel: castingSource === "scroll"

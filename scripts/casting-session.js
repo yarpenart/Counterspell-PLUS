@@ -1,7 +1,5 @@
 import { SOCKET_NAME } from "./config.js";
-import { escapeHTML, getActorFromUuidSync, getSceneCasterEntries, getItemActor,
-  isCounterspellActivity, isDispelMagicActivity, isRemoveCurseActivity,
-  isIdentifyActivity, getRestorationActivityType, randomRequestId, t } from "./utils.js";
+import { escapeHTML, getActorFromUuidSync, getSceneCasterEntries, randomRequestId, t } from "./utils.js";
 import { promptCounterspeller } from "./dialogs.js";
 import { promptDispeller, promptDispellerEffects, promptGMDispelEffect } from "./dispel-dialogs.js";
 import { promptCurseRemover, promptCurseRemoverEffects, promptGMRemoveCurseEffect } from "./remove-curse-dialogs.js";
@@ -29,13 +27,6 @@ function owns(actor, user) {
     || actor.testUserPermission(user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)));
 }
 
-function matches(item, kind, activityType) {
-  const activity = { item };
-  if (kind === "restoration") return getRestorationActivityType(activity) === activityType;
-  return ({ counterspell: isCounterspellActivity, dispel: isDispelMagicActivity,
-    "remove-curse": isRemoveCurseActivity, identify: isIdentifyActivity })[kind]?.(activity) ?? false;
-}
-
 function options(entries, selected) {
   return entries.map(entry => `<option value="${escapeHTML(entry.id)}"${entry.id === selected ? " selected" : ""}>${escapeHTML(entry.name)}</option>`).join("");
 }
@@ -56,31 +47,30 @@ export async function selectCastingSession(originalActor, originalItem, kind, ac
     const actorEntries = Array.from(game.actors).filter(actor => !sceneEntries.some(entry => entry.kind === "actor" && entry.actor.uuid === actor.uuid))
       .map(actor => ({ uuid: actor.uuid, actor, name: actor.name, kind: "actor" }));
     const entries = [...sceneEntries, ...actorEntries].filter(entry => owns(entry.actor, game.user))
-      .flatMap(entry => (source ? [null] : Array.from(entry.actor.items).filter(item => matches(item, kind, activityType)))
-        .map(item => ({ id: source ? entry.uuid : `${entry.uuid}|${item.id}`, actor: entry.actor, item,
-          name: `${t(entry.kind === "token" ? "Casting.Token" : "Casting.Actor")}: ${entry.name}${item ? ` — ${item.name}` : ""}` })));
+      .map(entry => ({ id: entry.uuid, actor: entry.actor,
+        name: `${t(entry.kind === "token" ? "Casting.Token" : "Casting.Actor")}: ${entry.name}` }));
     if (!entries.length) {
-      ui.notifications.warn(t("Casting.NoSpell"));
+      ui.notifications.warn(t("Casting.NoActor"));
       return null;
     }
     const preferredUser = game.user;
-    const defaultItem = entries.find(entry => source ? entry.actor.uuid === originalActor?.uuid : entry.item.uuid === originalItem?.uuid)?.id;
+    const defaultActor = entries.find(entry => entry.actor.uuid === originalActor?.uuid)?.id;
     const result = await foundry.applications.api.DialogV2.wait({
       window: { title: t(source ? "Casting.SourceTitle" : "Casting.Title") }, position: { width: 620 },
       classes: ["counterspell-plus-dialog"], modal: false, rejectClose: false,
       content: `<div class="csp-form">
         <p class="hint">${t(source ? "Casting.SourceHint" : "Casting.Hint")}</p>
         <div class="form-group"><label>${t("Casting.Player")}</label><div class="form-fields"><select name="userId">${options(users, preferredUser.id)}</select></div></div>
-        <div class="form-group"><label>${t("Casting.Caster")}</label><div class="form-fields"><select name="itemUuid" required></select></div></div>
+        <div class="form-group"><label>${t("Casting.Caster")}</label><div class="form-fields"><select name="actorUuid" required></select></div></div>
         <p class="hint">${t("Casting.OwnershipHint")}</p>
       </div>`,
       render: (_event, dialog) => {
         const userSelect = dialog.element.querySelector('[name="userId"]');
-        const itemSelect = dialog.element.querySelector('[name="itemUuid"]');
+        const actorSelect = dialog.element.querySelector('[name="actorUuid"]');
         const update = () => {
-          const selected = itemSelect.value || defaultItem;
+          const selected = actorSelect.value || defaultActor;
           const user = game.users.get(userSelect.value);
-          itemSelect.innerHTML = options(entries.filter(entry => owns(entry.actor, user)), selected);
+          actorSelect.innerHTML = options(entries.filter(entry => owns(entry.actor, user)), selected);
         };
         userSelect.addEventListener("change", update);
         update();
@@ -93,12 +83,19 @@ export async function selectCastingSession(originalActor, originalItem, kind, ac
     });
     if (!result) return null;
     const user = users.find(user => user.id === result.userId);
-    const entry = entries.find(entry => entry.id === result.itemUuid);
+    const entry = entries.find(entry => entry.id === result.actorUuid);
     if (!user?.active || !entry || !owns(entry.actor, user)) {
       ui.notifications.warn(t("Casting.InvalidSelection"));
       return null;
     }
-    return { actor: entry.actor, item: entry.item, userId: user.id };
+    // The triggering activity supplies workflow metadata only. The selected actor
+    // need not own an embedded copy of the spell; its slots and abilities are used.
+    const item = originalItem ? {
+      uuid: originalActor?.uuid === entry.actor.uuid ? originalItem.uuid : "",
+      name: originalItem.name,
+      system: { level: originalItem.system?.level }
+    } : null;
+    return { actor: entry.actor, item, userId: user.id };
   } finally {
     selecting = false;
   }
@@ -127,7 +124,7 @@ export async function promptCasting(session, method, ...args) {
     pending.set(requestId, { userId: user.id, resolve, timer });
     game.socket.emit(SOCKET_NAME, { type: "casting-prompt", requestId,
       senderId: game.user.id, recipientId: user.id, method,
-      actorUuid: session.actor.uuid, itemUuid: session.item?.uuid, args });
+      actorUuid: session.actor.uuid, spell: session.item ? { uuid: session.item.uuid, name: session.item.name, system: { level: session.item.system?.level } } : null, args });
   });
 }
 
@@ -145,11 +142,12 @@ export function initializeCastingSessions() {
     if (message.type !== "casting-prompt") return;
     const sender = game.users.get(message.senderId);
     const actor = getActorFromUuidSync(message.actorUuid);
-    const item = message.itemUuid ? fromUuidSync(message.itemUuid) : null;
+    const item = message.spell;
     let result = null;
     const key = actor?.uuid;
     const valid = sender?.active && sender.isGM && owns(actor, game.user)
-      && (message.method?.endsWith("-source") || getItemActor(item)?.uuid === actor.uuid)
+      && (message.method?.endsWith("-source") || message.method?.endsWith("-effects")
+        || message.method === "restoration-effect" || typeof item?.name === "string")
       && Object.hasOwn(methods, message.method)
       && Array.isArray(message.args);
     if (valid && !busy.has(key)) {

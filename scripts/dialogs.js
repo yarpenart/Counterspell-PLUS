@@ -127,6 +127,14 @@ export async function promptCounterspeller(actor, item, ruleset) {
 
   const content = `
     <div class="csp-form"${ruleset === RULESETS.HOMEBREW ? " data-csp-homebrew-casting" : ""}>
+      <div class="form-group">
+        <label>${t("Dialog.SpellName")}</label>
+        <div class="form-fields"><input type="text" name="castingSpellName" value="${escapeHTML(item.name)}" required></div>
+      </div>
+      <div class="form-group">
+        <label>${t("Casting.TargetSpellName")}</label>
+        <div class="form-fields"><input type="text" name="targetSpellName" placeholder="Fireball"></div>
+      </div>
       <div class="csp-summary">
         <strong>${escapeHTML(actor.name)}</strong>
         <span>${escapeHTML(ruleset === RULESETS.HOMEBREW ? t("Rules.Homebrew") : t("Rules.Official2014"))}</span>
@@ -220,7 +228,8 @@ export async function promptCounterspeller(actor, item, ruleset) {
     actorUuid: actor.uuid,
     actorName: actor.name,
     itemUuid: item.uuid,
-    itemName: item.name,
+    itemName: String(result.castingSpellName || item.name),
+    targetSpellName: String(result.targetSpellName || ""),
     ruleset
   };
 }
@@ -302,7 +311,7 @@ export async function promptGMTarget(counter) {
       </div>
       <div class="form-group">
         <label>${t("Dialog.SpellName")}</label>
-        <div class="form-fields"><input type="text" name="spellName" placeholder="Fireball" required></div>
+        <div class="form-fields"><input type="text" name="spellName" value="${escapeHTML(counter.targetSpellName ?? "")}" placeholder="Fireball" required></div>
       </div>
       <div class="form-group">
         <label>${t("Dialog.SpellSlotLevel")}</label>
