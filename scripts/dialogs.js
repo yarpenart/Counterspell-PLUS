@@ -177,7 +177,7 @@ export async function promptCounterspeller(actor, item, ruleset) {
   const result = await waitForm({
     title: t("Dialog.CounterspellerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM"),
+    confirmLabel: t("Dialog.SendToTarget"),
     onRender: activateAbjurerProficiency
   });
   if (!result) return null;
@@ -287,7 +287,7 @@ export async function promptTargetPlayer(target) {
   const result = await waitForm({
     title: t("Dialog.TargetPlayerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM"),
+    confirmLabel: t("Dialog.SendToInitiator"),
     onRender: (event, dialog) => {
       picker.render(event, dialog);
       const root = dialog.element;

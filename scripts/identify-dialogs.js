@@ -307,7 +307,7 @@ export async function promptIdentifier(actor, item, ruleset) {
   const result = await waitForm({
     title: t("Identify.Dialog.CasterTitle"),
     content,
-    confirmLabel: t("Dialog.Continue"),
+    confirmLabel: t("Dialog.SendToTarget"),
     onRender: activateCasterForm(entries)
   });
   if (!result) return null;

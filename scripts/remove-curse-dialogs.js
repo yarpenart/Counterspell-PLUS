@@ -195,7 +195,7 @@ export async function promptCurseRemover(actor, item, ruleset) {
   const result = await waitForm({
     title: t("RemoveCurse.Dialog.DispellerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM"),
+    confirmLabel: t("Dialog.SendToTarget"),
     onRender: activateAbjurerProficiency
   });
   if (!result) return null;
@@ -363,7 +363,7 @@ export async function promptGMRemoveCurseEffect(index, count, targetType = "acto
   const result = await waitForm({
     title: tf("RemoveCurse.Dialog.GMEffectTitle", { index: index + 1, count }),
     content,
-    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue"),
+    confirmLabel: index + 1 === count ? t("Dialog.SendToInitiator") : t("Dialog.Continue"),
     onRender: picker?.render
   });
   if (!result) return null;

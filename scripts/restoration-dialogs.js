@@ -316,7 +316,7 @@ export async function promptRestorationEffect(restorer) {
   const result = await waitForm({
     title: t("Restoration.Dialog.EffectTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM"),
+    confirmLabel: t("Dialog.SendToTarget"),
     onRender
   });
   if (!result) return null;

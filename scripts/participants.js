@@ -156,7 +156,7 @@ export async function promptTargetConfirmation(data) {
     },
     buttons: [
       { action: "cancel", label: t("Dialog.Cancel"), callback: () => null },
-      { action: "confirm", label: t("Dialog.SendToGM"), default: true,
+      { action: "confirm", label: t("Dialog.SendToInitiator"), default: true,
         callback: (_event, button) => new foundry.applications.ux.FormDataExtended(button.form).object }
     ]
   });

@@ -186,7 +186,7 @@ export async function promptDispeller(actor, item, ruleset) {
   const result = await waitForm({
     title: t("Dispel.Dialog.DispellerTitle"),
     content,
-    confirmLabel: t("Dialog.SendToGM"),
+    confirmLabel: t("Dialog.SendToTarget"),
     onRender: activateAbjurerProficiency
   });
   if (!result) return null;
@@ -362,7 +362,7 @@ export async function promptGMDispelEffect(index, count, targetType = "actor", p
   const result = await waitForm({
     title: tf("Dispel.Dialog.GMEffectTitle", { index: index + 1, count }),
     content,
-    confirmLabel: index + 1 === count ? t("Dialog.SendToGM") : t("Dialog.Continue"),
+    confirmLabel: index + 1 === count ? t("Dialog.SendToInitiator") : t("Dialog.Continue"),
     onRender: picker?.render
   });
   if (!result) return null;
